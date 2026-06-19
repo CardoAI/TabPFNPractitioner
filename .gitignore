@@ -11,3 +11,6 @@ catboost_info/
 
 # OS
 .DS_Store
+
+# Local Claude working notes (private, not published)
+.claude/
