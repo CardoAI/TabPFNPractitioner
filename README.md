@@ -1,17 +1,10 @@
-# RiseOfTFMs
+# TabPFNPractitioner
 
 Hands-on notebooks on working with **TabPFN**, a tabular foundation model, written for practitioners
 who built their instincts on gradient boosting. Each notebook walks the classical pre-modeling
 reflexes (scaling, missing values, parameters) and shows how they change when the model is a
 pretrained transformer instead of a booster. Every experiment is a small, self-contained synthetic
 construction, so the behaviour is real but the setup stays easy to read.
-
-## Notebooks
-
-- `notebooks/RiseOfTFMs.ipynb` — the baseline, and scaling / transforms / outliers.
-- `notebooks/Post2_MissingValues.ipynb` — missing values: what TabPFN automates, and the two failure
-  modes (the vendor trap, mechanism shift) where it still matters.
-- `notebooks/Post0_Parameters.ipynb` — the TabPFN parameters a practitioner actually turns.
 
 ## Environment
 
