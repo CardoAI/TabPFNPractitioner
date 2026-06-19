@@ -1,0 +1,37 @@
+[project]
+name = "rise-of-tfms"
+version = "0.1.0"
+description = "Hands-on notebooks on working with TabPFN, for gradient-boosting practitioners."
+readme = "README.md"
+requires-python = "==3.11.*"
+dependencies = [
+    "tabpfn==8.0.3",
+    "torch==2.5.1",
+    "scikit-learn==1.9.0",
+    "lightgbm==4.6.0",
+    "xgboost==3.2.0",
+    "catboost==1.2.10",
+    "pandas==2.1.4",
+    "numpy==1.26.4",
+    "matplotlib==3.9.2",
+    "tabulate==0.10.0",
+    "tqdm==4.66.6",
+]
+
+[dependency-groups]
+dev = ["jupyterlab>=4.0", "ipykernel>=6.29"]
+
+[tool.uv]
+package = false          # notebooks-only project, nothing to build or install
+
+# --- CPU-only torch (optional) -------------------------------------------------
+# On Linux the default torch wheel above already bundles CUDA 12.4 (GPU works out of
+# the box). For a CPU-only build, uncomment the following before `uv sync`:
+#
+# [tool.uv.sources]
+# torch = [{ index = "pytorch-cpu" }]
+#
+# [[tool.uv.index]]
+# name = "pytorch-cpu"
+# url = "https://download.pytorch.org/whl/cpu"
+# explicit = true
