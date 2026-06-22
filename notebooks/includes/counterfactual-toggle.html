@@ -1,0 +1,49 @@
+<script>
+(() => {
+  const toggles = document.querySelectorAll(".cf-toggle");
+
+  toggles.forEach((toggle) => {
+    const panels = Array.from(toggle.querySelectorAll("[data-cf-setting]"));
+    if (panels.length < 2 || toggle.dataset.cfReady === "true") {
+      return;
+    }
+
+    const knob = toggle.dataset.cfKnob || "counterfactual";
+    const controls = document.createElement("div");
+    controls.className = "cf-toggle__controls";
+    controls.setAttribute("role", "group");
+    controls.setAttribute("aria-label", knob);
+
+    const settings = panels.map((panel) => panel.dataset.cfSetting);
+    const fallback = settings[0];
+    let active = settings.includes(toggle.dataset.cfDefault)
+      ? toggle.dataset.cfDefault
+      : fallback;
+
+    const show = (setting) => {
+      active = setting;
+      panels.forEach((panel) => {
+        panel.hidden = panel.dataset.cfSetting !== active;
+      });
+      controls.querySelectorAll("button").forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.cfSetting === active));
+      });
+    };
+
+    settings.forEach((setting) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "cf-toggle__button";
+      button.dataset.cfSetting = setting;
+      button.textContent = setting;
+      button.addEventListener("click", () => show(setting));
+      controls.appendChild(button);
+    });
+
+    toggle.prepend(controls);
+    toggle.dataset.cfReady = "true";
+    show(active);
+  });
+})();
+</script>
+

@@ -1,0 +1,25 @@
+---
+title: "TabPFN Practitioner"
+subtitle: "Rendered notebooks for gradient boosting practitioners"
+page-layout: full
+listing:
+  contents: "*.ipynb"
+  type: table
+  fields: [title, description, reading-time]
+  sort: false
+  sort-ui: false
+  filter-ui: true
+  table-striped: false
+  table-hover: true
+---
+
+::: {.site-hero}
+Practical TabPFN notes for readers who already know boosted trees and want a sharper feel for missing values, categorical inputs, parameters, and counterfactual checks.
+:::
+
+The notebooks are rendered as committed. Saved outputs are used as the display layer, with no runtime Python, model weights, backend, or browser recompute.
+
+Start from the sidebar for the authored order. New notebooks are added to navigation during render when their front matter follows the [content contract](site-contract.qmd).
+
+## Notebook Index
+

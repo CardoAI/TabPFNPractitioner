@@ -1,0 +1,56 @@
+metadata-files:
+  - _site-nav.yml
+
+project:
+  type: website
+  output-dir: _site
+  pre-render: scripts/build_sidebar.py
+  render:
+    - "*.qmd"
+    - "*.ipynb"
+    - "**/*.ipynb"
+    - "!_site/"
+    - "!catboost_info/"
+
+execute:
+  enabled: false
+  freeze: true
+
+website:
+  title: "TabPFN Practitioner"
+  description: "Rendered TabPFN notebooks for gradient boosting practitioners."
+  site-url: "https://cardoai.github.io/TabPFNPractitioner/"
+  repo-url: "https://github.com/CardoAI/TabPFNPractitioner"
+  repo-subdir: "notebooks"
+  page-navigation: true
+  bread-crumbs: true
+  search:
+    location: sidebar
+    type: textbox
+  navbar:
+    background: "#2e2e33"
+    foreground: "#ffffff"
+    left:
+      - href: index.qmd
+        text: Overview
+      - href: site-contract.qmd
+        text: Contract
+    right:
+      - text: Source
+        href: "https://github.com/CardoAI/TabPFNPractitioner"
+
+format:
+  html:
+    theme:
+      - cosmo
+      - styles/theme.scss
+    toc: true
+    code-fold: true
+    code-summary: "Show code"
+    code-copy: true
+    code-overflow: wrap
+    include-after-body:
+      - includes/counterfactual-toggle.html
+    link-external-newwindow: true
+    link-external-icon: true
+

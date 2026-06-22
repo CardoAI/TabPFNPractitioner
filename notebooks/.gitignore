@@ -1,0 +1,7 @@
+/.quarto/
+/_freeze/
+/_site/
+/_site-nav.yml
+
+
+**/*.quarto_ipynb
