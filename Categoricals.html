@@ -260,7 +260,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <p>A categorical column forces a choice a gradient-boosting practitioner makes on reflex: how do you turn the labels into numbers? Ordinal codes, one-hot columns, frequency counts, a target statistic, or the model’s own native handling. This notebook walks that familiar checklist, then shows that for TabPFN the choice mostly stops mattering, and isolates the one place it still does. Every experiment is a small construction plus one real dataset, so the behaviour is real but the setup stays easy to read.</p>
 <p>Everything here is the local <code>tabpfn</code> package (8.0.3, v3 default checkpoint), not the hosted API. That distinction turns out to matter for text, and beat 4 says exactly where.</p>
-<div id="afceeef2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T08:03:26.344971Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T08:03:26.344813Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T08:03:36.654237Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T08:03:36.653395Z&quot;}}" data-execution_count="1">
+<div id="afceeef2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:13:06.289978Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:13:06.289814Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:13:26.138207Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:13:26.137482Z&quot;}}" data-execution_count="1">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
@@ -269,54 +269,55 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm <span class="im">import</span> tqdm</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabulate <span class="im">import</span> tabulate</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> OrdinalEncoder, OneHotEncoder, TargetEncoder, StandardScaler</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LogisticRegression</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestClassifier</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> Pipeline</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> roc_auc_score</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.datasets <span class="im">import</span> fetch_openml</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lightgbm <span class="im">import</span> LGBMClassifier</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> xgboost <span class="im">import</span> XGBClassifier</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> catboost <span class="im">import</span> CatBoostClassifier</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn <span class="im">import</span> TabPFNClassifier</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> printdf(df, nrows<span class="op">=</span><span class="dv">10</span>, showindex<span class="op">=</span><span class="va">True</span>):</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(tabulate(df.head(nrows), headers<span class="op">=</span><span class="st">"keys"</span>, tablefmt<span class="op">=</span><span class="st">"psql"</span>, showindex<span class="op">=</span>showindex))</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> auc(model, X_train, y_train, X_test, y_test):</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Fit on train, return ROC AUC on the positive-class probability for test."""</span></span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    model.fit(X_train, y_train)</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> roc_auc_score(y_test, model.predict_proba(X_test)[:, <span class="dv">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>plt.style.use(<span class="st">"fivethirtyeight"</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm <span class="im">import</span> tqdm</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabulate <span class="im">import</span> tabulate</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> OrdinalEncoder, OneHotEncoder, TargetEncoder, StandardScaler</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LogisticRegression</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestClassifier</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> Pipeline</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> roc_auc_score</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.datasets <span class="im">import</span> fetch_openml</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lightgbm <span class="im">import</span> LGBMClassifier</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> xgboost <span class="im">import</span> XGBClassifier</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> catboost <span class="im">import</span> CatBoostClassifier</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn <span class="im">import</span> TabPFNClassifier</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> printdf(df, nrows<span class="op">=</span><span class="dv">10</span>, showindex<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(tabulate(df.head(nrows), headers<span class="op">=</span><span class="st">"keys"</span>, tablefmt<span class="op">=</span><span class="st">"psql"</span>, showindex<span class="op">=</span>showindex))</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> auc(model, X_train, y_train, X_test, y_test):</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Fit on train, return ROC AUC on the positive-class probability for test."""</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    model.fit(X_train, y_train)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> roc_auc_score(y_test, model.predict_proba(X_test)[:, <span class="dv">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <section id="the-familiar-checklist" class="level2">
 <h2 class="anchored" data-anchor-id="the-familiar-checklist">1. The familiar checklist</h2>
 <p>You encode a categorical by what it represents. The practitioner’s map, the way the CardoAI course teaches it, with every mapping learned on the training split only:</p>
 <ul>
-<li><strong>Ordinal</strong>: integers <code>0..N-1</code>. For genuinely ordered categories, or for tree models. Watch the fake order it injects on nominals (is Puglia twice Lazio?).</li>
+<li><strong>Ordinal</strong>: integers <code>0..N-1</code>. For genuinely ordered categories, or for tree models. Watch the fake order it injects on nominals (is Japan greater than Brazil in any real sense?).</li>
 <li><strong>One-hot</strong>: one binary column per level. For low or medium cardinality nominals, especially linear and distance-based models. Watch the blow-up on high cardinality.</li>
 <li><strong>Frequency</strong>: replace each level by how often it appears in train. A compact numeric for high cardinality. Watch collisions: two levels with the same count get the same number.</li>
 <li><strong>Target</strong>: replace each level by a statistic of the target. For high cardinality that carries signal. Watch leakage: learn it on train only, out-of-fold for the training rows, and smooth rare levels.</li>
 <li><strong>Native</strong>: hand the raw column to a model that has its own categorical handling (CatBoost, LightGBM, XGBoost).</li>
 </ul>
 <p>The same four encodings, side by side on a toy column, so the shapes are concrete:</p>
-<div id="8651e749" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T08:03:36.656378Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T08:03:36.655956Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T08:03:36.742562Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T08:03:36.741842Z&quot;}}" data-execution_count="2">
+<div id="8651e749" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:13:26.140626Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:13:26.140242Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:13:26.292075Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:13:26.291374Z&quot;}}" data-execution_count="2">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>toy <span class="op">=</span> pd.DataFrame({</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"regione"</span>: [<span class="st">"Lombardia"</span>, <span class="st">"Lazio"</span>, <span class="st">"Puglia"</span>, <span class="st">"Sicilia"</span>, <span class="st">"Lazio"</span>, <span class="st">"Lombardia"</span>, <span class="st">"Lombardia"</span>, <span class="st">"Puglia"</span>],</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"country"</span>: [<span class="st">"Germany"</span>, <span class="st">"Brazil"</span>, <span class="st">"Japan"</span>, <span class="st">"Canada"</span>, <span class="st">"Brazil"</span>, <span class="st">"Germany"</span>, <span class="st">"Germany"</span>, <span class="st">"Japan"</span>],</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"y"</span>:       [<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>],</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>})</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>ordinal_codes <span class="op">=</span> OrdinalEncoder().fit_transform(toy[[<span class="st">"regione"</span>]]).ravel().astype(<span class="bu">int</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>onehot <span class="op">=</span> OneHotEncoder(sparse_output<span class="op">=</span><span class="va">False</span>).fit_transform(toy[[<span class="st">"regione"</span>]])</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>onehot_names <span class="op">=</span> [<span class="ss">f"oh_</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> c <span class="kw">in</span> <span class="bu">sorted</span>(toy[<span class="st">"regione"</span>].unique())]</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>frequency <span class="op">=</span> toy[<span class="st">"regione"</span>].<span class="bu">map</span>(toy[<span class="st">"regione"</span>].value_counts(normalize<span class="op">=</span><span class="va">True</span>))</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>target_mean <span class="op">=</span> toy[<span class="st">"regione"</span>].<span class="bu">map</span>(toy.groupby(<span class="st">"regione"</span>)[<span class="st">"y"</span>].mean())   <span class="co"># in-sample, for illustration only</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>ordinal_codes <span class="op">=</span> OrdinalEncoder().fit_transform(toy[[<span class="st">"country"</span>]]).ravel().astype(<span class="bu">int</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>onehot <span class="op">=</span> OneHotEncoder(sparse_output<span class="op">=</span><span class="va">False</span>).fit_transform(toy[[<span class="st">"country"</span>]])</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>onehot_names <span class="op">=</span> [<span class="ss">f"oh_</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> c <span class="kw">in</span> <span class="bu">sorted</span>(toy[<span class="st">"country"</span>].unique())]</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>frequency <span class="op">=</span> toy[<span class="st">"country"</span>].<span class="bu">map</span>(toy[<span class="st">"country"</span>].value_counts(normalize<span class="op">=</span><span class="va">True</span>))</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>target_mean <span class="op">=</span> toy[<span class="st">"country"</span>].<span class="bu">map</span>(toy.groupby(<span class="st">"country"</span>)[<span class="st">"y"</span>].mean())   <span class="co"># in-sample, for illustration only</span></span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>shown <span class="op">=</span> toy.copy()</span>
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>shown[<span class="st">"ordinal"</span>] <span class="op">=</span> ordinal_codes</span>
@@ -325,18 +326,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>printdf(pd.concat([shown, pd.DataFrame(onehot, columns<span class="op">=</span>onehot_names).astype(<span class="bu">int</span>)], axis<span class="op">=</span><span class="dv">1</span>), nrows<span class="op">=</span><span class="dv">8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>+----+-----------+-----+-----------+-------------+---------------+------------+----------------+-------------+--------------+
-|    | regione   |   y |   ordinal |   frequency |   target_mean |   oh_Lazio |   oh_Lombardia |   oh_Puglia |   oh_Sicilia |
-|----+-----------+-----+-----------+-------------+---------------+------------+----------------+-------------+--------------|
-|  0 | Lombardia |   1 |         1 |        0.38 |             1 |          0 |              1 |           0 |            0 |
-|  1 | Lazio     |   0 |         0 |        0.25 |             0 |          1 |              0 |           0 |            0 |
-|  2 | Puglia    |   0 |         2 |        0.25 |             0 |          0 |              0 |           1 |            0 |
-|  3 | Sicilia   |   1 |         3 |        0.12 |             1 |          0 |              0 |           0 |            1 |
-|  4 | Lazio     |   0 |         0 |        0.25 |             0 |          1 |              0 |           0 |            0 |
-|  5 | Lombardia |   1 |         1 |        0.38 |             1 |          0 |              1 |           0 |            0 |
-|  6 | Lombardia |   1 |         1 |        0.38 |             1 |          0 |              1 |           0 |            0 |
-|  7 | Puglia    |   0 |         2 |        0.25 |             0 |          0 |              0 |           1 |            0 |
-+----+-----------+-----+-----------+-------------+---------------+------------+----------------+-------------+--------------+</code></pre>
+<pre><code>+----+-----------+-----+-----------+-------------+---------------+-------------+-------------+--------------+------------+
+|    | country   |   y |   ordinal |   frequency |   target_mean |   oh_Brazil |   oh_Canada |   oh_Germany |   oh_Japan |
+|----+-----------+-----+-----------+-------------+---------------+-------------+-------------+--------------+------------|
+|  0 | Germany   |   1 |         2 |        0.38 |             1 |           0 |           0 |            1 |          0 |
+|  1 | Brazil    |   0 |         0 |        0.25 |             0 |           1 |           0 |            0 |          0 |
+|  2 | Japan     |   0 |         3 |        0.25 |             0 |           0 |           0 |            0 |          1 |
+|  3 | Canada    |   1 |         1 |        0.12 |             1 |           0 |           1 |            0 |          0 |
+|  4 | Brazil    |   0 |         0 |        0.25 |             0 |           1 |           0 |            0 |          0 |
+|  5 | Germany   |   1 |         2 |        0.38 |             1 |           0 |           0 |            1 |          0 |
+|  6 | Germany   |   1 |         2 |        0.38 |             1 |           0 |           0 |            1 |          0 |
+|  7 | Japan     |   0 |         3 |        0.25 |             0 |           0 |           0 |            0 |          1 |
++----+-----------+-----+-----------+-------------+---------------+-------------+-------------+--------------+------------+</code></pre>
 </div>
 </div>
 <p>Each method trades off differently: ordinal spends one column but invents an order, one-hot keeps the nominal structure but spends a column per level, frequency stays compact but can collide, and target is the most informative but leaks if you do not cross-fit it. The <code>target_mean</code> above is computed in-sample purely to show the shape; the experiment below uses the out-of-fold version.</p>
@@ -344,22 +345,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="what-tabpfn-does-to-that-checklist" class="level2">
 <h2 class="anchored" data-anchor-id="what-tabpfn-does-to-that-checklist">2. What TabPFN does to that checklist</h2>
 <p>You pass the raw column. TabPFN inspects each column and assigns it a modality on its own, so the encoding decision moves from you to the model. Here is the decision on four columns at once:</p>
-<div id="a6eea377" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T08:03:36.744245Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T08:03:36.744062Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T08:03:37.948215Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T08:03:37.947436Z&quot;}}" data-execution_count="3">
+<div id="a6eea377" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:13:26.293730Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:13:26.293556Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:13:27.464696Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:13:27.463969Z&quot;}}" data-execution_count="3">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">0</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">400</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>demo <span class="op">=</span> pd.DataFrame({</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"low_card_string"</span>:  [<span class="ss">f"city_</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> rng.randint(<span class="dv">0</span>, <span class="dv">10</span>, n)],    <span class="co"># 10 string levels</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"high_card_string"</span>: [<span class="ss">f"id_</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span>   <span class="cf">for</span> i <span class="kw">in</span> rng.randint(<span class="dv">0</span>, <span class="dv">120</span>, n)],   <span class="co"># 120 string levels</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"integer_code"</span>:     rng.randint(<span class="dv">0</span>, <span class="dv">50</span>, n).astype(<span class="bu">float</span>),            <span class="co"># 50 numeric codes</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"true_numeric"</span>:     rng.normal(size<span class="op">=</span>n),</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>clf <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>clf.fit(demo, (rng.random(n) <span class="op">&lt;</span> <span class="fl">0.5</span>).astype(<span class="bu">int</span>))</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> column, feature <span class="kw">in</span> <span class="bu">zip</span>(demo.columns, clf.inferred_feature_schema_.features):</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>column<span class="sc">:18}</span><span class="ss"> -&gt; </span><span class="sc">{</span>feature<span class="sc">.</span>modality<span class="sc">.</span>value<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># TabPFN reads each column's modality from the ORIGINAL values, before any cast</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># (tabpfn/preprocessing/modality_detection.py, _detect_feature_modality): a string with</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># &lt;=30 unique values is categorical, more than 30 is text, numeric-looking stays numerical.</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">0</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">400</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>demo <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"low_card_string"</span>:  [<span class="ss">f"city_</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> rng.randint(<span class="dv">0</span>, <span class="dv">10</span>, n)],    <span class="co"># 10 string levels</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"high_card_string"</span>: [<span class="ss">f"id_</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span>   <span class="cf">for</span> i <span class="kw">in</span> rng.randint(<span class="dv">0</span>, <span class="dv">120</span>, n)],   <span class="co"># 120 string levels</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"integer_code"</span>:     rng.randint(<span class="dv">0</span>, <span class="dv">50</span>, n).astype(<span class="bu">float</span>),            <span class="co"># 50 numeric codes</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"true_numeric"</span>:     rng.normal(size<span class="op">=</span>n),</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>clf <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>clf.fit(demo, (rng.random(n) <span class="op">&lt;</span> <span class="fl">0.5</span>).astype(<span class="bu">int</span>))</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> column, feature <span class="kw">in</span> <span class="bu">zip</span>(demo.columns, clf.inferred_feature_schema_.features):</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>column<span class="sc">:18}</span><span class="ss"> -&gt; </span><span class="sc">{</span>feature<span class="sc">.</span>modality<span class="sc">.</span>value<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>low_card_string    -&gt; categorical
@@ -368,162 +372,192 @@ integer_code       -&gt; numerical
 true_numeric       -&gt; numerical</code></pre>
 </div>
 </div>
-<p>The rule in one breath: a string with 30 or fewer unique values is <strong>categorical</strong>, more than 30 is <strong>text</strong>, and anything that looks numeric (including integer codes) is <strong>numerical</strong>. So the encoding menu collapses to a single row, “pass it raw”, and the only open question is whether that single row is as good as the careful encoding you would have picked. The rest of the notebook answers that.</p>
+<p>The rule in one breath: a string with 30 or fewer unique values is <strong>categorical</strong>, more than 30 is <strong>text</strong>, and anything that looks numeric (including integer codes) is <strong>numerical</strong>. So the menu collapses to a single row, “pass it raw”.</p>
+<p>The modality is only a label, though. Whatever it is, the first transform TabPFN applies to the data is the same: it casts every non-numeric column to integers. <code>clean_data</code> (<code>tabpfn/preprocessing/clean.py</code>) runs one shared ordinal encoder (<code>get_ordinal_encoder</code>, in <code>tabpfn/preprocessing/steps/preprocessing_helpers.py</code>) over the string and category columns before the network sees a single value. We can run that exact encoder ourselves:</p>
+<div id="28ace94f" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:13:27.466660Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:13:27.466472Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:13:27.480254Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:13:27.479523Z&quot;}}" data-execution_count="4">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn.preprocessing.steps.preprocessing_helpers <span class="im">import</span> get_ordinal_encoder</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># The same ordinal encoder clean_data uses. convert_dtypes() is the cast clean_data does first</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># (object -&gt; string), so the two string columns are picked up and turned into integer codes, while</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># the numeric columns pass straight through.</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>codes <span class="op">=</span> get_ordinal_encoder().fit_transform(demo.convert_dtypes())</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>peek <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"low_card_string"</span>:  demo[<span class="st">"low_card_string"</span>].values,  <span class="st">"code (categorical)"</span>: codes[:, <span class="dv">0</span>].astype(<span class="bu">int</span>),</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"high_card_string"</span>: demo[<span class="st">"high_card_string"</span>].values, <span class="st">"code (text)"</span>:        codes[:, <span class="dv">1</span>].astype(<span class="bu">int</span>),</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>printdf(peek, nrows<span class="op">=</span><span class="dv">6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>+----+-------------------+----------------------+--------------------+---------------+
+|    | low_card_string   |   code (categorical) | high_card_string   |   code (text) |
+|----+-------------------+----------------------+--------------------+---------------|
+|  0 | city_5            |                    5 | id_47              |            57 |
+|  1 | city_0            |                    0 | id_10              |             2 |
+|  2 | city_3            |                    3 | id_109             |            11 |
+|  3 | city_3            |                    3 | id_104             |             6 |
+|  4 | city_7            |                    7 | id_94              |           109 |
+|  5 | city_9            |                    9 | id_91              |           106 |
++----+-------------------+----------------------+--------------------+---------------+</code></pre>
+</div>
+</div>
+<p>The high-cardinality string got no special treatment: it became integer codes exactly like the low-cardinality one. The modality (categorical or text) only decides what happens to those codes next, not whether they become codes. The open question is whether handing TabPFN the raw column, and letting it do this, is as good as the careful encoding you would have reached for. Beat 3 measures it.</p>
 </section>
 <section id="one-measured-result" class="level2">
 <h2 class="anchored" data-anchor-id="one-measured-result">3. One measured result</h2>
 <p>The question: does the encoding choice change accuracy, and does that depend on the model and on the cardinality? The construction is deliberately narrow so the answer is clean. One nominal categorical <code>g</code> with <code>K</code> levels (skewed frequencies, so rare levels exist) whose <strong>only</strong> signal is its per-level mean, no order, plus two pure-noise numerics. We sweep <code>K</code> and compare the five representations across the full roster, AUC over three seeds.</p>
 <p>Two honest caveats stated up front. The signal is linear in the levels, which flatters a one-hot logistic regression (it is near the Bayes model here), so do not read the LogReg-onehot number as general. And frequency is independent of the signal by construction, so it is a floor that hurts every model, not a verdict on frequency encoding; the trend chart therefore excludes it and the full table keeps it.</p>
-<div id="92881568" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T08:03:37.950067Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T08:03:37.949873Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T08:03:37.959352Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T08:03:37.958683Z&quot;}}" data-execution_count="4">
+<div id="92881568" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:13:27.481834Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:13:27.481671Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:13:27.580616Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:13:27.579979Z&quot;}}" data-execution_count="5">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_data(K, seed, n<span class="op">=</span><span class="dv">4000</span>, n_noise<span class="op">=</span><span class="dv">2</span>):</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Binary task whose only signal is the per-level mean of one nominal categorical g</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">    with K levels (skewed Zipf frequencies, no real order), plus n_noise pure-noise numerics."""</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> <span class="fl">1.0</span> <span class="op">/</span> np.arange(<span class="dv">1</span>, K <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> p <span class="op">/</span> p.<span class="bu">sum</span>()</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> rng.choice(K, size<span class="op">=</span>n, p<span class="op">=</span>p)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    beta <span class="op">=</span> rng.normal(<span class="fl">0.0</span>, <span class="fl">1.5</span>, size<span class="op">=</span>K)                       <span class="co"># per-level log-odds, no order</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> (rng.random(n) <span class="op">&lt;</span> <span class="fl">1.0</span> <span class="op">/</span> (<span class="fl">1.0</span> <span class="op">+</span> np.exp(<span class="op">-</span>beta[g]))).astype(<span class="bu">int</span>)</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> pd.DataFrame({<span class="st">"g"</span>: [<span class="ss">f"lvl_</span><span class="sc">{</span>v<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> v <span class="kw">in</span> g]})</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(n_noise):</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        X[<span class="ss">f"x</span><span class="sc">{</span>j<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> rng.normal(size<span class="op">=</span>n)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    half <span class="op">=</span> n <span class="op">//</span> <span class="dv">2</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (X.iloc[:half].reset_index(drop<span class="op">=</span><span class="va">True</span>), X.iloc[half:].reset_index(drop<span class="op">=</span><span class="va">True</span>), y[:half], y[half:])</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rep_ordinal(train, test):</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    enc <span class="op">=</span> OrdinalEncoder(handle_unknown<span class="op">=</span><span class="st">"use_encoded_value"</span>, unknown_value<span class="op">=-</span><span class="dv">1</span>)</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> train.copy(), test.copy()</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    a[<span class="st">"g"</span>] <span class="op">=</span> enc.fit_transform(train[[<span class="st">"g"</span>]]).ravel()</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    b[<span class="st">"g"</span>] <span class="op">=</span> enc.transform(test[[<span class="st">"g"</span>]]).ravel()</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a, b</span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rep_onehot(train, test):</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    enc <span class="op">=</span> OneHotEncoder(handle_unknown<span class="op">=</span><span class="st">"ignore"</span>, sparse_output<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    A, B <span class="op">=</span> enc.fit_transform(train[[<span class="st">"g"</span>]]), enc.transform(test[[<span class="st">"g"</span>]])</span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    names <span class="op">=</span> [<span class="ss">f"g_</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> c <span class="kw">in</span> enc.categories_[<span class="dv">0</span>]]</span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> pd.concat([train.drop(columns<span class="op">=</span><span class="st">"g"</span>), pd.DataFrame(A, columns<span class="op">=</span>names)], axis<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    b <span class="op">=</span> pd.concat([test.drop(columns<span class="op">=</span><span class="st">"g"</span>), pd.DataFrame(B, columns<span class="op">=</span>names)], axis<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a, b</span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rep_frequency(train, test):</span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>    freq <span class="op">=</span> train[<span class="st">"g"</span>].value_counts(normalize<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> train.copy(), test.copy()</span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>    a[<span class="st">"g"</span>] <span class="op">=</span> train[<span class="st">"g"</span>].<span class="bu">map</span>(freq).fillna(<span class="fl">0.0</span>)</span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>    b[<span class="st">"g"</span>] <span class="op">=</span> test[<span class="st">"g"</span>].<span class="bu">map</span>(freq).fillna(<span class="fl">0.0</span>)</span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a, b</span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rep_target(train, test, y_train):</span>
-<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    enc <span class="op">=</span> TargetEncoder(smooth<span class="op">=</span><span class="st">"auto"</span>, cv<span class="op">=</span><span class="dv">5</span>)                  <span class="co"># cross-fitted on train, leakage-safe</span></span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> train.copy(), test.copy()</span>
-<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>    a[<span class="st">"g"</span>] <span class="op">=</span> enc.fit_transform(train[[<span class="st">"g"</span>]], y_train).ravel()</span>
-<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>    b[<span class="st">"g"</span>] <span class="op">=</span> enc.transform(test[[<span class="st">"g"</span>]]).ravel()</span>
-<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a, b</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_data(K, seed, n<span class="op">=</span><span class="dv">4000</span>, n_noise<span class="op">=</span><span class="dv">2</span>):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Binary task whose only signal is the per-level mean of one nominal categorical g</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">    with K levels (skewed Zipf frequencies, no real order), plus n_noise pure-noise numerics."""</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> <span class="fl">1.0</span> <span class="op">/</span> np.arange(<span class="dv">1</span>, K <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> p <span class="op">/</span> p.<span class="bu">sum</span>()</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> rng.choice(K, size<span class="op">=</span>n, p<span class="op">=</span>p)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    beta <span class="op">=</span> rng.normal(<span class="fl">0.0</span>, <span class="fl">1.5</span>, size<span class="op">=</span>K)                       <span class="co"># per-level log-odds, no order</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> (rng.random(n) <span class="op">&lt;</span> <span class="fl">1.0</span> <span class="op">/</span> (<span class="fl">1.0</span> <span class="op">+</span> np.exp(<span class="op">-</span>beta[g]))).astype(<span class="bu">int</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> pd.DataFrame({<span class="st">"g"</span>: [<span class="ss">f"lvl_</span><span class="sc">{</span>v<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> v <span class="kw">in</span> g]})</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(n_noise):</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        X[<span class="ss">f"x</span><span class="sc">{</span>j<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> rng.normal(size<span class="op">=</span>n)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    half <span class="op">=</span> n <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (X.iloc[:half].reset_index(drop<span class="op">=</span><span class="va">True</span>), X.iloc[half:].reset_index(drop<span class="op">=</span><span class="va">True</span>), y[:half], y[half:])</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rep_ordinal(train, test):</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    enc <span class="op">=</span> OrdinalEncoder(handle_unknown<span class="op">=</span><span class="st">"use_encoded_value"</span>, unknown_value<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> train.copy(), test.copy()</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    a[<span class="st">"g"</span>] <span class="op">=</span> enc.fit_transform(train[[<span class="st">"g"</span>]]).ravel()</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    b[<span class="st">"g"</span>] <span class="op">=</span> enc.transform(test[[<span class="st">"g"</span>]]).ravel()</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a, b</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rep_onehot(train, test):</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    enc <span class="op">=</span> OneHotEncoder(handle_unknown<span class="op">=</span><span class="st">"ignore"</span>, sparse_output<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    A, B <span class="op">=</span> enc.fit_transform(train[[<span class="st">"g"</span>]]), enc.transform(test[[<span class="st">"g"</span>]])</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    names <span class="op">=</span> [<span class="ss">f"g_</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> c <span class="kw">in</span> enc.categories_[<span class="dv">0</span>]]</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> pd.concat([train.drop(columns<span class="op">=</span><span class="st">"g"</span>), pd.DataFrame(A, columns<span class="op">=</span>names)], axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    b <span class="op">=</span> pd.concat([test.drop(columns<span class="op">=</span><span class="st">"g"</span>), pd.DataFrame(B, columns<span class="op">=</span>names)], axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a, b</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rep_frequency(train, test):</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    freq <span class="op">=</span> train[<span class="st">"g"</span>].value_counts(normalize<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> train.copy(), test.copy()</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>    a[<span class="st">"g"</span>] <span class="op">=</span> train[<span class="st">"g"</span>].<span class="bu">map</span>(freq).fillna(<span class="fl">0.0</span>)</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>    b[<span class="st">"g"</span>] <span class="op">=</span> test[<span class="st">"g"</span>].<span class="bu">map</span>(freq).fillna(<span class="fl">0.0</span>)</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a, b</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rep_target(train, test, y_train):</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>    enc <span class="op">=</span> TargetEncoder(smooth<span class="op">=</span><span class="st">"auto"</span>, cv<span class="op">=</span><span class="dv">5</span>)                  <span class="co"># cross-fitted on train, leakage-safe</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> train.copy(), test.copy()</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>    a[<span class="st">"g"</span>] <span class="op">=</span> enc.fit_transform(train[[<span class="st">"g"</span>]], y_train).ravel()</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>    b[<span class="st">"g"</span>] <span class="op">=</span> enc.transform(test[[<span class="st">"g"</span>]]).ravel()</span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a, b</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div id="589122c3" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T08:03:37.960969Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T08:03:37.960794Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T08:06:52.120897Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T08:06:52.120167Z&quot;}}" data-execution_count="5">
+<div id="589122c3" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:13:27.582122Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:13:27.581957Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:16:47.984594Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:16:47.983857Z&quot;}}" data-execution_count="6">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_model(name, seed):</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"logreg"</span>:       <span class="cf">return</span> Pipeline([(<span class="st">"scale"</span>, StandardScaler()), (<span class="st">"lr"</span>, LogisticRegression(max_iter<span class="op">=</span><span class="dv">2000</span>))])</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"randomforest"</span>: <span class="cf">return</span> RandomForestClassifier(n_estimators<span class="op">=</span><span class="dv">300</span>, random_state<span class="op">=</span>seed, n_jobs<span class="op">=-</span><span class="dv">1</span>)</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"xgboost"</span>:      <span class="cf">return</span> XGBClassifier(tree_method<span class="op">=</span><span class="st">"hist"</span>, random_state<span class="op">=</span>seed, verbosity<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"lightgbm"</span>:     <span class="cf">return</span> LGBMClassifier(verbose<span class="op">=-</span><span class="dv">1</span>, random_state<span class="op">=</span>seed)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"catboost"</span>:     <span class="cf">return</span> CatBoostClassifier(verbose<span class="op">=</span><span class="dv">0</span>, random_state<span class="op">=</span>seed)</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"tabpfn"</span>:       <span class="cf">return</span> TabPFNClassifier(random_state<span class="op">=</span>seed)</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> as_native(name, train, test, seed):</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Hand the raw column to a model that has its own categorical handling."""</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> train.copy(), test.copy()</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"tabpfn"</span>:</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> a, b, make_model(<span class="st">"tabpfn"</span>, seed)              <span class="co"># raw string, TabPFN picks the modality</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"catboost"</span>:</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        a[<span class="st">"g"</span>], b[<span class="st">"g"</span>] <span class="op">=</span> a[<span class="st">"g"</span>].astype(<span class="bu">str</span>), b[<span class="st">"g"</span>].astype(<span class="bu">str</span>)</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> a, b, CatBoostClassifier(verbose<span class="op">=</span><span class="dv">0</span>, random_state<span class="op">=</span>seed, cat_features<span class="op">=</span>[a.columns.get_loc(<span class="st">"g"</span>)])</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    levels <span class="op">=</span> pd.api.types.union_categoricals([a[<span class="st">"g"</span>].astype(<span class="st">"category"</span>), b[<span class="st">"g"</span>].astype(<span class="st">"category"</span>)]).categories</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    a[<span class="st">"g"</span>] <span class="op">=</span> pd.Categorical(a[<span class="st">"g"</span>], categories<span class="op">=</span>levels)</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    b[<span class="st">"g"</span>] <span class="op">=</span> pd.Categorical(b[<span class="st">"g"</span>], categories<span class="op">=</span>levels)</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"lightgbm"</span>: <span class="cf">return</span> a, b, make_model(<span class="st">"lightgbm"</span>, seed)</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"xgboost"</span>:  <span class="cf">return</span> a, b, XGBClassifier(tree_method<span class="op">=</span><span class="st">"hist"</span>, enable_categorical<span class="op">=</span><span class="va">True</span>, random_state<span class="op">=</span>seed, verbosity<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>ENCODERS <span class="op">=</span> {<span class="st">"ordinal"</span>: rep_ordinal, <span class="st">"onehot"</span>: rep_onehot, <span class="st">"frequency"</span>: rep_frequency, <span class="st">"target"</span>: rep_target}</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>MODELS <span class="op">=</span> [<span class="st">"logreg"</span>, <span class="st">"randomforest"</span>, <span class="st">"xgboost"</span>, <span class="st">"lightgbm"</span>, <span class="st">"catboost"</span>, <span class="st">"tabpfn"</span>]</span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>NATIVE <span class="op">=</span> [<span class="st">"tabpfn"</span>, <span class="st">"catboost"</span>, <span class="st">"lightgbm"</span>, <span class="st">"xgboost"</span>]</span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sweep(cardinalities, seeds):</span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    rows <span class="op">=</span> []</span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> K <span class="kw">in</span> tqdm(cardinalities, desc<span class="op">=</span><span class="st">"cardinality"</span>):</span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> seed <span class="kw">in</span> seeds:</span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>            train, test, y_train, y_test <span class="op">=</span> make_data(K, seed)</span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> rep_name, rep_fn <span class="kw">in</span> ENCODERS.items():</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>                a, b <span class="op">=</span> rep_fn(train, test, y_train) <span class="cf">if</span> rep_name <span class="op">==</span> <span class="st">"target"</span> <span class="cf">else</span> rep_fn(train, test)</span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>                <span class="cf">for</span> model_name <span class="kw">in</span> MODELS:</span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>                    score <span class="op">=</span> auc(make_model(model_name, seed), a, y_train, b, y_test)</span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>                    rows.append(<span class="bu">dict</span>(K<span class="op">=</span>K, seed<span class="op">=</span>seed, model<span class="op">=</span>model_name, rep<span class="op">=</span>rep_name, auc<span class="op">=</span>score))</span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> model_name <span class="kw">in</span> NATIVE:</span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>                a, b, clf <span class="op">=</span> as_native(model_name, train, test, seed)</span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>                clf.fit(a, y_train)</span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>                rows.append(<span class="bu">dict</span>(K<span class="op">=</span>K, seed<span class="op">=</span>seed, model<span class="op">=</span>model_name, rep<span class="op">=</span><span class="st">"native"</span>,</span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>                                 auc<span class="op">=</span>roc_auc_score(y_test, clf.predict_proba(b)[:, <span class="dv">1</span>])))</span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame(rows)</span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>synth <span class="op">=</span> run_sweep([<span class="dv">10</span>, <span class="dv">40</span>, <span class="dv">120</span>], [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>])</span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>order <span class="op">=</span> [<span class="st">"native"</span>, <span class="st">"ordinal"</span>, <span class="st">"onehot"</span>, <span class="st">"frequency"</span>, <span class="st">"target"</span>]</span>
-<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Mean AUC at K=120 (high cardinality):"</span>)</span>
-<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>printdf(synth[synth.K <span class="op">==</span> <span class="dv">120</span>].pivot_table(index<span class="op">=</span><span class="st">"model"</span>, columns<span class="op">=</span><span class="st">"rep"</span>, values<span class="op">=</span><span class="st">"auc"</span>)[order].<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_model(name, seed):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"logreg"</span>:       <span class="cf">return</span> Pipeline([(<span class="st">"scale"</span>, StandardScaler()), (<span class="st">"lr"</span>, LogisticRegression(max_iter<span class="op">=</span><span class="dv">2000</span>))])</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"randomforest"</span>: <span class="cf">return</span> RandomForestClassifier(n_estimators<span class="op">=</span><span class="dv">300</span>, random_state<span class="op">=</span>seed, n_jobs<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"xgboost"</span>:      <span class="cf">return</span> XGBClassifier(tree_method<span class="op">=</span><span class="st">"hist"</span>, random_state<span class="op">=</span>seed, verbosity<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"lightgbm"</span>:     <span class="cf">return</span> LGBMClassifier(verbose<span class="op">=-</span><span class="dv">1</span>, random_state<span class="op">=</span>seed)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"catboost"</span>:     <span class="cf">return</span> CatBoostClassifier(verbose<span class="op">=</span><span class="dv">0</span>, random_state<span class="op">=</span>seed)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"tabpfn"</span>:       <span class="cf">return</span> TabPFNClassifier(random_state<span class="op">=</span>seed)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> as_native(name, train, test, seed):</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Hand the raw column to a model that has its own categorical handling."""</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> train.copy(), test.copy()</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"tabpfn"</span>:</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> a, b, make_model(<span class="st">"tabpfn"</span>, seed)              <span class="co"># raw string, TabPFN picks the modality</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"catboost"</span>:</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        a[<span class="st">"g"</span>], b[<span class="st">"g"</span>] <span class="op">=</span> a[<span class="st">"g"</span>].astype(<span class="bu">str</span>), b[<span class="st">"g"</span>].astype(<span class="bu">str</span>)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> a, b, CatBoostClassifier(verbose<span class="op">=</span><span class="dv">0</span>, random_state<span class="op">=</span>seed, cat_features<span class="op">=</span>[a.columns.get_loc(<span class="st">"g"</span>)])</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    levels <span class="op">=</span> pd.api.types.union_categoricals([a[<span class="st">"g"</span>].astype(<span class="st">"category"</span>), b[<span class="st">"g"</span>].astype(<span class="st">"category"</span>)]).categories</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    a[<span class="st">"g"</span>] <span class="op">=</span> pd.Categorical(a[<span class="st">"g"</span>], categories<span class="op">=</span>levels)</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    b[<span class="st">"g"</span>] <span class="op">=</span> pd.Categorical(b[<span class="st">"g"</span>], categories<span class="op">=</span>levels)</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"lightgbm"</span>: <span class="cf">return</span> a, b, make_model(<span class="st">"lightgbm"</span>, seed)</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"xgboost"</span>:  <span class="cf">return</span> a, b, XGBClassifier(tree_method<span class="op">=</span><span class="st">"hist"</span>, enable_categorical<span class="op">=</span><span class="va">True</span>, random_state<span class="op">=</span>seed, verbosity<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>ENCODERS <span class="op">=</span> {<span class="st">"ordinal"</span>: rep_ordinal, <span class="st">"onehot"</span>: rep_onehot, <span class="st">"frequency"</span>: rep_frequency, <span class="st">"target"</span>: rep_target}</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>MODELS <span class="op">=</span> [<span class="st">"logreg"</span>, <span class="st">"randomforest"</span>, <span class="st">"xgboost"</span>, <span class="st">"lightgbm"</span>, <span class="st">"catboost"</span>, <span class="st">"tabpfn"</span>]</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>NATIVE <span class="op">=</span> [<span class="st">"tabpfn"</span>, <span class="st">"catboost"</span>, <span class="st">"lightgbm"</span>, <span class="st">"xgboost"</span>]</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sweep(cardinalities, seeds):</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    rows <span class="op">=</span> []</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> K <span class="kw">in</span> tqdm(cardinalities, desc<span class="op">=</span><span class="st">"cardinality"</span>):</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> seed <span class="kw">in</span> seeds:</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>            train, test, y_train, y_test <span class="op">=</span> make_data(K, seed)</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> rep_name, rep_fn <span class="kw">in</span> ENCODERS.items():</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>                a, b <span class="op">=</span> rep_fn(train, test, y_train) <span class="cf">if</span> rep_name <span class="op">==</span> <span class="st">"target"</span> <span class="cf">else</span> rep_fn(train, test)</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>                <span class="cf">for</span> model_name <span class="kw">in</span> MODELS:</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>                    score <span class="op">=</span> auc(make_model(model_name, seed), a, y_train, b, y_test)</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>                    rows.append(<span class="bu">dict</span>(K<span class="op">=</span>K, seed<span class="op">=</span>seed, model<span class="op">=</span>model_name, rep<span class="op">=</span>rep_name, auc<span class="op">=</span>score))</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> model_name <span class="kw">in</span> NATIVE:</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>                a, b, clf <span class="op">=</span> as_native(model_name, train, test, seed)</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>                clf.fit(a, y_train)</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>                rows.append(<span class="bu">dict</span>(K<span class="op">=</span>K, seed<span class="op">=</span>seed, model<span class="op">=</span>model_name, rep<span class="op">=</span><span class="st">"native"</span>,</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>                                 auc<span class="op">=</span>roc_auc_score(y_test, clf.predict_proba(b)[:, <span class="dv">1</span>])))</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame(rows)</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>synth <span class="op">=</span> run_sweep([<span class="dv">10</span>, <span class="dv">40</span>, <span class="dv">120</span>], [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>])</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>order <span class="op">=</span> [<span class="st">"native"</span>, <span class="st">"ordinal"</span>, <span class="st">"onehot"</span>, <span class="st">"frequency"</span>, <span class="st">"target"</span>]</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Mean AUC at K=120 (high cardinality):"</span>)</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>printdf(synth[synth.K <span class="op">==</span> <span class="dv">120</span>].pivot_table(index<span class="op">=</span><span class="st">"model"</span>, columns<span class="op">=</span><span class="st">"rep"</span>, values<span class="op">=</span><span class="st">"auc"</span>)[order].<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
 <pre><code>
 cardinality:   0%|                                                                                                                                                  | 0/3 [00:00&lt;?, ?it/s]
-cardinality:  33%|██████████████████████████████████████████████                                                                                            | 1/3 [00:59&lt;01:58, 59.39s/it]
-cardinality:  67%|████████████████████████████████████████████████████████████████████████████████████████████                                              | 2/3 [02:01&lt;01:01, 61.13s/it]
-cardinality: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [03:14&lt;00:00, 66.23s/it]
-cardinality: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [03:14&lt;00:00, 64.68s/it]</code></pre>
+cardinality:  33%|██████████████████████████████████████████████                                                                                            | 1/3 [01:01&lt;02:02, 61.49s/it]
+cardinality:  67%|████████████████████████████████████████████████████████████████████████████████████████████                                              | 2/3 [02:07&lt;01:04, 64.08s/it]
+cardinality: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [03:20&lt;00:00, 68.11s/it]
+cardinality: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [03:20&lt;00:00, 66.76s/it]</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Mean AUC at K=120 (high cardinality):
 +--------------+----------+-----------+----------+-------------+----------+
 | model        |   native |   ordinal |   onehot |   frequency |   target |
 |--------------+----------+-----------+----------+-------------+----------|
-| catboost     |   0.7791 |    0.7525 |   0.775  |      0.7363 |   0.7756 |
-| lightgbm     |   0.747  |    0.7402 |   0.7116 |      0.7206 |   0.7557 |
-| logreg       | nan      |    0.5887 |   0.7871 |      0.5385 |   0.7882 |
-| randomforest | nan      |    0.7132 |   0.7553 |      0.7048 |   0.7625 |
-| tabpfn       |   0.7835 |    0.7835 |   0.7918 |      0.758  |   0.7882 |
-| xgboost      |   0.7444 |    0.736  |   0.7573 |      0.7106 |   0.7425 |
+| catboost     |   0.7791 |    0.7525 |   0.775  |      0.7363 |   0.7753 |
+| lightgbm     |   0.747  |    0.7402 |   0.7116 |      0.7206 |   0.7599 |
+| logreg       | nan      |    0.5887 |   0.7871 |      0.5385 |   0.7879 |
+| randomforest | nan      |    0.7132 |   0.7553 |      0.7048 |   0.7615 |
+| tabpfn       |   0.7835 |    0.7835 |   0.7918 |      0.758  |   0.7869 |
+| xgboost      |   0.7444 |    0.736  |   0.7573 |      0.7106 |   0.7437 |
 +--------------+----------+-----------+----------+-------------+----------+</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code></code></pre>
 </div>
 </div>
-<div id="af908bb7" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T08:06:52.122734Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T08:06:52.122551Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T08:06:52.855084Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T08:06:52.854328Z&quot;}}" data-execution_count="6">
+<div id="af908bb7" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:16:47.986351Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:16:47.986149Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:16:48.277069Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:16:48.276389Z&quot;}}" data-execution_count="7">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># how much the encoding choice moves AUC, per model and cardinality (excluding the frequency floor)</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>four <span class="op">=</span> synth[synth.rep <span class="op">!=</span> <span class="st">"frequency"</span>]</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>spread <span class="op">=</span> (four.groupby([<span class="st">"model"</span>, <span class="st">"K"</span>, <span class="st">"seed"</span>]).auc.agg(<span class="kw">lambda</span> v: v.<span class="bu">max</span>() <span class="op">-</span> v.<span class="bu">min</span>())</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>              .groupby([<span class="st">"model"</span>, <span class="st">"K"</span>]).mean().unstack(<span class="st">"K"</span>))</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="fl">7.5</span>, <span class="fl">4.5</span>))</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_name <span class="kw">in</span> spread.index:</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    ax.plot(spread.columns, spread.loc[model_name].values, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span>model_name)</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"cardinality K (number of levels)"</span>)</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"AUC spread across native / ordinal / onehot / target"</span>)</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"How much the encoding choice matters, by model and cardinality"</span>)</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>ax.set_xticks(<span class="bu">list</span>(spread.columns))</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Representation spread (max minus min AUC across the four encodings):"</span>)</span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>printdf(spread.<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># how much the encoding choice moves AUC, per model and cardinality (excluding the frequency floor)</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>four <span class="op">=</span> synth[synth.rep <span class="op">!=</span> <span class="st">"frequency"</span>]</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>spread <span class="op">=</span> (four.groupby([<span class="st">"model"</span>, <span class="st">"K"</span>, <span class="st">"seed"</span>]).auc.agg(<span class="kw">lambda</span> v: v.<span class="bu">max</span>() <span class="op">-</span> v.<span class="bu">min</span>())</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>              .groupby([<span class="st">"model"</span>, <span class="st">"K"</span>]).mean().unstack(<span class="st">"K"</span>))</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="fl">8.5</span>, <span class="fl">4.5</span>))</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_name <span class="kw">in</span> spread.index:</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    ax.plot(spread.columns, spread.loc[model_name].values, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span>model_name)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"cardinality K (number of levels)"</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"AUC spread across encodings"</span>)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"How much the encoding choice matters"</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>ax.set_xticks(<span class="bu">list</span>(spread.columns))</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>ax.legend(loc<span class="op">=</span><span class="st">"center left"</span>, bbox_to_anchor<span class="op">=</span>(<span class="fl">1.01</span>, <span class="fl">0.5</span>), title<span class="op">=</span><span class="st">"model"</span>, fontsize<span class="op">=</span><span class="dv">9</span>, title_fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Representation spread (max minus min AUC across the four encodings):"</span>)</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>printdf(spread.<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Categoricals_files/figure-html/cell-7-output-1.png" class="img-fluid figure-img"></p>
+<p><img src="Categoricals_files/figure-html/cell-8-output-1.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 </div>
@@ -532,26 +566,26 @@ cardinality: 100%|████████████████████�
 +--------------+--------+--------+--------+
 | model        |     10 |     40 |    120 |
 |--------------+--------+--------+--------|
-| catboost     | 0.0063 | 0.0166 | 0.0272 |
-| lightgbm     | 0.0038 | 0.0253 | 0.0449 |
-| logreg       | 0.1436 | 0.1992 | 0.1995 |
-| randomforest | 0.0123 | 0.0383 | 0.051  |
-| tabpfn       | 0.0048 | 0.003  | 0.0092 |
-| xgboost      | 0.007  | 0.0216 | 0.023  |
+| catboost     | 0.0053 | 0.0156 | 0.0279 |
+| lightgbm     | 0.0045 | 0.0234 | 0.0488 |
+| logreg       | 0.1438 | 0.1993 | 0.1992 |
+| randomforest | 0.0133 | 0.0372 | 0.0506 |
+| tabpfn       | 0.0056 | 0.0016 | 0.0105 |
+| xgboost      | 0.0144 | 0.0219 | 0.0245 |
 +--------------+--------+--------+--------+</code></pre>
 </div>
 </div>
 <p>Read the chart top to bottom. TabPFN’s line is flat and lowest, and the gap is clearest at high cardinality: the encoding choice barely moves it, while every classic model’s line climbs as K grows. They climb roughly in the order a practitioner would guess, LogReg by far the most encoding-dependent, then the tree models, with RandomForest the most representation-sensitive of those once the cardinality is high. TabPFN-raw also sits at the top of the AUC table, so you reach top-tier accuracy with none of the choices the other models force.</p>
 <p>The synthetic result is structural but it is still one construction. The decisive check is real high-cardinality data, where the levels are genuine identifiers, not a signal we planted. Amazon Employee Access is the canonical case: nine integer-ID columns, some with thousands of levels.</p>
-<div id="1e100e09" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T08:06:52.856834Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T08:06:52.856649Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T08:06:53.016971Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T08:06:53.016350Z&quot;}}" data-execution_count="7">
+<div id="1e100e09" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:16:48.279130Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:16:48.278939Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:16:48.450339Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:16:48.449584Z&quot;}}" data-execution_count="8">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> fetch_openml(data_id<span class="op">=</span><span class="dv">4135</span>, as_frame<span class="op">=</span><span class="va">True</span>)              <span class="co"># Amazon Employee Access</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>Xfull, yfull <span class="op">=</span> data.data.copy(), data.target.astype(<span class="bu">int</span>).values</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>cardinalities <span class="op">=</span> {c: <span class="bu">int</span>(Xfull[c].nunique()) <span class="cf">for</span> c <span class="kw">in</span> Xfull.columns}</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"rows"</span>, <span class="bu">len</span>(Xfull), <span class="st">"| features"</span>, Xfull.shape[<span class="dv">1</span>], <span class="st">"| positive rate"</span>, <span class="bu">round</span>(<span class="bu">float</span>(yfull.mean()), <span class="dv">3</span>))</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"per-column cardinality:"</span>, cardinalities)</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"one-hot would create"</span>, <span class="bu">sum</span>(cardinalities.values()), <span class="st">"columns, so we omit it here"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> fetch_openml(data_id<span class="op">=</span><span class="dv">4135</span>, as_frame<span class="op">=</span><span class="va">True</span>)              <span class="co"># Amazon Employee Access</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>Xfull, yfull <span class="op">=</span> data.data.copy(), data.target.astype(<span class="bu">int</span>).values</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>cardinalities <span class="op">=</span> {c: <span class="bu">int</span>(Xfull[c].nunique()) <span class="cf">for</span> c <span class="kw">in</span> Xfull.columns}</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"rows"</span>, <span class="bu">len</span>(Xfull), <span class="st">"| features"</span>, Xfull.shape[<span class="dv">1</span>], <span class="st">"| positive rate"</span>, <span class="bu">round</span>(<span class="bu">float</span>(yfull.mean()), <span class="dv">3</span>))</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"per-column cardinality:"</span>, cardinalities)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"one-hot would create"</span>, <span class="bu">sum</span>(cardinalities.values()), <span class="st">"columns, so we omit it here"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>rows 32769 | features 9 | positive rate 0.942
@@ -559,110 +593,113 @@ per-column cardinality: {'RESOURCE': 7518, 'MGR_ID': 4243, 'ROLE_ROLLUP_1': 128,
 one-hot would create 15626 columns, so we omit it here</code></pre>
 </div>
 </div>
-<div id="24d91e2f" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T08:06:53.019061Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T08:06:53.018871Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T08:08:49.090112Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T08:08:49.089302Z&quot;}}" data-execution_count="8">
+<div id="24d91e2f" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:16:48.452192Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:16:48.452009Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:18:46.348930Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:18:46.347968Z&quot;}}" data-execution_count="9">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>cols <span class="op">=</span> <span class="bu">list</span>(Xfull.columns)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> amazon_subsample(seed, n<span class="op">=</span><span class="dv">12000</span>):</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    idx <span class="op">=</span> rng.permutation(<span class="bu">len</span>(Xfull))[:n]</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    Xs, ys <span class="op">=</span> Xfull.iloc[idx].reset_index(drop<span class="op">=</span><span class="va">True</span>), yfull[idx]</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    half <span class="op">=</span> n <span class="op">//</span> <span class="dv">2</span></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Xs.iloc[:half].reset_index(drop<span class="op">=</span><span class="va">True</span>), Xs.iloc[half:].reset_index(drop<span class="op">=</span><span class="va">True</span>), ys[:half], ys[half:]</span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> amazon_ordinal(train, test):</span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    enc <span class="op">=</span> OrdinalEncoder(handle_unknown<span class="op">=</span><span class="st">"use_encoded_value"</span>, unknown_value<span class="op">=-</span><span class="dv">1</span>)</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame(enc.fit_transform(train), columns<span class="op">=</span>cols), pd.DataFrame(enc.transform(test), columns<span class="op">=</span>cols)</span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> amazon_frequency(train, test):</span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> pd.DataFrame(), pd.DataFrame()</span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> c <span class="kw">in</span> cols:</span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>        freq <span class="op">=</span> train[c].value_counts(normalize<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>        a[c] <span class="op">=</span> train[c].<span class="bu">map</span>(freq).fillna(<span class="fl">0.0</span>).values</span>
-<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>        b[c] <span class="op">=</span> test[c].<span class="bu">map</span>(freq).fillna(<span class="fl">0.0</span>).values</span>
-<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a, b</span>
-<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> amazon_target(train, test, y_train):</span>
-<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    enc <span class="op">=</span> TargetEncoder(smooth<span class="op">=</span><span class="st">"auto"</span>, cv<span class="op">=</span><span class="dv">5</span>)</span>
-<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame(enc.fit_transform(train, y_train), columns<span class="op">=</span>cols), pd.DataFrame(enc.transform(test), columns<span class="op">=</span>cols)</span>
-<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> amazon_native(name, train, test, seed):</span>
-<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> train.copy(), test.copy()</span>
-<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"tabpfn"</span>:</span>
-<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> a, b, make_model(<span class="st">"tabpfn"</span>, seed)</span>
-<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"catboost"</span>:</span>
-<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> a.astype(<span class="bu">str</span>), b.astype(<span class="bu">str</span>), CatBoostClassifier(verbose<span class="op">=</span><span class="dv">0</span>, random_state<span class="op">=</span>seed, cat_features<span class="op">=</span><span class="bu">list</span>(<span class="bu">range</span>(<span class="bu">len</span>(cols))))</span>
-<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> c <span class="kw">in</span> cols:</span>
-<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>        levels <span class="op">=</span> pd.api.types.union_categoricals([a[c].astype(<span class="st">"category"</span>), b[c].astype(<span class="st">"category"</span>)]).categories</span>
-<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>        a[c] <span class="op">=</span> pd.Categorical(a[c], categories<span class="op">=</span>levels)</span>
-<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>        b[c] <span class="op">=</span> pd.Categorical(b[c], categories<span class="op">=</span>levels)</span>
-<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"lightgbm"</span>: <span class="cf">return</span> a, b, make_model(<span class="st">"lightgbm"</span>, seed)</span>
-<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"xgboost"</span>:  <span class="cf">return</span> a, b, XGBClassifier(tree_method<span class="op">=</span><span class="st">"hist"</span>, enable_categorical<span class="op">=</span><span class="va">True</span>, random_state<span class="op">=</span>seed, verbosity<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>amazon_encoders <span class="op">=</span> {<span class="st">"ordinal"</span>: amazon_ordinal, <span class="st">"frequency"</span>: amazon_frequency, <span class="st">"target"</span>: amazon_target}</span>
-<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
-<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> seed <span class="kw">in</span> tqdm([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>], desc<span class="op">=</span><span class="st">"seed"</span>):</span>
-<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>    train, test, y_train, y_test <span class="op">=</span> amazon_subsample(seed)</span>
-<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> rep_name, rep_fn <span class="kw">in</span> amazon_encoders.items():</span>
-<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>        a, b <span class="op">=</span> rep_fn(train, test, y_train) <span class="cf">if</span> rep_name <span class="op">==</span> <span class="st">"target"</span> <span class="cf">else</span> rep_fn(train, test)</span>
-<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> model_name <span class="kw">in</span> MODELS:</span>
-<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>            <span class="cf">try</span>:</span>
-<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a>                score <span class="op">=</span> auc(make_model(model_name, seed), a, y_train, b, y_test)</span>
-<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a>            <span class="cf">except</span> <span class="pp">Exception</span>:</span>
-<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a>                score <span class="op">=</span> np.nan</span>
-<span id="cb15-50"><a href="#cb15-50" aria-hidden="true" tabindex="-1"></a>            rows.append(<span class="bu">dict</span>(seed<span class="op">=</span>seed, model<span class="op">=</span>model_name, rep<span class="op">=</span>rep_name, auc<span class="op">=</span>score))</span>
-<span id="cb15-51"><a href="#cb15-51" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> model_name <span class="kw">in</span> NATIVE:</span>
-<span id="cb15-52"><a href="#cb15-52" aria-hidden="true" tabindex="-1"></a>        a, b, clf <span class="op">=</span> amazon_native(model_name, train, test, seed)</span>
-<span id="cb15-53"><a href="#cb15-53" aria-hidden="true" tabindex="-1"></a>        clf.fit(a, y_train)</span>
-<span id="cb15-54"><a href="#cb15-54" aria-hidden="true" tabindex="-1"></a>        rows.append(<span class="bu">dict</span>(seed<span class="op">=</span>seed, model<span class="op">=</span>model_name, rep<span class="op">=</span><span class="st">"native"</span>, auc<span class="op">=</span>roc_auc_score(y_test, clf.predict_proba(b)[:, <span class="dv">1</span>])))</span>
-<span id="cb15-55"><a href="#cb15-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-56"><a href="#cb15-56" aria-hidden="true" tabindex="-1"></a>amazon <span class="op">=</span> pd.DataFrame(rows)</span>
-<span id="cb15-57"><a href="#cb15-57" aria-hidden="true" tabindex="-1"></a>amazon_table <span class="op">=</span> amazon.pivot_table(index<span class="op">=</span><span class="st">"model"</span>, columns<span class="op">=</span><span class="st">"rep"</span>, values<span class="op">=</span><span class="st">"auc"</span>)[[<span class="st">"native"</span>, <span class="st">"ordinal"</span>, <span class="st">"frequency"</span>, <span class="st">"target"</span>]]</span>
-<span id="cb15-58"><a href="#cb15-58" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Amazon: mean AUC by model and representation (one-hot omitted):"</span>)</span>
-<span id="cb15-59"><a href="#cb15-59" aria-hidden="true" tabindex="-1"></a>printdf(amazon_table.<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>cols <span class="op">=</span> <span class="bu">list</span>(Xfull.columns)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> amazon_subsample(seed, n<span class="op">=</span><span class="dv">12000</span>):</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    idx <span class="op">=</span> rng.permutation(<span class="bu">len</span>(Xfull))[:n]</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    Xs, ys <span class="op">=</span> Xfull.iloc[idx].reset_index(drop<span class="op">=</span><span class="va">True</span>), yfull[idx]</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    half <span class="op">=</span> n <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Xs.iloc[:half].reset_index(drop<span class="op">=</span><span class="va">True</span>), Xs.iloc[half:].reset_index(drop<span class="op">=</span><span class="va">True</span>), ys[:half], ys[half:]</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> amazon_ordinal(train, test):</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    enc <span class="op">=</span> OrdinalEncoder(handle_unknown<span class="op">=</span><span class="st">"use_encoded_value"</span>, unknown_value<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame(enc.fit_transform(train), columns<span class="op">=</span>cols), pd.DataFrame(enc.transform(test), columns<span class="op">=</span>cols)</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> amazon_frequency(train, test):</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> pd.DataFrame(), pd.DataFrame()</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> c <span class="kw">in</span> cols:</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>        freq <span class="op">=</span> train[c].value_counts(normalize<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>        a[c] <span class="op">=</span> train[c].<span class="bu">map</span>(freq).fillna(<span class="fl">0.0</span>).values</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>        b[c] <span class="op">=</span> test[c].<span class="bu">map</span>(freq).fillna(<span class="fl">0.0</span>).values</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a, b</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> amazon_target(train, test, y_train):</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>    enc <span class="op">=</span> TargetEncoder(smooth<span class="op">=</span><span class="st">"auto"</span>, cv<span class="op">=</span><span class="dv">5</span>)</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame(enc.fit_transform(train, y_train), columns<span class="op">=</span>cols), pd.DataFrame(enc.transform(test), columns<span class="op">=</span>cols)</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> amazon_native(name, train, test, seed):</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> train.copy(), test.copy()</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"tabpfn"</span>:</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> a, b, make_model(<span class="st">"tabpfn"</span>, seed)</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"catboost"</span>:</span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> a.astype(<span class="bu">str</span>), b.astype(<span class="bu">str</span>), CatBoostClassifier(verbose<span class="op">=</span><span class="dv">0</span>, random_state<span class="op">=</span>seed, cat_features<span class="op">=</span><span class="bu">list</span>(<span class="bu">range</span>(<span class="bu">len</span>(cols))))</span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> c <span class="kw">in</span> cols:</span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>        levels <span class="op">=</span> pd.api.types.union_categoricals([a[c].astype(<span class="st">"category"</span>), b[c].astype(<span class="st">"category"</span>)]).categories</span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>        a[c] <span class="op">=</span> pd.Categorical(a[c], categories<span class="op">=</span>levels)</span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>        b[c] <span class="op">=</span> pd.Categorical(b[c], categories<span class="op">=</span>levels)</span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"lightgbm"</span>: <span class="cf">return</span> a, b, make_model(<span class="st">"lightgbm"</span>, seed)</span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"xgboost"</span>:  <span class="cf">return</span> a, b, XGBClassifier(tree_method<span class="op">=</span><span class="st">"hist"</span>, enable_categorical<span class="op">=</span><span class="va">True</span>, random_state<span class="op">=</span>seed, verbosity<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-39"><a href="#cb17-39" aria-hidden="true" tabindex="-1"></a>amazon_encoders <span class="op">=</span> {<span class="st">"ordinal"</span>: amazon_ordinal, <span class="st">"frequency"</span>: amazon_frequency, <span class="st">"target"</span>: amazon_target}</span>
+<span id="cb17-40"><a href="#cb17-40" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> seed <span class="kw">in</span> tqdm([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>], desc<span class="op">=</span><span class="st">"seed"</span>):</span>
+<span id="cb17-42"><a href="#cb17-42" aria-hidden="true" tabindex="-1"></a>    train, test, y_train, y_test <span class="op">=</span> amazon_subsample(seed)</span>
+<span id="cb17-43"><a href="#cb17-43" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> rep_name, rep_fn <span class="kw">in</span> amazon_encoders.items():</span>
+<span id="cb17-44"><a href="#cb17-44" aria-hidden="true" tabindex="-1"></a>        a, b <span class="op">=</span> rep_fn(train, test, y_train) <span class="cf">if</span> rep_name <span class="op">==</span> <span class="st">"target"</span> <span class="cf">else</span> rep_fn(train, test)</span>
+<span id="cb17-45"><a href="#cb17-45" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> model_name <span class="kw">in</span> MODELS:</span>
+<span id="cb17-46"><a href="#cb17-46" aria-hidden="true" tabindex="-1"></a>            <span class="cf">try</span>:</span>
+<span id="cb17-47"><a href="#cb17-47" aria-hidden="true" tabindex="-1"></a>                score <span class="op">=</span> auc(make_model(model_name, seed), a, y_train, b, y_test)</span>
+<span id="cb17-48"><a href="#cb17-48" aria-hidden="true" tabindex="-1"></a>            <span class="cf">except</span> <span class="pp">Exception</span>:</span>
+<span id="cb17-49"><a href="#cb17-49" aria-hidden="true" tabindex="-1"></a>                score <span class="op">=</span> np.nan</span>
+<span id="cb17-50"><a href="#cb17-50" aria-hidden="true" tabindex="-1"></a>            rows.append(<span class="bu">dict</span>(seed<span class="op">=</span>seed, model<span class="op">=</span>model_name, rep<span class="op">=</span>rep_name, auc<span class="op">=</span>score))</span>
+<span id="cb17-51"><a href="#cb17-51" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> model_name <span class="kw">in</span> NATIVE:</span>
+<span id="cb17-52"><a href="#cb17-52" aria-hidden="true" tabindex="-1"></a>        a, b, clf <span class="op">=</span> amazon_native(model_name, train, test, seed)</span>
+<span id="cb17-53"><a href="#cb17-53" aria-hidden="true" tabindex="-1"></a>        clf.fit(a, y_train)</span>
+<span id="cb17-54"><a href="#cb17-54" aria-hidden="true" tabindex="-1"></a>        rows.append(<span class="bu">dict</span>(seed<span class="op">=</span>seed, model<span class="op">=</span>model_name, rep<span class="op">=</span><span class="st">"native"</span>, auc<span class="op">=</span>roc_auc_score(y_test, clf.predict_proba(b)[:, <span class="dv">1</span>])))</span>
+<span id="cb17-55"><a href="#cb17-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-56"><a href="#cb17-56" aria-hidden="true" tabindex="-1"></a>amazon <span class="op">=</span> pd.DataFrame(rows)</span>
+<span id="cb17-57"><a href="#cb17-57" aria-hidden="true" tabindex="-1"></a>amazon_table <span class="op">=</span> amazon.pivot_table(index<span class="op">=</span><span class="st">"model"</span>, columns<span class="op">=</span><span class="st">"rep"</span>, values<span class="op">=</span><span class="st">"auc"</span>)[[<span class="st">"native"</span>, <span class="st">"ordinal"</span>, <span class="st">"frequency"</span>, <span class="st">"target"</span>]]</span>
+<span id="cb17-58"><a href="#cb17-58" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Amazon: mean AUC by model and representation (one-hot omitted):"</span>)</span>
+<span id="cb17-59"><a href="#cb17-59" aria-hidden="true" tabindex="-1"></a>printdf(amazon_table.<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
 <pre><code>
 seed:   0%|                                                                                                                                                         | 0/3 [00:00&lt;?, ?it/s]
-seed:  33%|████████████████████████████████████████████████▎                                                                                                | 1/3 [00:38&lt;01:16, 38.42s/it]
-seed:  67%|████████████████████████████████████████████████████████████████████████████████████████████████▋                                                | 2/3 [01:17&lt;00:38, 38.52s/it]
-seed: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [01:56&lt;00:00, 38.76s/it]
-seed: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [01:56&lt;00:00, 38.68s/it]</code></pre>
+seed:  33%|████████████████████████████████████████████████▎                                                                                                | 1/3 [00:39&lt;01:19, 39.57s/it]
+seed:  67%|████████████████████████████████████████████████████████████████████████████████████████████████▋                                                | 2/3 [01:18&lt;00:39, 39.33s/it]
+seed: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [01:57&lt;00:00, 39.24s/it]
+seed: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [01:57&lt;00:00, 39.29s/it]</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Amazon: mean AUC by model and representation (one-hot omitted):
 +--------------+----------+-----------+-------------+----------+
 | model        |   native |   ordinal |   frequency |   target |
 |--------------+----------+-----------+-------------+----------|
-| catboost     |   0.7809 |    0.6692 |      0.7218 |   0.7214 |
-| lightgbm     |   0.751  |    0.674  |      0.7377 |   0.7099 |
+| catboost     |   0.7809 |    0.6692 |      0.7218 |   0.7276 |
+| lightgbm     |   0.751  |    0.674  |      0.7377 |   0.7012 |
 | logreg       | nan      |    0.5921 |      0.5849 |   0.763  |
-| randomforest | nan      |    0.7433 |      0.7497 |   0.7333 |
-| tabpfn       |   0.7486 |    0.7486 |      0.7614 |   0.7596 |
-| xgboost      |   0.7244 |    0.6871 |      0.7389 |   0.6797 |
+| randomforest | nan      |    0.7433 |      0.7497 |   0.7357 |
+| tabpfn       |   0.7486 |    0.7486 |      0.7614 |   0.7633 |
+| xgboost      |   0.7244 |    0.6871 |      0.7389 |   0.6783 |
 +--------------+----------+-----------+-------------+----------+</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code></code></pre>
 </div>
 </div>
-<div id="b01eb4ba" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T08:08:49.092091Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T08:08:49.091908Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T08:08:49.400976Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T08:08:49.400304Z&quot;}}" data-execution_count="9">
+<div id="b01eb4ba" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:18:46.350634Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:18:46.350450Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:18:46.599083Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:18:46.598373Z&quot;}}" data-execution_count="10">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> amazon_table.plot(kind<span class="op">=</span><span class="st">"bar"</span>, figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="fl">4.5</span>))</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"AUC"</span>)</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="fl">0.5</span>, <span class="fl">0.85</span>)</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Amazon Employee Access: AUC by model and representation"</span>)</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>ax.legend(title<span class="op">=</span><span class="st">"representation"</span>, loc<span class="op">=</span><span class="st">"lower right"</span>)</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>plt.xticks(rotation<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> amazon_table.plot(kind<span class="op">=</span><span class="st">"bar"</span>, figsize<span class="op">=</span>(<span class="fl">8.5</span>, <span class="fl">4.5</span>))</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"AUC"</span>)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"model"</span>)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="fl">0.5</span>, <span class="fl">0.85</span>)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>ax.set_yticks(np.arange(<span class="fl">0.5</span>, <span class="fl">0.86</span>, <span class="fl">0.05</span>))</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>ax.set_axisbelow(<span class="va">True</span>)</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>ax.grid(axis<span class="op">=</span><span class="st">"y"</span>, alpha<span class="op">=</span><span class="fl">0.6</span>)</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Amazon Employee Access: AUC by model and representation"</span>)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>ax.legend(title<span class="op">=</span><span class="st">"representation"</span>, loc<span class="op">=</span><span class="st">"center left"</span>, bbox_to_anchor<span class="op">=</span>(<span class="fl">1.01</span>, <span class="fl">0.5</span>), fontsize<span class="op">=</span><span class="dv">9</span>, title_fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>plt.xticks(rotation<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Categoricals_files/figure-html/cell-10-output-1.png" class="img-fluid figure-img"></p>
+<p><img src="Categoricals_files/figure-html/cell-11-output-1.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 </div>
@@ -685,15 +722,15 @@ MIN_NUMBER_SAMPLES_FOR_CATEGORICAL_INFERENCE = 100</code></pre>
 <p>This is the part worth knowing. Text is not a real pathway in the local package. In <code>tabpfn/preprocessing/clean.py</code> (<code>clean_data</code>), every non-numeric column, category and string alike, is ordinal-encoded to integer codes by one shared encoder (<code>get_ordinal_encoder</code> in <code>tabpfn/preprocessing/steps/preprocessing_helpers.py</code>), and the whole frame is cast to float. The only thing separating a categorical from a text column afterward is bookkeeping: every later step asks the schema for <code>indices_for(FeatureModality.CATEGORICAL)</code> (in <code>tabpfn/inference.py</code>, the categorical-encode step, the distribution-reshape step) and nothing ever asks for the text indices.</p>
 <p>So a high-cardinality string becomes arbitrary integer codes handed to the model as a plain numeric feature. The string content is gone the moment it is coded; there is no semantic understanding at all. Per the Prior Labs FAQ, the hosted API does the opposite, it detects text features and embeds their meaning. Same column: meaning through the API, identity only through the local package.</p>
 <p>That is exactly what our experiment ran into, and we can see it directly. Our high-cardinality <code>lvl_*</code> labels route to text, which is the same as ordinal-encoding them, so for TabPFN raw and ordinal should land on top of each other:</p>
-<div id="18a7ae84" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T08:08:49.402770Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T08:08:49.402590Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T08:08:52.852263Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T08:08:52.851487Z&quot;}}" data-execution_count="10">
+<div id="18a7ae84" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:18:46.601015Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:18:46.600832Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:18:50.226675Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:18:50.225740Z&quot;}}" data-execution_count="11">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>train, test, y_train, y_test <span class="op">=</span> make_data(<span class="dv">120</span>, <span class="dv">0</span>)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>raw_text <span class="op">=</span> auc(TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>), train, y_train, test, y_test)   <span class="co"># g is a high-card string -&gt; text</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>a, b <span class="op">=</span> rep_ordinal(train, test)</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>ordinal_codes <span class="op">=</span> auc(TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>), a, y_train, b, y_test)     <span class="co"># g is integer codes -&gt; numerical</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"TabPFN, raw high-card string (text modality)  </span><span class="sc">{</span>raw_text<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"TabPFN, ordinal integer codes (numerical)     </span><span class="sc">{</span>ordinal_codes<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>train, test, y_train, y_test <span class="op">=</span> make_data(<span class="dv">120</span>, <span class="dv">0</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>raw_text <span class="op">=</span> auc(TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>), train, y_train, test, y_test)   <span class="co"># g is a high-card string -&gt; text</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>a, b <span class="op">=</span> rep_ordinal(train, test)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>ordinal_codes <span class="op">=</span> auc(TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>), a, y_train, b, y_test)     <span class="co"># g is integer codes -&gt; numerical</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"TabPFN, raw high-card string (text modality)  </span><span class="sc">{</span>raw_text<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"TabPFN, ordinal integer codes (numerical)     </span><span class="sc">{</span>ordinal_codes<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>TabPFN, raw high-card string (text modality)  0.7440
@@ -705,21 +742,21 @@ TabPFN, ordinal integer codes (numerical)     0.7440</code></pre>
 <h3 class="anchored" data-anchor-id="why-an-arbitrary-integer-order-helps-tabpfn-but-breaks-a-boosted-tree">Why an arbitrary integer order helps TabPFN but breaks a boosted tree</h3>
 <p>The same input, an arbitrary integer code, is read very differently by the two model families, and that is the whole story of the chart. A gradient-boosted tree makes axis-aligned threshold splits. On a column of arbitrary codes (<code>lvl_5 &lt; lvl_6 &lt; ...</code>) a threshold only separates one contiguous run of codes from another, which is meaningless for a nominal category. Isolating a single level costs about two splits, so across thousands of levels the tree runs out of budget and falls toward the base rate. Native CatBoost avoids this by encoding each level with ordered target statistics (a leakage-safe per-level target mean); ordinal-as-numeric throws that machinery away, and LightGBM and XGBoost collapse the same way.</p>
 <p>TabPFN is not splitting on the axis. It is a transformer reading the actual values in context, so two rows that share a code are simply two rows with an equal feature value, and it can learn a non-monotonic response per code. An arbitrary order does not trap it. The three numbers below are the whole mechanism:</p>
-<div id="b0c25aa2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T08:08:52.853982Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T08:08:52.853798Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T08:09:07.369669Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T08:09:07.368817Z&quot;}}" data-execution_count="11">
+<div id="b0c25aa2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:18:50.228457Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:18:50.228261Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:19:04.418612Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:19:04.417832Z&quot;}}" data-execution_count="12">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>train, test, y_train, y_test <span class="op">=</span> amazon_subsample(<span class="dv">0</span>)</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>a, b, catboost_native_clf <span class="op">=</span> amazon_native(<span class="st">"catboost"</span>, train, test, <span class="dv">0</span>)</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>catboost_native_clf.fit(a, y_train)</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>catboost_native <span class="op">=</span> roc_auc_score(y_test, catboost_native_clf.predict_proba(b)[:, <span class="dv">1</span>])</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>a_ord, b_ord <span class="op">=</span> amazon_ordinal(train, test)</span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>catboost_ordinal <span class="op">=</span> auc(CatBoostClassifier(verbose<span class="op">=</span><span class="dv">0</span>, random_state<span class="op">=</span><span class="dv">0</span>), a_ord, y_train, b_ord, y_test)</span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>tabpfn_ordinal <span class="op">=</span> auc(TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>), a_ord, y_train, b_ord, y_test)</span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"CatBoost, native categorical      </span><span class="sc">{</span>catboost_native<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"CatBoost, ordinal-as-numeric      </span><span class="sc">{</span>catboost_ordinal<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"TabPFN,   ordinal-as-numeric      </span><span class="sc">{</span>tabpfn_ordinal<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>train, test, y_train, y_test <span class="op">=</span> amazon_subsample(<span class="dv">0</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>a, b, catboost_native_clf <span class="op">=</span> amazon_native(<span class="st">"catboost"</span>, train, test, <span class="dv">0</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>catboost_native_clf.fit(a, y_train)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>catboost_native <span class="op">=</span> roc_auc_score(y_test, catboost_native_clf.predict_proba(b)[:, <span class="dv">1</span>])</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>a_ord, b_ord <span class="op">=</span> amazon_ordinal(train, test)</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>catboost_ordinal <span class="op">=</span> auc(CatBoostClassifier(verbose<span class="op">=</span><span class="dv">0</span>, random_state<span class="op">=</span><span class="dv">0</span>), a_ord, y_train, b_ord, y_test)</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>tabpfn_ordinal <span class="op">=</span> auc(TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>), a_ord, y_train, b_ord, y_test)</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"CatBoost, native categorical      </span><span class="sc">{</span>catboost_native<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"CatBoost, ordinal-as-numeric      </span><span class="sc">{</span>catboost_ordinal<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"TabPFN,   ordinal-as-numeric      </span><span class="sc">{</span>tabpfn_ordinal<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>CatBoost, native categorical      0.7877
