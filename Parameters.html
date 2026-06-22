@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>TabPFN parameters, for a gradient-boosting practitioner – TabPFN Practitioner</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./MissingValues.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-1f0383365d55c353df76ff428ca87abd.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-5a3118da9a7072767d500adb0b6529fa.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">TabPFN Practitioner</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="./index.html" aria-current="page"> 
+<span class="menu-text">Overview</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./site-contract.html"> 
+<span class="menu-text">Contract</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/CardoAI/TabPFNPractitioner"> 
+<span class="menu-text">Source</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Needs metadata</a></li><li class="breadcrumb-item"><a href="./Parameters.html">TabPFN parameters, for a gradient-boosting practitioner</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TabPFN Practitioner</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./site-contract.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Content Contract</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Needs metadata</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Categoricals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">High-cardinality and categorical variables, with TabPFN</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./MissingValues.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Missing values, with TabPFN</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Parameters.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">TabPFN parameters, for a gradient-boosting practitioner</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-map" id="toc-the-map" class="nav-link active" data-scroll-target="#the-map">The map</a></li>
+  <li><a href="#n_estimators-the-accuracy-vs-speed-dial" id="toc-n_estimators-the-accuracy-vs-speed-dial" class="nav-link" data-scroll-target="#n_estimators-the-accuracy-vs-speed-dial"><code>n_estimators</code>: the accuracy-vs-speed dial</a></li>
+  <li><a href="#what-the-calibration-knobs-do-to-the-output" id="toc-what-the-calibration-knobs-do-to-the-output" class="nav-link" data-scroll-target="#what-the-calibration-knobs-do-to-the-output">What the calibration knobs do to the output</a></li>
+  <li><a href="#inspect-what-tabpfn-decided" id="toc-inspect-what-tabpfn-decided" class="nav-link" data-scroll-target="#inspect-what-tabpfn-decided">Inspect what TabPFN decided</a></li>
+  <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Needs metadata</a></li><li class="breadcrumb-item"><a href="./Parameters.html">TabPFN parameters, for a gradient-boosting practitioner</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">TabPFN parameters, for a gradient-boosting practitioner</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>With a gradient booster you spend real effort searching hyperparameters: tree depth, learning rate, number of trees, subsample, column sample, regularization. With TabPFN that search is gone. The model is <strong>pretrained</strong>, its weights are fixed, and there is no train-time fit to tune. What is left is a short list of <strong>inference settings</strong>, and the defaults are strong.</p>
+<p>This notebook tours them, measures the few that actually move the needle, and shows how to inspect what TabPFN decided about your data. Everything runs on a small synthetic task so it stays self-contained.</p>
+<div id="c01" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>warnings.filterwarnings(<span class="st">"ignore"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>plt.style.use(<span class="st">'fivethirtyeight'</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> roc_auc_score, average_precision_score</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn <span class="im">import</span> TabPFNClassifier</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_data(n<span class="op">=</span><span class="dv">6000</span>, n_features<span class="op">=</span><span class="dv">12</span>, noise<span class="op">=</span><span class="fl">1.5</span>, positive_rate<span class="op">=</span><span class="va">None</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""A synthetic binary task with a nonlinear signal plus noise."""</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> rng.randn(n, n_features)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    signal <span class="op">=</span> X[:, <span class="dv">0</span>] <span class="op">*</span> X[:, <span class="dv">1</span>] <span class="op">+</span> X[:, <span class="dv">2</span>] <span class="op">**</span> <span class="dv">2</span> <span class="op">-</span> X[:, <span class="dv">3</span>] <span class="op">*</span> X[:, <span class="dv">4</span>] <span class="op">+</span> <span class="fl">0.8</span> <span class="op">*</span> X[:, <span class="dv">5</span>]</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    logit <span class="op">=</span> signal <span class="op">+</span> noise <span class="op">*</span> rng.randn(n)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> positive_rate <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        label <span class="op">=</span> (logit <span class="op">&gt;</span> np.median(logit)).astype(<span class="bu">int</span>)               <span class="co"># balanced</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>        label <span class="op">=</span> (logit <span class="op">&gt;</span> np.quantile(logit, <span class="dv">1</span> <span class="op">-</span> positive_rate)).astype(<span class="bu">int</span>)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    table <span class="op">=</span> pd.DataFrame(X, columns<span class="op">=</span>[<span class="ss">f"x</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n_features)])</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> table, label</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> expected_calibration_error(y_true, p, bins<span class="op">=</span><span class="dv">15</span>):</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Average gap between predicted confidence and actual frequency, over equal-width bins."""</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    bucket <span class="op">=</span> np.clip(np.digitize(p, np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, bins <span class="op">+</span> <span class="dv">1</span>)) <span class="op">-</span> <span class="dv">1</span>, <span class="dv">0</span>, bins <span class="op">-</span> <span class="dv">1</span>)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    error <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> b <span class="kw">in</span> <span class="bu">range</span>(bins):</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        in_bin <span class="op">=</span> bucket <span class="op">==</span> b</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> in_bin.<span class="bu">any</span>():</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>            error <span class="op">+=</span> in_bin.mean() <span class="op">*</span> <span class="bu">abs</span>(y_true[in_bin].mean() <span class="op">-</span> p[in_bin].mean())</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> error</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<section id="the-map" class="level2">
+<h2 class="anchored" data-anchor-id="the-map">The map</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter (default)</th>
+<th>What it controls</th>
+<th>When to touch it</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>n_estimators</code> (8)</td>
+<td>how many differently-preprocessed copies of the data are ensembled</td>
+<td>lower for speed, higher for a small accuracy bump</td>
+</tr>
+<tr class="even">
+<td><code>categorical_features_indices</code> (None)</td>
+<td>which columns are treated as categorical</td>
+<td>when auto-detection mis-types a column</td>
+</tr>
+<tr class="odd">
+<td><code>ignore_pretraining_limits</code> (False)</td>
+<td>allow data beyond the recommended size</td>
+<td>many rows or features (expect some degradation)</td>
+</tr>
+<tr class="even">
+<td><code>balance_probabilities</code> (False)</td>
+<td>reweight outputs toward balanced classes</td>
+<td>imbalanced data, to move the 0.5 operating point</td>
+</tr>
+<tr class="odd">
+<td><code>softmax_temperature</code> (0.9)</td>
+<td>sharpen or soften the predicted probabilities</td>
+<td>calibration</td>
+</tr>
+<tr class="even">
+<td><code>inference_config</code> (None)</td>
+<td>override the internal preprocessing</td>
+<td>advanced: scaling, outlier clip, categorical thresholds</td>
+</tr>
+<tr class="odd">
+<td><code>device</code>, <code>inference_precision</code>, <code>memory_saving_mode</code>, <code>fit_mode</code></td>
+<td>hardware and memory</td>
+<td>performance</td>
+</tr>
+<tr class="even">
+<td><code>model_path</code> (<code>'auto'</code>)</td>
+<td>which checkpoint to load</td>
+<td><code>'auto'</code> loads v3; rarely changed</td>
+</tr>
+<tr class="odd">
+<td><code>tuning_config</code> (None)</td>
+<td>optional post-hoc tuning search</td>
+<td>when you want an AutoML-style sweep</td>
+</tr>
+<tr class="even">
+<td><code>random_state</code> (0)</td>
+<td>reproducibility</td>
+<td>set it for reproducible runs</td>
+</tr>
+</tbody>
+</table>
+<p>The next cells measure the three a practitioner actually reaches for, then inspect the rest.</p>
+</section>
+<section id="n_estimators-the-accuracy-vs-speed-dial" class="level2">
+<h2 class="anchored" data-anchor-id="n_estimators-the-accuracy-vs-speed-dial"><code>n_estimators</code>: the accuracy-vs-speed dial</h2>
+<p>Each estimator is a differently-preprocessed copy of the data, and TabPFN averages over them. More estimators reduce the variance of the prediction, at a <strong>linear</strong> compute cost: eight estimators take about eight times as long to predict as one. The accuracy gain saturates quickly, and exactly how quickly is dataset-dependent, so there is no universal number. The default of 8 is a reasonable middle: drop it to 1 or 2 when you need speed, raise it for a marginal, diminishing gain.</p>
+</section>
+<section id="what-the-calibration-knobs-do-to-the-output" class="level2">
+<h2 class="anchored" data-anchor-id="what-the-calibration-knobs-do-to-the-output">What the calibration knobs do to the output</h2>
+<p><code>balance_probabilities</code> and <code>softmax_temperature</code> reshape the predicted probabilities <em>without touching the ranking</em>. That part is not an empirical claim: both are monotone transforms of the probability, and a monotone transform cannot change which examples score higher, so AUC and AUPRC are unchanged by construction. What they change is the <em>shape</em> of the output distribution, and with it the calibration and any fixed-threshold decision. The plots below show that directly, on a deliberately hard task where the model is uncertain enough for the effect to be visible.</p>
+<div id="hlbal" class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># balance_probabilities on a HARD, imbalanced task (uncertain model, so the shift is visible).</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">1</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> <span class="dv">6000</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>Xb <span class="op">=</span> rng.randn(m, <span class="dv">4</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>logit <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> Xb[:, <span class="dv">0</span>] <span class="op">-</span> <span class="fl">2.2</span>                                 <span class="co"># weak signal + low base rate (uncertain, ~11% positive)</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>yb <span class="op">=</span> (rng.rand(m) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span>logit))).astype(<span class="bu">int</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>Xtr, Xte <span class="op">=</span> pd.DataFrame(Xb[:m <span class="op">//</span> <span class="dv">2</span>]), pd.DataFrame(Xb[m <span class="op">//</span> <span class="dv">2</span>:])<span class="op">;</span> ytr, yte <span class="op">=</span> yb[:m <span class="op">//</span> <span class="dv">2</span>], yb[m <span class="op">//</span> <span class="dv">2</span>:]</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>p_off <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>]</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>p_on  <span class="op">=</span> TabPFNClassifier(balance_probabilities<span class="op">=</span><span class="va">True</span>, random_state<span class="op">=</span><span class="dv">0</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>]</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">3</span>))</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>plt.hist(p_off, bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.6</span>, label<span class="op">=</span><span class="st">"balance_probabilities=False"</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>plt.hist(p_on,  bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.6</span>, label<span class="op">=</span><span class="st">"balance_probabilities=True"</span>)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>plt.legend()<span class="op">;</span> plt.xlabel(<span class="st">"predicted P(class 1)"</span>)<span class="op">;</span> plt.title(<span class="st">"balance_probabilities reshapes the output"</span>)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div id="hltemp" class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># softmax_temperature on a HARD, balanced task (uncertain model, so sharpen/soften shows).</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">2</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> <span class="dv">6000</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>Xt <span class="op">=</span> rng.randn(m, <span class="dv">6</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>logit <span class="op">=</span> <span class="fl">0.6</span> <span class="op">*</span> Xt[:, <span class="dv">0</span>] <span class="op">+</span> <span class="fl">0.4</span> <span class="op">*</span> Xt[:, <span class="dv">1</span>]</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>yt <span class="op">=</span> (rng.rand(m) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span>logit))).astype(<span class="bu">int</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>Xtr, Xte <span class="op">=</span> pd.DataFrame(Xt[:m <span class="op">//</span> <span class="dv">2</span>]), pd.DataFrame(Xt[m <span class="op">//</span> <span class="dv">2</span>:])<span class="op">;</span> ytr, yte <span class="op">=</span> yt[:m <span class="op">//</span> <span class="dv">2</span>], yt[m <span class="op">//</span> <span class="dv">2</span>:]</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">3</span>))</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> [<span class="fl">0.5</span>, <span class="fl">0.9</span>, <span class="fl">2.0</span>]:</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> TabPFNClassifier(softmax_temperature<span class="op">=</span>t, random_state<span class="op">=</span><span class="dv">0</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>]</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    plt.hist(p, bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, label<span class="op">=</span><span class="ss">f"temperature=</span><span class="sc">{</span>t<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>plt.legend()<span class="op">;</span> plt.xlabel(<span class="st">"predicted P(class 1)"</span>)<span class="op">;</span> plt.title(<span class="st">"softmax_temperature: &lt;1 more confident (toward 0/1), &gt;1 less confident (toward 0.5)"</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p><code>balance_probabilities</code> pushes mass toward the minority class: it raises recall at a 0.5 threshold and, on imbalanced data, worsens calibration (the probabilities drift away from the true base rate).</p>
+<p><code>softmax_temperature</code> controls confidence. Below 1 the model is more confident, probabilities are pushed toward 0 and 1, so the across-example histogram spreads to the extremes. Above 1 it is less confident, probabilities are pulled toward 0.5, so the histogram collapses into a peak at 0.5. (Note: less confident per example gives a <em>more concentrated</em> histogram, not a flatter one, which is easy to misread.) The default 0.9 sits near the best-calibrated point.</p>
+<p>Neither knob moves a ranking metric, so reach for them only when you threshold at a fixed cutoff or need calibrated probabilities, not to improve AUC. (A booster’s <code>scale_pos_weight</code> is what people often expect to help ranking; this is not that.)</p>
+</section>
+<section id="inspect-what-tabpfn-decided" class="level2">
+<h2 class="anchored" data-anchor-id="inspect-what-tabpfn-decided">Inspect what TabPFN decided</h2>
+<p>You do not tune the preprocessing, but you can read it. After a fit, <code>inference_config_</code> holds the resolved limits and thresholds, and <code>inferred_feature_schema_</code> shows the modality TabPFN assigned to each column (which is what <code>categorical_features_indices</code> would override).</p>
+<div id="c11" class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>Xq <span class="op">=</span> pd.DataFrame(np.random.RandomState(<span class="dv">0</span>).randn(<span class="dv">200</span>, <span class="dv">5</span>), columns<span class="op">=</span>[<span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"e"</span>])</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>yq <span class="op">=</span> (Xq[<span class="st">"a"</span>] <span class="op">&gt;</span> <span class="dv">0</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>).fit(Xq, yq)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Envelope (hard ceilings):"</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> field <span class="kw">in</span> [<span class="st">"MAX_NUMBER_OF_SAMPLES"</span>, <span class="st">"MAX_NUMBER_OF_FEATURES"</span>, <span class="st">"MAX_NUMBER_OF_CLASSES"</span>]:</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>field<span class="sc">}</span><span class="ss"> = </span><span class="sc">{</span><span class="bu">getattr</span>(model.inference_config_, field)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Preprocessing thresholds:"</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> field <span class="kw">in</span> [<span class="st">"MAX_UNIQUE_FOR_CATEGORICAL_FEATURES"</span>, <span class="st">"MIN_UNIQUE_FOR_NUMERICAL_FEATURES"</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>              <span class="st">"MIN_NUMBER_SAMPLES_FOR_CATEGORICAL_INFERENCE"</span>, <span class="st">"OUTLIER_REMOVAL_STD"</span>]:</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>field<span class="sc">}</span><span class="ss"> = </span><span class="sc">{</span><span class="bu">getattr</span>(model.inference_config_, field)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Inferred column modality (first five columns):"</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> feature <span class="kw">in</span> model.inferred_feature_schema_.features[:<span class="dv">5</span>]:</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>feature<span class="sc">.</span>name<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>feature<span class="sc">.</span>modality<span class="sc">.</span>value<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>The <strong>envelope</strong> is the hard ceiling the checkpoint was built for (a million rows, two thousand features, a hundred and sixty classes). Separately, <code>ignore_pretraining_limits</code> guards a softer <em>recommended</em> operating range, and pushing well past it is where accuracy starts to slip. The <strong>thresholds</strong> are the rules behind the auto-detection: a string column with 30 or fewer distinct values is treated as categorical, a numeric column needs at least 4 distinct values to stay numeric, and category inference needs at least 100 rows. Those are the knobs the scaling and categorical chapters open up through <code>inference_config</code>.</p>
+</section>
+<section id="takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="takeaways">Takeaways</h2>
+<ul>
+<li>TabPFN is pretrained, so there is no hyperparameter <em>search</em>. You configure inference, and the defaults are strong.</li>
+<li><strong><code>n_estimators</code></strong> trades compute for a small, saturating accuracy gain; the default is a sensible middle.</li>
+<li><strong><code>balance_probabilities</code></strong> and <strong><code>softmax_temperature</code></strong> never change the ranking (a monotone transform cannot); they shift the operating point and the calibration. Use them only if you threshold at a fixed cutoff or need calibrated probabilities.</li>
+<li><strong><code>categorical_features_indices</code></strong> and <strong><code>ignore_pretraining_limits</code></strong> tell TabPFN the truth about your data: which columns are categorical, and whether you are past its recommended size.</li>
+<li><strong><code>inference_config</code></strong> is the door to the internal preprocessing (scaling, outlier clipping, categorical thresholds), and the envelope and thresholds above are read straight off it.</li>
+</ul>
+<p>The shift from gradient boosting: you are not tuning a model, you are configuring a fixed one, and most of the time the defaults are the right answer.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script>
+(() => {
+  const toggles = document.querySelectorAll(".cf-toggle");
+
+  toggles.forEach((toggle) => {
+    const panels = Array.from(toggle.querySelectorAll("[data-cf-setting]"));
+    if (panels.length < 2 || toggle.dataset.cfReady === "true") {
+      return;
+    }
+
+    const knob = toggle.dataset.cfKnob || "counterfactual";
+    const controls = document.createElement("div");
+    controls.className = "cf-toggle__controls";
+    controls.setAttribute("role", "group");
+    controls.setAttribute("aria-label", knob);
+
+    const settings = panels.map((panel) => panel.dataset.cfSetting);
+    const fallback = settings[0];
+    let active = settings.includes(toggle.dataset.cfDefault)
+      ? toggle.dataset.cfDefault
+      : fallback;
+
+    const show = (setting) => {
+      active = setting;
+      panels.forEach((panel) => {
+        panel.hidden = panel.dataset.cfSetting !== active;
+      });
+      controls.querySelectorAll("button").forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.cfSetting === active));
+      });
+    };
+
+    settings.forEach((setting) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "cf-toggle__button";
+      button.dataset.cfSetting = setting;
+      button.textContent = setting;
+      button.addEventListener("click", () => show(setting));
+      controls.appendChild(button);
+    });
+
+    toggle.prepend(controls);
+    toggle.dataset.cfReady = "true";
+    show(active);
+  });
+})();
+</script>
+
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/cardoai\.github\.io\/TabPFNPractitioner\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./MissingValues.html" class="pagination-link" aria-label="Missing values, with TabPFN">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Missing values, with TabPFN</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
