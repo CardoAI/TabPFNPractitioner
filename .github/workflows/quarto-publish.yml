@@ -20,6 +20,16 @@ jobs:
         with:
           version: 1.9.38
 
+      - name: Initialize gh-pages branch
+        run: |
+          if ! git ls-remote --exit-code --heads origin gh-pages > /dev/null; then
+            git config user.email "quarto-github-actions-publish@example.com"
+            git config user.name "Quarto GHA Workflow Runner"
+            empty_tree="$(git mktree < /dev/null)"
+            empty_commit="$(git commit-tree "$empty_tree" -m "Initialize gh-pages")"
+            git push origin "$empty_commit:refs/heads/gh-pages"
+          fi
+
       - name: Render and publish
         uses: quarto-dev/quarto-actions/publish@v2
         with:
@@ -27,4 +37,3 @@ jobs:
           path: notebooks
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
