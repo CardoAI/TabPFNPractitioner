@@ -269,7 +269,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <p>A hole in the table is the most common defect in real data. This notebook walks the classical toolkit for handling it, shows how much of that toolkit TabPFN makes unnecessary, and isolates the two places where it still matters. Every experiment is a small, self-contained synthetic construction, so the behaviour we observe is real but the setup stays easy to read.</p>
-<div id="c01" class="cell" data-execution_count="1">
+<div id="c01" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:12:31.355024Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:12:31.354862Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:12:52.900083Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:12:52.899236Z&quot;}}" data-execution_count="1">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
@@ -298,18 +298,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    probabilities <span class="op">=</span> model.predict_proba(X_test)[:, <span class="dv">1</span>]</span>
 <span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">round</span>(roc_auc_score(y_test, probabilities), <span class="dv">4</span>)</span>
 <span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestClassifier</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="co"># One shared roster, used by every experiment below.</span></span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>MODELS <span class="op">=</span> {</span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    <span class="st">"TabPFN"</span>:       <span class="kw">lambda</span>: TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>),</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    <span class="st">"LightGBM"</span>:     <span class="kw">lambda</span>: LGBMClassifier(verbose<span class="op">=-</span><span class="dv">1</span>),</span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    <span class="st">"XGBoost"</span>:      <span class="kw">lambda</span>: XGBClassifier(tree_method<span class="op">=</span><span class="st">"hist"</span>, eval_metric<span class="op">=</span><span class="st">"logloss"</span>),</span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    <span class="st">"CatBoost"</span>:     <span class="kw">lambda</span>: CatBoostClassifier(verbose<span class="op">=</span><span class="dv">0</span>),</span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    <span class="st">"RandomForest"</span>: <span class="kw">lambda</span>: RandomForestClassifier(n_estimators<span class="op">=</span><span class="dv">200</span>, random_state<span class="op">=</span><span class="dv">0</span>),</span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Linear"</span>:       <span class="kw">lambda</span>: Pipeline([(<span class="st">"impute"</span>, SimpleImputer()), (<span class="st">"scale"</span>, StandardScaler()),</span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>                                      (<span class="st">"logreg"</span>, LogisticRegression(max_iter<span class="op">=</span><span class="dv">2000</span>))]),</span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> relative_to(table, baseline_col):</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Each column minus a baseline column: + helps, - hurts versus that reference."""</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> table.sub(table[baseline_col], axis<span class="op">=</span><span class="dv">0</span>).<span class="bu">round</span>(<span class="dv">4</span>)</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestClassifier</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="co"># One shared roster, used by every experiment below.</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>MODELS <span class="op">=</span> {</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>    <span class="st">"TabPFN"</span>:       <span class="kw">lambda</span>: TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>),</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>    <span class="st">"LightGBM"</span>:     <span class="kw">lambda</span>: LGBMClassifier(verbose<span class="op">=-</span><span class="dv">1</span>),</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>    <span class="st">"XGBoost"</span>:      <span class="kw">lambda</span>: XGBClassifier(tree_method<span class="op">=</span><span class="st">"hist"</span>, eval_metric<span class="op">=</span><span class="st">"logloss"</span>),</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>    <span class="st">"CatBoost"</span>:     <span class="kw">lambda</span>: CatBoostClassifier(verbose<span class="op">=</span><span class="dv">0</span>),</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>    <span class="st">"RandomForest"</span>: <span class="kw">lambda</span>: RandomForestClassifier(n_estimators<span class="op">=</span><span class="dv">200</span>, random_state<span class="op">=</span><span class="dv">0</span>),</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Linear"</span>:       <span class="kw">lambda</span>: Pipeline([(<span class="st">"impute"</span>, SimpleImputer()), (<span class="st">"scale"</span>, StandardScaler()),</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>                                      (<span class="st">"logreg"</span>, LogisticRegression(max_iter<span class="op">=</span><span class="dv">2000</span>))]),</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <section id="how-we-usually-handle-missing-values" class="level2">
@@ -334,7 +339,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>MNAR (Missing Not At Random).</strong> The gap depends on the <em>missing value itself</em>, e.g.&nbsp;high earners decline to report income. The missingness carries information you cannot fully recover from the other columns.</li>
 </ul>
 <p>The upshot: under MAR and MNAR, “this value is missing” is itself a feature. That is what a missing-indicator captures, and why imputing-and-forgetting can throw signal away.</p>
-<div id="c04" class="cell" data-execution_count="2">
+<div id="c04" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:12:52.902334Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:12:52.901924Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:12:52.910372Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:12:52.909772Z&quot;}}" data-execution_count="2">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Three ways a column could go missing. We measure how much "this value is missing"</span></span>
@@ -373,7 +378,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="what-tabpfn-does" class="level2">
 <h2 class="anchored" data-anchor-id="what-tabpfn-does">What TabPFN does</h2>
 <p>Leave the NaNs in. Inside the model, before the forward pass, every missing cell is (1) filled with that feature’s <strong>mean over the training rows</strong>, and (2) recorded in a <strong>per-feature missing-indicator channel</strong> that the network reads. So TabPFN performs <em>mean-impute-plus-indicator</em> by default, the move strong neural baselines do by hand. Most of the checklist above is already inside the model. The rest of this notebook asks: which parts does that make redundant, and where does the toolkit still earn its keep?</p>
-<div id="c07" class="cell" data-execution_count="3">
+<div id="c07" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:12:52.911970Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:12:52.911802Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:12:57.691821Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:12:57.691069Z&quot;}}" data-execution_count="3">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># TabPFN accepts NaNs directly. No imputation step needed.</span></span>
@@ -393,7 +398,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="can-you-change-how-tabpfn-handles-missing-values" class="level3">
 <h3 class="anchored" data-anchor-id="can-you-change-how-tabpfn-handles-missing-values">Can you change how TabPFN handles missing values?</h3>
 <p>Short answer: no. The mean-fill and the indicator channel are baked into the v3 architecture and its pretrained weights, not exposed as settings. No constructor argument and no <code>inference_config</code> field controls feature imputation. (The two parameters that touch missing values do so only indirectly: <code>categorical_features_indices</code>, which decides whether a hole-bearing column is encoded as categorical or numeric, and <code>inference_config</code>, which sets the scaling the filled value then passes through.)</p>
-<div id="c09" class="cell" data-execution_count="4">
+<div id="c09" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:12:57.693633Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:12:57.693442Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:12:58.466761Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:12:58.466016Z&quot;}}" data-execution_count="4">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> inspect</span>
@@ -427,7 +432,7 @@ inference_config fields that control feature imputation: none</code></pre>
 <section id="do-the-classical-fills-even-matter" class="level2">
 <h2 class="anchored" data-anchor-id="do-the-classical-fills-even-matter">Do the classical fills even matter?</h2>
 <p>A useful numeric column <code>a</code> is 40% missing (completely at random), and it varies by an observed segment <code>seg</code> (think product or region). We try the classical fills, mean, median, an out-of-range sentinel, a segment-wise mean, and mean-plus-indicator, against just leaving the NaN in. (Mode is the same idea for a categorical column: fill with the most frequent level.) How much does the choice move each model?</p>
-<div id="c11" class="cell" data-execution_count="5">
+<div id="c11" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:12:58.468527Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:12:58.468337Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:12:58.475066Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:12:58.474404Z&quot;}}" data-execution_count="5">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Build a small dataset: 'a' depends on a segment/group, the label depends on 'a' and 'b'.</span></span>
@@ -449,7 +454,7 @@ inference_config fields that control feature imputation: none</code></pre>
 <span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>y_train, y_test <span class="op">=</span> label[:n <span class="op">//</span> <span class="dv">2</span>], label[n <span class="op">//</span> <span class="dv">2</span>:]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div id="c12" class="cell" data-execution_count="6">
+<div id="c12" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:12:58.476514Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:12:58.476340Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:12:58.573460Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:12:58.572740Z&quot;}}" data-execution_count="6">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fill values, all computed on the TRAIN half only (no leakage).</span></span>
@@ -475,7 +480,7 @@ inference_config fields that control feature imputation: none</code></pre>
 <span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> out</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div id="c13" class="cell" data-execution_count="7">
+<div id="c13" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:12:58.574974Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:12:58.574801Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:13:26.330044Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:13:26.329002Z&quot;}}" data-execution_count="7">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>methods <span class="op">=</span> [<span class="st">"native"</span>, <span class="st">"mean"</span>, <span class="st">"median"</span>, <span class="st">"sentinel"</span>, <span class="st">"group"</span>, <span class="st">"indicator"</span>]</span>
@@ -487,10 +492,53 @@ inference_config fields that control feature imputation: none</code></pre>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        row[method] <span class="op">=</span> auc(make_model(), filled(train, method), y_train, filled(test, method), y_test)</span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    scores[model_name] <span class="op">=</span> row</span>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>printdf(pd.DataFrame(scores).T, nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>fills_table <span class="op">=</span> pd.DataFrame(scores).T</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>printdf(fills_table, nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Same table, relative to leaving the NaN in place (native), + helps / - hurts:"</span>)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>printdf(relative_to(fills_table, <span class="st">"native"</span>), nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
-<pre><code>                                                           </code></pre>
+<pre><code>
+TabPFN:   0%|                                                       | 0/6 [00:00&lt;?, ?it/s]
+TabPFN:  17%|███████▊                                       | 1/6 [00:02&lt;00:12,  2.42s/it]
+TabPFN:  33%|███████████████▋                               | 2/6 [00:04&lt;00:09,  2.37s/it]
+TabPFN:  50%|███████████████████████▌                       | 3/6 [00:07&lt;00:07,  2.43s/it]
+TabPFN:  67%|███████████████████████████████▎               | 4/6 [00:09&lt;00:04,  2.40s/it]
+TabPFN:  83%|███████████████████████████████████████▏       | 5/6 [00:11&lt;00:02,  2.38s/it]
+TabPFN: 100%|███████████████████████████████████████████████| 6/6 [00:14&lt;00:00,  2.40s/it]
+                                                                                          
+
+LightGBM:   0%|                                                     | 0/6 [00:00&lt;?, ?it/s]
+LightGBM:  33%|███████████████                              | 2/6 [00:00&lt;00:00, 12.90it/s]
+LightGBM:  67%|██████████████████████████████               | 4/6 [00:00&lt;00:00, 13.08it/s]
+LightGBM: 100%|█████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 13.07it/s]
+                                                                                          
+
+XGBoost:   0%|                                                      | 0/6 [00:00&lt;?, ?it/s]
+XGBoost:  33%|███████████████▎                              | 2/6 [00:00&lt;00:00, 18.90it/s]
+XGBoost:  83%|██████████████████████████████████████▎       | 5/6 [00:00&lt;00:00, 20.90it/s]
+                                                                                          
+
+CatBoost:   0%|                                                     | 0/6 [00:00&lt;?, ?it/s]
+CatBoost:  17%|███████▌                                     | 1/6 [00:01&lt;00:06,  1.38s/it]
+CatBoost:  33%|███████████████                              | 2/6 [00:02&lt;00:05,  1.36s/it]
+CatBoost:  50%|██████████████████████▌                      | 3/6 [00:04&lt;00:04,  1.35s/it]
+CatBoost:  67%|██████████████████████████████               | 4/6 [00:05&lt;00:02,  1.35s/it]
+CatBoost:  83%|█████████████████████████████████████▌       | 5/6 [00:06&lt;00:01,  1.34s/it]
+CatBoost: 100%|█████████████████████████████████████████████| 6/6 [00:08&lt;00:00,  1.34s/it]
+                                                                                          
+
+RandomForest:   0%|                                                 | 0/6 [00:00&lt;?, ?it/s]
+RandomForest:  17%|██████▊                                  | 1/6 [00:00&lt;00:03,  1.38it/s]
+RandomForest:  33%|█████████████▋                           | 2/6 [00:01&lt;00:02,  1.40it/s]
+RandomForest:  50%|████████████████████▌                    | 3/6 [00:02&lt;00:02,  1.41it/s]
+RandomForest:  67%|███████████████████████████▎             | 4/6 [00:02&lt;00:01,  1.41it/s]
+RandomForest:  83%|██████████████████████████████████▏      | 5/6 [00:03&lt;00:00,  1.40it/s]
+RandomForest: 100%|█████████████████████████████████████████| 6/6 [00:04&lt;00:00,  1.36it/s]
+                                                                                          
+
+Linear:   0%|                                                       | 0/6 [00:00&lt;?, ?it/s]
+                                                                                          </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>+--------------+----------+--------+----------+------------+---------+-------------+
@@ -502,7 +550,19 @@ inference_config fields that control feature imputation: none</code></pre>
 | CatBoost     |   0.8825 | 0.8807 |   0.8809 |     0.8838 |  0.8838 |      0.8821 |
 | RandomForest |   0.8484 | 0.8484 |   0.8483 |     0.8479 |  0.8493 |      0.8459 |
 | Linear       |   0.8367 | 0.8367 |   0.8372 |     0.6682 |  0.8922 |      0.8365 |
-+--------------+----------+--------+----------+------------+---------+-------------+</code></pre>
++--------------+----------+--------+----------+------------+---------+-------------+
+
+Same table, relative to leaving the NaN in place (native), + helps / - hurts:
++--------------+----------+---------+----------+------------+---------+-------------+
+|              |   native |    mean |   median |   sentinel |   group |   indicator |
+|--------------+----------+---------+----------+------------+---------+-------------|
+| TabPFN       |        0 | -0.0011 |  -0.0012 |    -0.0031 | -0.0003 |     -0.0004 |
+| LightGBM     |        0 | -0.0007 |  -0.0004 |    -0.0001 | -0.0014 |     -0.0025 |
+| XGBoost      |        0 |  0.0024 |   0.003  |     0.0041 |  0.0027 |      0.0029 |
+| CatBoost     |        0 | -0.0018 |  -0.0016 |     0.0013 |  0.0013 |     -0.0004 |
+| RandomForest |        0 |  0      |  -0.0001 |    -0.0005 |  0.0009 |     -0.0025 |
+| Linear       |        0 |  0      |   0.0005 |    -0.1685 |  0.0555 |     -0.0002 |
++--------------+----------+---------+----------+------------+---------+-------------+</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code></code></pre>
@@ -510,7 +570,7 @@ inference_config fields that control feature imputation: none</code></pre>
 </div>
 <p>Read across each row. <strong>The native-handling models barely move</strong>: they read the segment directly, so how you fill <code>a</code> hardly matters. The <strong>linear model is the sensitive one</strong>: the segment-wise <code>group</code> fill helps it (it cannot use <code>seg</code> non-monotonically on its own), and the <code>-9999</code> sentinel hurts it (a giant value wrecks a linear fit, while a tree just splits it off). The <code>indicator</code> adds nothing here, because this gap is MCAR, there is no missingness signal to capture. That is the grounding in one table: for a flexible model the fill is mostly a non-decision; the care goes into weak models and into <em>informative</em> missingness, which is where the rest of the notebook goes.</p>
 <p>To check that group-fill’s benefit is entirely about <em>access to the grouping</em>, run the same comparison but drop <code>seg</code> from the columns the models see. The fill still uses <code>seg</code> to compute the group mean; the models just no longer get <code>seg</code> as a feature, so the only way the segment can reach them is through the <code>group</code> fill.</p>
-<div id="absg2" class="cell" data-execution_count="8">
+<div id="absg2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:13:26.333082Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:13:26.332730Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:13:54.367318Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:13:54.366632Z&quot;}}" data-execution_count="8">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Same comparison, but 'seg' is removed from the features (group-fill still uses it to fill 'a').</span></span>
@@ -523,10 +583,53 @@ inference_config fields that control feature imputation: none</code></pre>
 <span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>        row[method] <span class="op">=</span> auc(make_model(), train_f, y_train, test_f, y_test)</span>
 <span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    scores_no_seg[model_name] <span class="op">=</span> row</span>
 <span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>printdf(pd.DataFrame(scores_no_seg).T, nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>fills_no_seg <span class="op">=</span> pd.DataFrame(scores_no_seg).T</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>printdf(fills_no_seg, nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Same table, relative to native (now with the seg column removed):"</span>)</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>printdf(relative_to(fills_no_seg, <span class="st">"native"</span>), nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
-<pre><code>                                                           </code></pre>
+<pre><code>
+TabPFN:   0%|                                                       | 0/6 [00:00&lt;?, ?it/s]
+TabPFN:  17%|███████▊                                       | 1/6 [00:02&lt;00:12,  2.50s/it]
+TabPFN:  33%|███████████████▋                               | 2/6 [00:04&lt;00:09,  2.41s/it]
+TabPFN:  50%|███████████████████████▌                       | 3/6 [00:07&lt;00:07,  2.38s/it]
+TabPFN:  67%|███████████████████████████████▎               | 4/6 [00:09&lt;00:04,  2.35s/it]
+TabPFN:  83%|███████████████████████████████████████▏       | 5/6 [00:11&lt;00:02,  2.34s/it]
+TabPFN: 100%|███████████████████████████████████████████████| 6/6 [00:14&lt;00:00,  2.35s/it]
+                                                                                          
+
+LightGBM:   0%|                                                     | 0/6 [00:00&lt;?, ?it/s]
+LightGBM:  33%|███████████████                              | 2/6 [00:00&lt;00:00, 12.68it/s]
+LightGBM:  67%|██████████████████████████████               | 4/6 [00:00&lt;00:00, 12.90it/s]
+LightGBM: 100%|█████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 12.97it/s]
+                                                                                          
+
+XGBoost:   0%|                                                      | 0/6 [00:00&lt;?, ?it/s]
+XGBoost:  33%|███████████████▎                              | 2/6 [00:00&lt;00:00, 17.69it/s]
+XGBoost:  83%|██████████████████████████████████████▎       | 5/6 [00:00&lt;00:00, 20.57it/s]
+                                                                                          
+
+CatBoost:   0%|                                                     | 0/6 [00:00&lt;?, ?it/s]
+CatBoost:  17%|███████▌                                     | 1/6 [00:01&lt;00:07,  1.40s/it]
+CatBoost:  33%|███████████████                              | 2/6 [00:02&lt;00:05,  1.37s/it]
+CatBoost:  50%|██████████████████████▌                      | 3/6 [00:04&lt;00:04,  1.36s/it]
+CatBoost:  67%|██████████████████████████████               | 4/6 [00:05&lt;00:02,  1.35s/it]
+CatBoost:  83%|█████████████████████████████████████▌       | 5/6 [00:06&lt;00:01,  1.34s/it]
+CatBoost: 100%|█████████████████████████████████████████████| 6/6 [00:08&lt;00:00,  1.36s/it]
+                                                                                          
+
+RandomForest:   0%|                                                 | 0/6 [00:00&lt;?, ?it/s]
+RandomForest:  17%|██████▊                                  | 1/6 [00:00&lt;00:04,  1.21it/s]
+RandomForest:  33%|█████████████▋                           | 2/6 [00:01&lt;00:03,  1.22it/s]
+RandomForest:  50%|████████████████████▌                    | 3/6 [00:02&lt;00:02,  1.23it/s]
+RandomForest:  67%|███████████████████████████▎             | 4/6 [00:03&lt;00:01,  1.23it/s]
+RandomForest:  83%|██████████████████████████████████▏      | 5/6 [00:04&lt;00:00,  1.27it/s]
+RandomForest: 100%|█████████████████████████████████████████| 6/6 [00:04&lt;00:00,  1.26it/s]
+                                                                                          
+
+Linear:   0%|                                                       | 0/6 [00:00&lt;?, ?it/s]
+                                                                                          </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>+--------------+----------+--------+----------+------------+---------+-------------+
@@ -538,7 +641,19 @@ inference_config fields that control feature imputation: none</code></pre>
 | CatBoost     |   0.8185 | 0.8211 |   0.8192 |     0.8199 |  0.8836 |      0.8211 |
 | RandomForest |   0.7612 | 0.7598 |   0.7607 |     0.7579 |  0.8511 |      0.7581 |
 | Linear       |   0.8315 | 0.8315 |   0.8322 |     0.6257 |  0.8921 |      0.8315 |
-+--------------+----------+--------+----------+------------+---------+-------------+</code></pre>
++--------------+----------+--------+----------+------------+---------+-------------+
+
+Same table, relative to native (now with the seg column removed):
++--------------+----------+---------+----------+------------+---------+-------------+
+|              |   native |    mean |   median |   sentinel |   group |   indicator |
+|--------------+----------+---------+----------+------------+---------+-------------|
+| TabPFN       |        0 | -0.0015 |  -0.0014 |    -0.0204 |  0.0589 |     -0.0012 |
+| LightGBM     |        0 |  0.0012 |   0.0008 |    -0.0015 |  0.0663 |     -0.0002 |
+| XGBoost      |        0 | -0.0004 |  -0.0013 |    -0.0011 |  0.067  |      0.0008 |
+| CatBoost     |        0 |  0.0026 |   0.0007 |     0.0014 |  0.0651 |      0.0026 |
+| RandomForest |        0 | -0.0014 |  -0.0005 |    -0.0033 |  0.0899 |     -0.0031 |
+| Linear       |        0 |  0      |   0.0007 |    -0.2058 |  0.0606 |      0      |
++--------------+----------+---------+----------+------------+---------+-------------+</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code></code></pre>
@@ -555,7 +670,7 @@ inference_config fields that control feature imputation: none</code></pre>
 <li><code>model_based_impute(...)</code> trains a small regressor to predict <code>Z</code> from the other columns and fills the holes with its predictions.</li>
 <li><code>compare_imputations(...)</code> scores four ways of handling the holes (the true <code>Z</code>, leaving the NaN, mean-fill, and model-based) across the three models. (MICE is the iterative, multi-column version of this; KNN is another model-based method.)</li>
 </ul>
-<div id="c16" class="cell" data-execution_count="9">
+<div id="c16" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:13:54.369387Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:13:54.369210Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:13:54.375772Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:13:54.375108Z&quot;}}" data-execution_count="9">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_data(make_Z, n<span class="op">=</span><span class="dv">8000</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
@@ -595,7 +710,7 @@ inference_config fields that control feature imputation: none</code></pre>
 <span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> train, test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div id="c17" class="cell" data-execution_count="16">
+<div id="c17" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:13:54.377278Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:13:54.377113Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:13:54.491509Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:13:54.490869Z&quot;}}" data-execution_count="10">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compare_imputations(table, label):</span>
@@ -631,7 +746,7 @@ inference_config fields that control feature imputation: none</code></pre>
 <span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> rel.<span class="bu">round</span>(<span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div id="c18" class="cell" data-execution_count="17">
+<div id="c18" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:13:54.493276Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:13:54.493106Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:14:26.287593Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:14:26.286412Z&quot;}}" data-execution_count="11">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># An easy Z: a small combination of three columns.</span></span>
@@ -644,7 +759,43 @@ inference_config fields that control feature imputation: none</code></pre>
 <span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>printdf(relative_to_oracle(scores), nrows<span class="op">=</span><span class="bu">len</span>(MODELS)) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
-<pre><code>                                                           </code></pre>
+<pre><code>
+TabPFN:   0%|                                                       | 0/4 [00:00&lt;?, ?it/s]
+TabPFN:  25%|███████████▊                                   | 1/4 [00:03&lt;00:10,  3.60s/it]
+TabPFN:  50%|███████████████████████▌                       | 2/4 [00:07&lt;00:07,  3.57s/it]
+TabPFN:  75%|███████████████████████████████████▎           | 3/4 [00:10&lt;00:03,  3.57s/it]
+TabPFN: 100%|███████████████████████████████████████████████| 4/4 [00:14&lt;00:00,  3.56s/it]
+                                                                                          
+
+LightGBM:   0%|                                                     | 0/4 [00:00&lt;?, ?it/s]
+LightGBM:  50%|██████████████████████▌                      | 2/4 [00:00&lt;00:00, 11.52it/s]
+LightGBM: 100%|█████████████████████████████████████████████| 4/4 [00:00&lt;00:00, 11.77it/s]
+                                                                                          
+
+XGBoost:   0%|                                                      | 0/4 [00:00&lt;?, ?it/s]
+XGBoost:  50%|███████████████████████                       | 2/4 [00:00&lt;00:00, 13.23it/s]
+XGBoost: 100%|██████████████████████████████████████████████| 4/4 [00:00&lt;00:00, 13.56it/s]
+                                                                                          
+
+CatBoost:   0%|                                                     | 0/4 [00:00&lt;?, ?it/s]
+CatBoost:  25%|███████████▎                                 | 1/4 [00:01&lt;00:04,  1.54s/it]
+CatBoost:  50%|██████████████████████▌                      | 2/4 [00:03&lt;00:03,  1.56s/it]
+CatBoost:  75%|█████████████████████████████████▊           | 3/4 [00:04&lt;00:01,  1.57s/it]
+CatBoost: 100%|█████████████████████████████████████████████| 4/4 [00:06&lt;00:00,  1.57s/it]
+                                                                                          
+
+RandomForest:   0%|                                                 | 0/4 [00:00&lt;?, ?it/s]
+RandomForest:  25%|██████████▎                              | 1/4 [00:02&lt;00:06,  2.30s/it]
+RandomForest:  50%|████████████████████▌                    | 2/4 [00:04&lt;00:04,  2.36s/it]
+RandomForest:  75%|██████████████████████████████▊          | 3/4 [00:07&lt;00:02,  2.37s/it]
+RandomForest: 100%|█████████████████████████████████████████| 4/4 [00:09&lt;00:00,  2.33s/it]
+                                                                                          
+
+Linear:   0%|                                                       | 0/4 [00:00&lt;?, ?it/s]
+Linear:  50%|███████████████████████▌                       | 2/4 [00:00&lt;00:00,  5.42it/s]
+Linear:  75%|███████████████████████████████████▎           | 3/4 [00:00&lt;00:00,  5.12it/s]
+Linear: 100%|███████████████████████████████████████████████| 4/4 [00:00&lt;00:00,  4.89it/s]
+                                                                                          </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>+--------------+-------------------+----------------+---------------+---------------+
@@ -674,7 +825,7 @@ inference_config fields that control feature imputation: none</code></pre>
 </div>
 <p>For TabPFN and the tree models every option ties: leaving the hole, mean-filling, or carefully rebuilding <code>Z</code> all land within noise, and all match the <em>oracle</em> that never lost <code>Z</code>. They reconstruct what they need from the other columns internally. Rebuilding <code>Z</code> explicitly only rescues the <strong>linear</strong> model, which cannot learn the combination itself. Model-based imputation is a crutch for weak models.</p>
 <p>(We also checked hand-built indicators and <code>-9999</code> sentinels: for TabPFN both land within noise too. It is forgiving about how you encode a hole.)</p>
-<div id="c20" class="cell" data-execution_count="18">
+<div id="c20" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:14:26.291528Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:14:26.291132Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:14:57.984135Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:14:57.982925Z&quot;}}" data-execution_count="12">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A hard Z: a high-order, nonlinear combination of several columns.</span></span>
@@ -690,7 +841,44 @@ inference_config fields that control feature imputation: none</code></pre>
 <span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>printdf(relative_to_oracle(scores), nrows<span class="op">=</span><span class="bu">len</span>(MODELS)) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
-<pre><code>                                                           </code></pre>
+<pre><code>
+TabPFN:   0%|                                                       | 0/4 [00:00&lt;?, ?it/s]
+TabPFN:  25%|███████████▊                                   | 1/4 [00:03&lt;00:11,  3.80s/it]
+TabPFN:  50%|███████████████████████▌                       | 2/4 [00:07&lt;00:07,  3.70s/it]
+TabPFN:  75%|███████████████████████████████████▎           | 3/4 [00:11&lt;00:03,  3.68s/it]
+TabPFN: 100%|███████████████████████████████████████████████| 4/4 [00:14&lt;00:00,  3.67s/it]
+                                                                                          
+
+LightGBM:   0%|                                                     | 0/4 [00:00&lt;?, ?it/s]
+LightGBM:  50%|██████████████████████▌                      | 2/4 [00:00&lt;00:00, 11.11it/s]
+LightGBM: 100%|█████████████████████████████████████████████| 4/4 [00:00&lt;00:00, 11.35it/s]
+                                                                                          
+
+XGBoost:   0%|                                                      | 0/4 [00:00&lt;?, ?it/s]
+XGBoost:  50%|███████████████████████                       | 2/4 [00:00&lt;00:00, 12.84it/s]
+XGBoost: 100%|██████████████████████████████████████████████| 4/4 [00:00&lt;00:00, 13.25it/s]
+                                                                                          
+
+CatBoost:   0%|                                                     | 0/4 [00:00&lt;?, ?it/s]
+CatBoost:  25%|███████████▎                                 | 1/4 [00:01&lt;00:04,  1.54s/it]
+CatBoost:  50%|██████████████████████▌                      | 2/4 [00:03&lt;00:03,  1.56s/it]
+CatBoost:  75%|█████████████████████████████████▊           | 3/4 [00:04&lt;00:01,  1.55s/it]
+CatBoost: 100%|█████████████████████████████████████████████| 4/4 [00:06&lt;00:00,  1.55s/it]
+                                                                                          
+
+RandomForest:   0%|                                                 | 0/4 [00:00&lt;?, ?it/s]
+RandomForest:  25%|██████████▎                              | 1/4 [00:02&lt;00:06,  2.13s/it]
+RandomForest:  50%|████████████████████▌                    | 2/4 [00:04&lt;00:04,  2.22s/it]
+RandomForest:  75%|██████████████████████████████▊          | 3/4 [00:06&lt;00:02,  2.24s/it]
+RandomForest: 100%|█████████████████████████████████████████| 4/4 [00:08&lt;00:00,  2.22s/it]
+                                                                                          
+
+Linear:   0%|                                                       | 0/4 [00:00&lt;?, ?it/s]
+Linear:  25%|███████████▊                                   | 1/4 [00:00&lt;00:00,  7.50it/s]
+Linear:  50%|███████████████████████▌                       | 2/4 [00:00&lt;00:00,  5.50it/s]
+Linear:  75%|███████████████████████████████████▎           | 3/4 [00:00&lt;00:00,  5.26it/s]
+Linear: 100%|███████████████████████████████████████████████| 4/4 [00:00&lt;00:00,  4.95it/s]
+                                                                                          </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>+--------------+-------------------+----------------+---------------+---------------+
@@ -714,6 +902,9 @@ inference_config fields that control feature imputation: none</code></pre>
 | Linear       |                      -11.92 |                     -11.92 |                      -1.96 |
 +--------------+-----------------------------+----------------------------+----------------------------+</code></pre>
 </div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
 </div>
 <p>Now model-based imputation helps TabPFN and RandomForest as well, not just the linear model. And notice that <code>native</code> TabPFN sits clearly below the <code>oracle</code>: even with every source column present, it cannot fully rebuild a hard column in one forward pass. <strong>TabPFN’s internal reconstruction has a complexity ceiling.</strong> For a genuinely complex recoverable column, explicit model-based imputation still earns its keep. That is the one real survivor of the classical toolkit.</p>
 </section>
@@ -723,42 +914,76 @@ inference_config fields that control feature imputation: none</code></pre>
 <section id="the-vendor-trap-a-column-missing-only-at-inference" class="level3">
 <h3 class="anchored" data-anchor-id="the-vendor-trap-a-column-missing-only-at-inference">The vendor trap: a column missing only at inference</h3>
 <p>The classic schema or vendor-feed change: a feature was never missing in training, then a feed drops in production. The booster’s routing for “missing” was never learned. Below, the test set always has 30% of <code>x0</code> (a strong predictor) missing, and we sweep how much missingness the model saw during training.</p>
-<div id="c24" class="cell" data-execution_count="19">
+<div id="c24" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:14:57.988373Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:14:57.987863Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:15:28.584231Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:15:28.583064Z&quot;}}" data-execution_count="13">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A strong predictor x0; the label depends on it.</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">0</span>)</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.randn(<span class="dv">8000</span>, <span class="dv">10</span>)</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>label <span class="op">=</span> (rng.rand(<span class="dv">8000</span>) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span>(<span class="fl">2.5</span> <span class="op">*</span> X[:, <span class="dv">0</span>] <span class="op">+</span> X[:, <span class="dv">1</span>])))).astype(<span class="bu">int</span>)</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> pd.DataFrame(X, columns<span class="op">=</span>[<span class="ss">f"x</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">10</span>)])</span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>half <span class="op">=</span> <span class="dv">4000</span></span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>train_full, test <span class="op">=</span> data.iloc[:half], data.iloc[half:].copy()</span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>y_train, y_test <span class="op">=</span> label[:half], label[half:]</span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>test.loc[rng.rand(half) <span class="op">&lt;</span> <span class="fl">0.30</span>, <span class="st">"x0"</span>] <span class="op">=</span> np.nan      <span class="co"># </span><span class="al">TEST</span><span class="co"> always has 30% of x0 missing</span></span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> train_with_missing(rate):</span>
-<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Copy the training set and make x0 missing at the given rate."""</span></span>
-<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>    train <span class="op">=</span> train_full.copy()</span>
-<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>    holes <span class="op">=</span> np.random.RandomState(<span class="dv">1</span>).rand(half) <span class="op">&lt;</span> rate</span>
-<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>    train.loc[holes, <span class="st">"x0"</span>] <span class="op">=</span> np.nan</span>
-<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> train</span>
-<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>train_missing_rates <span class="op">=</span> [<span class="fl">0.0</span>, <span class="fl">0.01</span>, <span class="fl">0.05</span>, <span class="fl">0.30</span>]</span>
-<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>scores <span class="op">=</span> {}</span>
-<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> rate <span class="kw">in</span> train_missing_rates:</span>
-<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a>    column <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span><span class="bu">int</span>(rate <span class="op">*</span> <span class="dv">100</span>)<span class="sc">}</span><span class="ss">% train-missing"</span></span>
-<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a>    train <span class="op">=</span> train_with_missing(rate)</span>
-<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a>    scores[column] <span class="op">=</span> {}</span>
-<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> model_name, make_model <span class="kw">in</span> tqdm(MODELS.items(), desc<span class="op">=</span>column, leave<span class="op">=</span><span class="va">False</span>):</span>
-<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a>        scores[column][model_name] <span class="op">=</span> auc(make_model(), train, y_train, test, y_test)</span>
-<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-30"><a href="#cb27-30" aria-hidden="true" tabindex="-1"></a>printdf(pd.DataFrame(scores), nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A strong predictor x0; the label depends on it.</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">0</span>)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.randn(<span class="dv">8000</span>, <span class="dv">10</span>)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>label <span class="op">=</span> (rng.rand(<span class="dv">8000</span>) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span>(<span class="fl">2.5</span> <span class="op">*</span> X[:, <span class="dv">0</span>] <span class="op">+</span> X[:, <span class="dv">1</span>])))).astype(<span class="bu">int</span>)</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> pd.DataFrame(X, columns<span class="op">=</span>[<span class="ss">f"x</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">10</span>)])</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>half <span class="op">=</span> <span class="dv">4000</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>train_full, test <span class="op">=</span> data.iloc[:half], data.iloc[half:].copy()</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>y_train, y_test <span class="op">=</span> label[:half], label[half:]</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>test.loc[rng.rand(half) <span class="op">&lt;</span> <span class="fl">0.30</span>, <span class="st">"x0"</span>] <span class="op">=</span> np.nan      <span class="co"># </span><span class="al">TEST</span><span class="co"> always has 30% of x0 missing</span></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> train_with_missing(rate):</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Copy the training set and make x0 missing at the given rate."""</span></span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>    train <span class="op">=</span> train_full.copy()</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>    holes <span class="op">=</span> np.random.RandomState(<span class="dv">1</span>).rand(half) <span class="op">&lt;</span> rate</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>    train.loc[holes, <span class="st">"x0"</span>] <span class="op">=</span> np.nan</span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> train</span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>train_missing_rates <span class="op">=</span> [<span class="fl">0.0</span>, <span class="fl">0.01</span>, <span class="fl">0.05</span>, <span class="fl">0.30</span>]</span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>scores <span class="op">=</span> {}</span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> rate <span class="kw">in</span> train_missing_rates:</span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a>    column <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span><span class="bu">int</span>(rate <span class="op">*</span> <span class="dv">100</span>)<span class="sc">}</span><span class="ss">% train-missing"</span></span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a>    train <span class="op">=</span> train_with_missing(rate)</span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a>    scores[column] <span class="op">=</span> {}</span>
+<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> model_name, make_model <span class="kw">in</span> tqdm(MODELS.items(), desc<span class="op">=</span>column, leave<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a>        scores[column][model_name] <span class="op">=</span> auc(make_model(), train, y_train, test, y_test)</span>
+<span id="cb28-29"><a href="#cb28-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-30"><a href="#cb28-30" aria-hidden="true" tabindex="-1"></a>cliff_table <span class="op">=</span> pd.DataFrame(scores)</span>
+<span id="cb28-31"><a href="#cb28-31" aria-hidden="true" tabindex="-1"></a>printdf(cliff_table, nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span>
+<span id="cb28-32"><a href="#cb28-32" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Same table, relative to the 30% train-missing column (how far each model cliffs at 0%):"</span>)</span>
+<span id="cb28-33"><a href="#cb28-33" aria-hidden="true" tabindex="-1"></a>printdf(relative_to(cliff_table, <span class="st">"30% train-missing"</span>), nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
-<pre><code>                                                                </code></pre>
+<pre><code>
+0% train-missing:   0%|                                             | 0/6 [00:00&lt;?, ?it/s]
+0% train-missing:  17%|██████▏                              | 1/6 [00:03&lt;00:18,  3.64s/it]
+0% train-missing:  33%|████████████▎                        | 2/6 [00:03&lt;00:06,  1.56s/it]
+0% train-missing:  67%|████████████████████████▋            | 4/6 [00:05&lt;00:02,  1.14s/it]
+0% train-missing:  83%|██████████████████████████████▊      | 5/6 [00:07&lt;00:01,  1.41s/it]
+0% train-missing: 100%|█████████████████████████████████████| 6/6 [00:07&lt;00:00,  1.06s/it]
+                                                                                          
+
+1% train-missing:   0%|                                             | 0/6 [00:00&lt;?, ?it/s]
+1% train-missing:  17%|██████▏                              | 1/6 [00:03&lt;00:18,  3.62s/it]
+1% train-missing:  50%|██████████████████▌                  | 3/6 [00:03&lt;00:03,  1.00s/it]
+1% train-missing:  67%|████████████████████████▋            | 4/6 [00:05&lt;00:02,  1.20s/it]
+1% train-missing:  83%|██████████████████████████████▊      | 5/6 [00:07&lt;00:01,  1.49s/it]
+1% train-missing: 100%|█████████████████████████████████████| 6/6 [00:07&lt;00:00,  1.06s/it]
+                                                                                          
+
+5% train-missing:   0%|                                             | 0/6 [00:00&lt;?, ?it/s]
+5% train-missing:  17%|██████▏                              | 1/6 [00:03&lt;00:17,  3.60s/it]
+5% train-missing:  50%|██████████████████▌                  | 3/6 [00:03&lt;00:02,  1.00it/s]
+5% train-missing:  67%|████████████████████████▋            | 4/6 [00:05&lt;00:02,  1.19s/it]
+5% train-missing:  83%|██████████████████████████████▊      | 5/6 [00:07&lt;00:01,  1.48s/it]
+5% train-missing: 100%|█████████████████████████████████████| 6/6 [00:07&lt;00:00,  1.06s/it]
+                                                                                          
+
+30% train-missing:   0%|                                            | 0/6 [00:00&lt;?, ?it/s]
+30% train-missing:  17%|██████                              | 1/6 [00:03&lt;00:18,  3.62s/it]
+30% train-missing:  50%|██████████████████                  | 3/6 [00:03&lt;00:03,  1.01s/it]
+30% train-missing:  67%|████████████████████████            | 4/6 [00:05&lt;00:02,  1.19s/it]
+30% train-missing:  83%|██████████████████████████████      | 5/6 [00:07&lt;00:01,  1.49s/it]
+30% train-missing: 100%|████████████████████████████████████| 6/6 [00:07&lt;00:00,  1.05s/it]
+                                                                                          </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>+--------------+--------------------+--------------------+--------------------+---------------------+
@@ -770,6 +995,18 @@ inference_config fields that control feature imputation: none</code></pre>
 | CatBoost     |             0.7534 |             0.8106 |             0.8302 |              0.8374 |
 | RandomForest |             0.8326 |             0.826  |             0.832  |              0.8328 |
 | Linear       |             0.8445 |             0.8446 |             0.8449 |              0.8455 |
++--------------+--------------------+--------------------+--------------------+---------------------+
+
+Same table, relative to the 30% train-missing column (how far each model cliffs at 0%):
++--------------+--------------------+--------------------+--------------------+---------------------+
+|              |   0% train-missing |   1% train-missing |   5% train-missing |   30% train-missing |
+|--------------+--------------------+--------------------+--------------------+---------------------|
+| TabPFN       |            -0.0004 |            -0.0035 |            -0.0004 |                   0 |
+| LightGBM     |             0.0005 |            -0.0082 |            -0.002  |                   0 |
+| XGBoost      |            -0.0878 |            -0.0076 |             0.0004 |                   0 |
+| CatBoost     |            -0.084  |            -0.0268 |            -0.0072 |                   0 |
+| RandomForest |            -0.0002 |            -0.0068 |            -0.0008 |                   0 |
+| Linear       |            -0.001  |            -0.0009 |            -0.0006 |                   0 |
 +--------------+--------------------+--------------------+--------------------+---------------------+</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
@@ -825,54 +1062,78 @@ inference_config fields that control feature imputation: none</code></pre>
 </table>
 <p>Sources: <a href="https://scikit-learn.org/stable/modules/tree.html">scikit-learn</a>, <a href="https://catboost.ai/docs/en/concepts/algorithm-missing-values-processing">CatBoost</a>, <a href="https://lightgbm.readthedocs.io/en/latest/Advanced-Topics.html">LightGBM</a>, <a href="https://xgboost.readthedocs.io/en/stable/faq.html">XGBoost</a>.</p>
 <p>A value routed to an <em>extreme</em> is catastrophic when the missingness actually sits at the <em>opposite</em> extreme; a value routed to the <em>middle</em> only loses the column’s information. The next cell makes that visible: a dominant feature <code>x</code> is made missing on its <strong>high</strong> tail versus its <strong>low</strong> tail (training always sees it, so each model falls back to its blind default), and we read off where each model sends a hole and what it costs.</p>
-<div id="c30a05b6" class="cell">
+<div id="c30a05b6" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:15:28.587851Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:15:28.587536Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:15:46.824328Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:15:46.823551Z&quot;}}" data-execution_count="14">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Control WHERE a feature goes missing: a dominant predictor x, made missing on its high tail vs its</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="co"># low tail. Training always sees x, so each model falls back to its blind default direction.</span></span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_vendor_data(n<span class="op">=</span><span class="dv">8000</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> rng.randn(n)</span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    other <span class="op">=</span> rng.randn(n)</span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    logit <span class="op">=</span> <span class="fl">2.0</span> <span class="op">*</span> x <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> other</span>
-<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    label <span class="op">=</span> (rng.rand(n) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span>logit))).astype(<span class="bu">int</span>)</span>
-<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame({<span class="st">"x"</span>: x, <span class="st">"other"</span>: other}), label</span>
-<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>vdata, vlabel <span class="op">=</span> make_vendor_data()</span>
-<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>half <span class="op">=</span> <span class="bu">len</span>(vdata) <span class="op">//</span> <span class="dv">2</span></span>
-<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>v_train, v_test <span class="op">=</span> vdata.iloc[:half], vdata.iloc[half:].reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>vy_train, vy_test <span class="op">=</span> vlabel[:half], vlabel[half:]</span>
-<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> route_fraction(model):</span>
-<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 0 = a missing x lands on the low-x prediction, 1 = the high-x prediction, ~0.5 = the middle.</span></span>
-<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>    low <span class="op">=</span> model.predict_proba(v_test.assign(x<span class="op">=-</span><span class="fl">2.0</span>))[:, <span class="dv">1</span>].mean()</span>
-<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>    high <span class="op">=</span> model.predict_proba(v_test.assign(x<span class="op">=</span><span class="fl">2.0</span>))[:, <span class="dv">1</span>].mean()</span>
-<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a>    nan <span class="op">=</span> model.predict_proba(v_test.assign(x<span class="op">=</span>np.nan))[:, <span class="dv">1</span>].mean()</span>
-<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (nan <span class="op">-</span> low) <span class="op">/</span> (high <span class="op">-</span> low)</span>
-<span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-23"><a href="#cb31-23" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> missing_tail(frame, side, frac<span class="op">=</span><span class="fl">0.30</span>):</span>
-<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Make x missing on its high tail or its low tail (MNAR).</span></span>
-<span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a>    frame <span class="op">=</span> frame.copy()</span>
-<span id="cb31-26"><a href="#cb31-26" aria-hidden="true" tabindex="-1"></a>    xv <span class="op">=</span> frame[<span class="st">"x"</span>].values</span>
-<span id="cb31-27"><a href="#cb31-27" aria-hidden="true" tabindex="-1"></a>    cut <span class="op">=</span> np.quantile(xv, <span class="dv">1</span> <span class="op">-</span> frac) <span class="cf">if</span> side <span class="op">==</span> <span class="st">"high"</span> <span class="cf">else</span> np.quantile(xv, frac)</span>
-<span id="cb31-28"><a href="#cb31-28" aria-hidden="true" tabindex="-1"></a>    mask <span class="op">=</span> xv <span class="op">&gt;=</span> cut <span class="cf">if</span> side <span class="op">==</span> <span class="st">"high"</span> <span class="cf">else</span> xv <span class="op">&lt;=</span> cut</span>
-<span id="cb31-29"><a href="#cb31-29" aria-hidden="true" tabindex="-1"></a>    frame.loc[mask, <span class="st">"x"</span>] <span class="op">=</span> np.nan</span>
-<span id="cb31-30"><a href="#cb31-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> frame</span>
-<span id="cb31-31"><a href="#cb31-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-32"><a href="#cb31-32" aria-hidden="true" tabindex="-1"></a>summary <span class="op">=</span> {}</span>
-<span id="cb31-33"><a href="#cb31-33" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_name, make_model <span class="kw">in</span> tqdm(MODELS.items(), leave<span class="op">=</span><span class="va">False</span>):</span>
-<span id="cb31-34"><a href="#cb31-34" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> make_model().fit(v_train, vy_train)</span>
-<span id="cb31-35"><a href="#cb31-35" aria-hidden="true" tabindex="-1"></a>    base <span class="op">=</span> roc_auc_score(vy_test, model.predict_proba(v_test)[:, <span class="dv">1</span>])</span>
-<span id="cb31-36"><a href="#cb31-36" aria-hidden="true" tabindex="-1"></a>    drop_high <span class="op">=</span> base <span class="op">-</span> roc_auc_score(vy_test, model.predict_proba(missing_tail(v_test, <span class="st">"high"</span>))[:, <span class="dv">1</span>])</span>
-<span id="cb31-37"><a href="#cb31-37" aria-hidden="true" tabindex="-1"></a>    drop_low <span class="op">=</span> base <span class="op">-</span> roc_auc_score(vy_test, model.predict_proba(missing_tail(v_test, <span class="st">"low"</span>))[:, <span class="dv">1</span>])</span>
-<span id="cb31-38"><a href="#cb31-38" aria-hidden="true" tabindex="-1"></a>    summary[model_name] <span class="op">=</span> {</span>
-<span id="cb31-39"><a href="#cb31-39" aria-hidden="true" tabindex="-1"></a>        <span class="st">"routing_frac"</span>: <span class="bu">round</span>(route_fraction(model), <span class="dv">2</span>),</span>
-<span id="cb31-40"><a href="#cb31-40" aria-hidden="true" tabindex="-1"></a>        <span class="st">"drop if missing-HIGH x"</span>: <span class="bu">round</span>(drop_high, <span class="dv">3</span>),</span>
-<span id="cb31-41"><a href="#cb31-41" aria-hidden="true" tabindex="-1"></a>        <span class="st">"drop if missing-LOW x"</span>: <span class="bu">round</span>(drop_low, <span class="dv">3</span>),</span>
-<span id="cb31-42"><a href="#cb31-42" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb31-43"><a href="#cb31-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-44"><a href="#cb31-44" aria-hidden="true" tabindex="-1"></a>printdf(pd.DataFrame(summary).T, nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Control WHERE a feature goes missing: a dominant predictor x, made missing on its high tail vs its</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="co"># low tail. Training always sees x, so each model falls back to its blind default direction.</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_vendor_data(n<span class="op">=</span><span class="dv">8000</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> rng.randn(n)</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    other <span class="op">=</span> rng.randn(n)</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>    logit <span class="op">=</span> <span class="fl">2.0</span> <span class="op">*</span> x <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> other</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>    label <span class="op">=</span> (rng.rand(n) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span>logit))).astype(<span class="bu">int</span>)</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame({<span class="st">"x"</span>: x, <span class="st">"other"</span>: other}), label</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>vdata, vlabel <span class="op">=</span> make_vendor_data()</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>half <span class="op">=</span> <span class="bu">len</span>(vdata) <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>v_train, v_test <span class="op">=</span> vdata.iloc[:half], vdata.iloc[half:].reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>vy_train, vy_test <span class="op">=</span> vlabel[:half], vlabel[half:]</span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> route_fraction(model):</span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 0 = a missing x lands on the low-x prediction, 1 = the high-x prediction, ~0.5 = the middle.</span></span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>    low <span class="op">=</span> model.predict_proba(v_test.assign(x<span class="op">=-</span><span class="fl">2.0</span>))[:, <span class="dv">1</span>].mean()</span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>    high <span class="op">=</span> model.predict_proba(v_test.assign(x<span class="op">=</span><span class="fl">2.0</span>))[:, <span class="dv">1</span>].mean()</span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>    nan <span class="op">=</span> model.predict_proba(v_test.assign(x<span class="op">=</span>np.nan))[:, <span class="dv">1</span>].mean()</span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (nan <span class="op">-</span> low) <span class="op">/</span> (high <span class="op">-</span> low)</span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> missing_tail(frame, side, frac<span class="op">=</span><span class="fl">0.30</span>):</span>
+<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Make x missing on its high tail or its low tail (MNAR).</span></span>
+<span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a>    frame <span class="op">=</span> frame.copy()</span>
+<span id="cb32-26"><a href="#cb32-26" aria-hidden="true" tabindex="-1"></a>    xv <span class="op">=</span> frame[<span class="st">"x"</span>].values</span>
+<span id="cb32-27"><a href="#cb32-27" aria-hidden="true" tabindex="-1"></a>    cut <span class="op">=</span> np.quantile(xv, <span class="dv">1</span> <span class="op">-</span> frac) <span class="cf">if</span> side <span class="op">==</span> <span class="st">"high"</span> <span class="cf">else</span> np.quantile(xv, frac)</span>
+<span id="cb32-28"><a href="#cb32-28" aria-hidden="true" tabindex="-1"></a>    mask <span class="op">=</span> xv <span class="op">&gt;=</span> cut <span class="cf">if</span> side <span class="op">==</span> <span class="st">"high"</span> <span class="cf">else</span> xv <span class="op">&lt;=</span> cut</span>
+<span id="cb32-29"><a href="#cb32-29" aria-hidden="true" tabindex="-1"></a>    frame.loc[mask, <span class="st">"x"</span>] <span class="op">=</span> np.nan</span>
+<span id="cb32-30"><a href="#cb32-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> frame</span>
+<span id="cb32-31"><a href="#cb32-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-32"><a href="#cb32-32" aria-hidden="true" tabindex="-1"></a>summary <span class="op">=</span> {}</span>
+<span id="cb32-33"><a href="#cb32-33" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_name, make_model <span class="kw">in</span> tqdm(MODELS.items(), leave<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb32-34"><a href="#cb32-34" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> make_model().fit(v_train, vy_train)</span>
+<span id="cb32-35"><a href="#cb32-35" aria-hidden="true" tabindex="-1"></a>    base <span class="op">=</span> roc_auc_score(vy_test, model.predict_proba(v_test)[:, <span class="dv">1</span>])</span>
+<span id="cb32-36"><a href="#cb32-36" aria-hidden="true" tabindex="-1"></a>    drop_high <span class="op">=</span> base <span class="op">-</span> roc_auc_score(vy_test, model.predict_proba(missing_tail(v_test, <span class="st">"high"</span>))[:, <span class="dv">1</span>])</span>
+<span id="cb32-37"><a href="#cb32-37" aria-hidden="true" tabindex="-1"></a>    drop_low <span class="op">=</span> base <span class="op">-</span> roc_auc_score(vy_test, model.predict_proba(missing_tail(v_test, <span class="st">"low"</span>))[:, <span class="dv">1</span>])</span>
+<span id="cb32-38"><a href="#cb32-38" aria-hidden="true" tabindex="-1"></a>    summary[model_name] <span class="op">=</span> {</span>
+<span id="cb32-39"><a href="#cb32-39" aria-hidden="true" tabindex="-1"></a>        <span class="st">"routing_frac"</span>: <span class="bu">round</span>(route_fraction(model), <span class="dv">2</span>),</span>
+<span id="cb32-40"><a href="#cb32-40" aria-hidden="true" tabindex="-1"></a>        <span class="st">"drop if missing-HIGH x"</span>: <span class="bu">round</span>(drop_high, <span class="dv">3</span>),</span>
+<span id="cb32-41"><a href="#cb32-41" aria-hidden="true" tabindex="-1"></a>        <span class="st">"drop if missing-LOW x"</span>: <span class="bu">round</span>(drop_low, <span class="dv">3</span>),</span>
+<span id="cb32-42"><a href="#cb32-42" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb32-43"><a href="#cb32-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-44"><a href="#cb32-44" aria-hidden="true" tabindex="-1"></a>printdf(pd.DataFrame(summary).T, nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+  0%|                                                               | 0/6 [00:00&lt;?, ?it/s]
+ 17%|█████████▏                                             | 1/6 [00:15&lt;01:15, 15.10s/it]
+ 33%|██████████████████▎                                    | 2/6 [00:15&lt;00:25,  6.28s/it]
+ 67%|████████████████████████████████████▋                  | 4/6 [00:16&lt;00:05,  2.83s/it]
+ 83%|█████████████████████████████████████████████▊         | 5/6 [00:18&lt;00:02,  2.40s/it]
+                                                                                          </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>+--------------+----------------+--------------------------+-------------------------+
+|              |   routing_frac |   drop if missing-HIGH x |   drop if missing-LOW x |
+|--------------+----------------+--------------------------+-------------------------|
+| TabPFN       |           0.48 |                    0.072 |                   0.051 |
+| LightGBM     |           0.49 |                    0.075 |                   0.07  |
+| XGBoost      |           1.01 |                    0.001 |                   0.391 |
+| CatBoost     |           0.01 |                    0.41  |                   0.006 |
+| RandomForest |           0.45 |                    0.086 |                   0.061 |
+| Linear       |           0.49 |                    0.066 |                   0.06  |
++--------------+----------------+--------------------------+-------------------------+</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
 </div>
 <p><code>routing_frac</code> reads where a missing <code>x</code> lands (0 = the low-<code>x</code> prediction, 1 = the high-<code>x</code> prediction, ~0.5 = the middle), and the two drops are the AUC lost when <code>x</code> goes missing on its high or low tail.</p>
 <p>The pattern is exactly the documented defaults. <strong>CatBoost</strong> routes low (frac ~0), so it is fine when the hole is at low <code>x</code> and collapses when it is at high <code>x</code>. <strong>XGBoost</strong> routes high (frac ~1), the mirror image: it dies on low-missing. <em>Same data, opposite cliffs</em>, because their fixed defaults point opposite ways, which is why “which library breaks” looks random across datasets but is not. <strong>RandomForest</strong> and <strong>TabPFN</strong> route to the middle, so they only pay the unavoidable information cost in both directions, never a routing inversion. <strong>LightGBM</strong> sits in the middle here too, but it is the one whose direction the docs do not fix, so on a different column it can swing to an extreme and cliff.</p>
@@ -881,41 +1142,82 @@ inference_config fields that control feature imputation: none</code></pre>
 <section id="mechanism-shift-when-the-reason-changes" class="level3">
 <h3 class="anchored" data-anchor-id="mechanism-shift-when-the-reason-changes">Mechanism shift: when the reason changes</h3>
 <p>The harder failure. A column’s missingness is informative, but the rule changes between training and production. We make a noise column <code>W</code> whose only signal is <em>whether</em> it is missing: in training “missing” means label 1, and at test the rule flips so “missing” means label 0.</p>
-<div id="c27" class="cell">
+<div id="c27" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:15:46.826105Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:15:46.825924Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:16:01.895463Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:16:01.894354Z&quot;}}" data-execution_count="15">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># W is pure noise. Only WHETHER it is missing carries signal, and we flip that rule at test.</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">0</span>)</span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.randn(<span class="dv">8000</span>, <span class="dv">8</span>)</span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>W <span class="op">=</span> rng.randn(<span class="dv">8000</span>)</span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>label <span class="op">=</span> (rng.rand(<span class="dv">8000</span>) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span><span class="fl">1.5</span> <span class="op">*</span> X[:, <span class="dv">0</span>]))).astype(<span class="bu">int</span>)</span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> build(rows, p_missing_if_1, p_missing_if_0, seed):</span>
-<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Make W missing with one probability when label==1 and another when label==0."""</span></span>
-<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> W[rows].copy()</span>
-<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> np.where(label[rows] <span class="op">==</span> <span class="dv">1</span>, p_missing_if_1, p_missing_if_0)</span>
-<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>    holes <span class="op">=</span> np.random.RandomState(seed).rand(<span class="bu">len</span>(w)) <span class="op">&lt;</span> p</span>
-<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>    w[holes] <span class="op">=</span> np.nan</span>
-<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [<span class="ss">f"x</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">8</span>)] <span class="op">+</span> [<span class="st">"W"</span>]</span>
-<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame(np.column_stack([X[rows], w]), columns<span class="op">=</span>columns)</span>
-<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>train_rows <span class="op">=</span> <span class="bu">slice</span>(<span class="dv">0</span>, <span class="dv">4000</span>)</span>
-<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>test_rows <span class="op">=</span> <span class="bu">slice</span>(<span class="dv">4000</span>, <span class="dv">8000</span>)</span>
-<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>y_train, y_test <span class="op">=</span> label[:<span class="dv">4000</span>], label[<span class="dv">4000</span>:]</span>
-<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>train <span class="op">=</span> build(train_rows, p_missing_if_1<span class="op">=</span><span class="fl">0.75</span>, p_missing_if_0<span class="op">=</span><span class="fl">0.25</span>, seed<span class="op">=</span><span class="dv">1</span>)   <span class="co"># missing -&gt; label 1</span></span>
-<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>test_stable <span class="op">=</span> build(test_rows, p_missing_if_1<span class="op">=</span><span class="fl">0.75</span>, p_missing_if_0<span class="op">=</span><span class="fl">0.25</span>, seed<span class="op">=</span><span class="dv">2</span>)   <span class="co"># same rule</span></span>
-<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>test_shifted <span class="op">=</span> build(test_rows, p_missing_if_1<span class="op">=</span><span class="fl">0.25</span>, p_missing_if_0<span class="op">=</span><span class="fl">0.75</span>, seed<span class="op">=</span><span class="dv">3</span>)  <span class="co"># rule flipped</span></span>
-<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a>scores <span class="op">=</span> {}</span>
-<span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_name, make_model <span class="kw">in</span> tqdm(MODELS.items(), leave<span class="op">=</span><span class="va">False</span>):</span>
-<span id="cb32-26"><a href="#cb32-26" aria-hidden="true" tabindex="-1"></a>    scores[model_name] <span class="op">=</span> {</span>
-<span id="cb32-27"><a href="#cb32-27" aria-hidden="true" tabindex="-1"></a>        <span class="st">"stable"</span>: auc(make_model(), train, y_train, test_stable, y_test),</span>
-<span id="cb32-28"><a href="#cb32-28" aria-hidden="true" tabindex="-1"></a>        <span class="st">"shift (rule flips)"</span>: auc(make_model(), train, y_train, test_shifted, y_test),</span>
-<span id="cb32-29"><a href="#cb32-29" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb32-30"><a href="#cb32-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-31"><a href="#cb32-31" aria-hidden="true" tabindex="-1"></a>printdf(pd.DataFrame(scores).T, nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># W is pure noise. Only WHETHER it is missing carries signal, and we flip that rule at test.</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">0</span>)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.randn(<span class="dv">8000</span>, <span class="dv">8</span>)</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>W <span class="op">=</span> rng.randn(<span class="dv">8000</span>)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>label <span class="op">=</span> (rng.rand(<span class="dv">8000</span>) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span><span class="fl">1.5</span> <span class="op">*</span> X[:, <span class="dv">0</span>]))).astype(<span class="bu">int</span>)</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> build(rows, p_missing_if_1, p_missing_if_0, seed):</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Make W missing with one probability when label==1 and another when label==0."""</span></span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> W[rows].copy()</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> np.where(label[rows] <span class="op">==</span> <span class="dv">1</span>, p_missing_if_1, p_missing_if_0)</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>    holes <span class="op">=</span> np.random.RandomState(seed).rand(<span class="bu">len</span>(w)) <span class="op">&lt;</span> p</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>    w[holes] <span class="op">=</span> np.nan</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [<span class="ss">f"x</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">8</span>)] <span class="op">+</span> [<span class="st">"W"</span>]</span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame(np.column_stack([X[rows], w]), columns<span class="op">=</span>columns)</span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>train_rows <span class="op">=</span> <span class="bu">slice</span>(<span class="dv">0</span>, <span class="dv">4000</span>)</span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>test_rows <span class="op">=</span> <span class="bu">slice</span>(<span class="dv">4000</span>, <span class="dv">8000</span>)</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>y_train, y_test <span class="op">=</span> label[:<span class="dv">4000</span>], label[<span class="dv">4000</span>:]</span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>train <span class="op">=</span> build(train_rows, p_missing_if_1<span class="op">=</span><span class="fl">0.75</span>, p_missing_if_0<span class="op">=</span><span class="fl">0.25</span>, seed<span class="op">=</span><span class="dv">1</span>)   <span class="co"># missing -&gt; label 1</span></span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>test_stable <span class="op">=</span> build(test_rows, p_missing_if_1<span class="op">=</span><span class="fl">0.75</span>, p_missing_if_0<span class="op">=</span><span class="fl">0.25</span>, seed<span class="op">=</span><span class="dv">2</span>)   <span class="co"># same rule</span></span>
+<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a>test_shifted <span class="op">=</span> build(test_rows, p_missing_if_1<span class="op">=</span><span class="fl">0.25</span>, p_missing_if_0<span class="op">=</span><span class="fl">0.75</span>, seed<span class="op">=</span><span class="dv">3</span>)  <span class="co"># rule flipped</span></span>
+<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>scores <span class="op">=</span> {}</span>
+<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_name, make_model <span class="kw">in</span> tqdm(MODELS.items(), leave<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a>    scores[model_name] <span class="op">=</span> {</span>
+<span id="cb36-27"><a href="#cb36-27" aria-hidden="true" tabindex="-1"></a>        <span class="st">"stable"</span>: auc(make_model(), train, y_train, test_stable, y_test),</span>
+<span id="cb36-28"><a href="#cb36-28" aria-hidden="true" tabindex="-1"></a>        <span class="st">"shift (rule flips)"</span>: auc(make_model(), train, y_train, test_shifted, y_test),</span>
+<span id="cb36-29"><a href="#cb36-29" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb36-30"><a href="#cb36-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-31"><a href="#cb36-31" aria-hidden="true" tabindex="-1"></a>shift_table <span class="op">=</span> pd.DataFrame(scores).T</span>
+<span id="cb36-32"><a href="#cb36-32" aria-hidden="true" tabindex="-1"></a>printdf(shift_table, nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span>
+<span id="cb36-33"><a href="#cb36-33" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Same table, relative to the stable rule (the collapse when the rule flips):"</span>)</span>
+<span id="cb36-34"><a href="#cb36-34" aria-hidden="true" tabindex="-1"></a>printdf(relative_to(shift_table, <span class="st">"stable"</span>), nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+  0%|                                                               | 0/6 [00:00&lt;?, ?it/s]
+ 17%|█████████▏                                             | 1/6 [00:07&lt;00:35,  7.03s/it]
+ 33%|██████████████████▎                                    | 2/6 [00:07&lt;00:11,  3.00s/it]
+ 50%|███████████████████████████▌                           | 3/6 [00:07&lt;00:05,  1.70s/it]
+ 67%|████████████████████████████████████▋                  | 4/6 [00:10&lt;00:04,  2.28s/it]
+ 83%|█████████████████████████████████████████████▊         | 5/6 [00:14&lt;00:02,  2.95s/it]
+100%|███████████████████████████████████████████████████████| 6/6 [00:15&lt;00:00,  2.07s/it]
+                                                                                          </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>+--------------+----------+----------------------+
+|              |   stable |   shift (rule flips) |
+|--------------+----------+----------------------|
+| TabPFN       |   0.8822 |               0.5806 |
+| LightGBM     |   0.8655 |               0.5725 |
+| XGBoost      |   0.8548 |               0.5754 |
+| CatBoost     |   0.8733 |               0.5818 |
+| RandomForest |   0.8656 |               0.5619 |
+| Linear       |   0.8119 |               0.8118 |
++--------------+----------+----------------------+
+
+Same table, relative to the stable rule (the collapse when the rule flips):
++--------------+----------+----------------------+
+|              |   stable |   shift (rule flips) |
+|--------------+----------+----------------------|
+| TabPFN       |        0 |              -0.3016 |
+| LightGBM     |        0 |              -0.293  |
+| XGBoost      |        0 |              -0.2794 |
+| CatBoost     |        0 |              -0.2915 |
+| RandomForest |        0 |              -0.3037 |
+| Linear       |        0 |              -0.0001 |
++--------------+----------+----------------------+</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
 </div>
 <p>When the rule is stable, every model exploits the informative missingness and gains. When it flips, they all collapse, well below the score they would get by ignoring <code>W</code> entirely, and <strong>TabPFN is right there with the other native handlers</strong> (having leaned on the signal hardest, it has the most to lose). The one exception is the <strong>linear</strong> model: it imputes <code>W</code> and never used the missingness, so it neither gains under the stable rule (0.81, below the others) nor collapses under the flip (0.81, far above them). The model blind to the informative missingness is the only one the shift cannot betray.</p>
 <p>This is the trap TabPFN does not escape. Its prior protects you from the <em>absence</em> of training missingness (the vendor trap), not from a <em>changing</em> missingness-to-label relationship. That one you monitor (PSI or adversarial validation on the missing-indicators), you do not model your way out of it.</p>
