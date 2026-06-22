@@ -68,7 +68,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./MissingValues.html" rel="next">
+<link href="./FeatureEngineering.html" rel="next">
 <link href="./site-contract.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -200,6 +200,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./FeatureEngineering.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Feature engineering, with TabPFN</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./MissingValues.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Missing values, with TabPFN</span></a>
   </div>
@@ -258,9 +264,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>A categorical column forces a choice a gradient-boosting practitioner makes on reflex: how do you turn the labels into numbers? Ordinal codes, one-hot columns, frequency counts, a target statistic, or the model’s own native handling. This notebook walks that familiar checklist, then shows that for TabPFN the choice mostly stops mattering, and isolates the one place it still does. Every experiment is a small construction plus one real dataset, so the behaviour is real but the setup stays easy to read.</p>
-<p>Everything here is the local <code>tabpfn</code> package (8.0.3, v3 default checkpoint), not the hosted API. That distinction turns out to matter for text, and beat 4 says exactly where.</p>
-<div id="afceeef2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:13:06.289978Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:13:06.289814Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:13:26.138207Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:13:26.137482Z&quot;}}" data-execution_count="1">
+<p>A machine-learning model takes numbers, and a column like <code>country = {Germany, Brazil, Japan}</code> is not one. Every tabular pipeline turns the labels into numbers, and there is a short menu of ways to do it:</p>
+<ul>
+<li><strong>Ordinal</strong>: number the levels, Germany to 0, Brazil to 1, Japan to 2 (<code>OrdinalEncoder</code>).</li>
+<li><strong>One-hot</strong>: one 0/1 column per level (<code>OneHotEncoder</code>).</li>
+<li><strong>Frequency</strong>: replace each level by how often it appears.</li>
+<li><strong>Target</strong>: replace each level by its average target value (<code>TargetEncoder</code>).</li>
+<li><strong>Native</strong>: hand the raw column to a model that encodes it internally (CatBoost, LightGBM, TabPFN).</li>
+</ul>
+<p>For a gradient-boosting practitioner the choice is a reflex, tuned to the model. This notebook walks the menu, shows that for TabPFN the choice mostly stops mattering, and isolates the one place it still does. Every experiment is a small construction plus one real dataset, so the behaviour is real but the setup stays easy to read. Everything here is the local <code>tabpfn</code> 8.0.3 package.</p>
+<div id="afceeef2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:41:13.110617Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:41:13.110436Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:41:23.517383Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:41:23.516434Z&quot;}}" data-execution_count="1">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
@@ -291,7 +304,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> auc(model, X_train, y_train, X_test, y_test):</span>
 <span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Fit on train, return ROC AUC on the positive-class probability for test."""</span></span>
 <span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    model.fit(X_train, y_train)</span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> roc_auc_score(y_test, model.predict_proba(X_test)[:, <span class="dv">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> roc_auc_score(y_test, model.predict_proba(X_test)[:, <span class="dv">1</span>])</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> relative_to_raw(table):</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Each cell minus the model's raw baseline: its 'native' score, or 'ordinal' for models that</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="co">    cannot take a raw categorical (logreg, randomforest). Shows how much each encoding moves you off</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="co">    simply passing the column in: + helps, - hurts."""</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>    base <span class="op">=</span> table[<span class="st">"native"</span>].fillna(table[<span class="st">"ordinal"</span>])</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> table.sub(base, axis<span class="op">=</span><span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <section id="the-familiar-checklist" class="level2">
@@ -305,7 +326,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Native</strong>: hand the raw column to a model that has its own categorical handling (CatBoost, LightGBM, XGBoost).</li>
 </ul>
 <p>The same four encodings, side by side on a toy column, so the shapes are concrete:</p>
-<div id="8651e749" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:13:26.140626Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:13:26.140242Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:13:26.292075Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:13:26.291374Z&quot;}}" data-execution_count="2">
+<div id="8651e749" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:41:23.519597Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:41:23.519196Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:41:23.604703Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:41:23.603912Z&quot;}}" data-execution_count="2">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>toy <span class="op">=</span> pd.DataFrame({</span>
@@ -345,7 +366,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="what-tabpfn-does-to-that-checklist" class="level2">
 <h2 class="anchored" data-anchor-id="what-tabpfn-does-to-that-checklist">2. What TabPFN does to that checklist</h2>
 <p>You pass the raw column. TabPFN inspects each column and assigns it a modality on its own, so the encoding decision moves from you to the model. Here is the decision on four columns at once:</p>
-<div id="a6eea377" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:13:26.293730Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:13:26.293556Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:13:27.464696Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:13:27.463969Z&quot;}}" data-execution_count="3">
+<div id="a6eea377" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:41:23.606522Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:41:23.606330Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:41:24.779040Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:41:24.778328Z&quot;}}" data-execution_count="3">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># TabPFN reads each column's modality from the ORIGINAL values, before any cast</span></span>
@@ -374,7 +395,7 @@ true_numeric       -&gt; numerical</code></pre>
 </div>
 <p>The rule in one breath: a string with 30 or fewer unique values is <strong>categorical</strong>, more than 30 is <strong>text</strong>, and anything that looks numeric (including integer codes) is <strong>numerical</strong>. So the menu collapses to a single row, “pass it raw”.</p>
 <p>The modality is only a label, though. Whatever it is, the first transform TabPFN applies to the data is the same: it casts every non-numeric column to integers. <code>clean_data</code> (<code>tabpfn/preprocessing/clean.py</code>) runs one shared ordinal encoder (<code>get_ordinal_encoder</code>, in <code>tabpfn/preprocessing/steps/preprocessing_helpers.py</code>) over the string and category columns before the network sees a single value. We can run that exact encoder ourselves:</p>
-<div id="28ace94f" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:13:27.466660Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:13:27.466472Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:13:27.480254Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:13:27.479523Z&quot;}}" data-execution_count="4">
+<div id="28ace94f" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:41:24.781322Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:41:24.780992Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:41:24.795024Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:41:24.794256Z&quot;}}" data-execution_count="4">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn.preprocessing.steps.preprocessing_helpers <span class="im">import</span> get_ordinal_encoder</span>
@@ -406,20 +427,58 @@ true_numeric       -&gt; numerical</code></pre>
 </section>
 <section id="one-measured-result" class="level2">
 <h2 class="anchored" data-anchor-id="one-measured-result">3. One measured result</h2>
-<p>The question: does the encoding choice change accuracy, and does that depend on the model and on the cardinality? The construction is deliberately narrow so the answer is clean. One nominal categorical <code>g</code> with <code>K</code> levels (skewed frequencies, so rare levels exist) whose <strong>only</strong> signal is its per-level mean, no order, plus two pure-noise numerics. We sweep <code>K</code> and compare the five representations across the full roster, AUC over three seeds.</p>
-<p>Two honest caveats stated up front. The signal is linear in the levels, which flatters a one-hot logistic regression (it is near the Bayes model here), so do not read the LogReg-onehot number as general. And frequency is independent of the signal by construction, so it is a floor that hurts every model, not a verdict on frequency encoding; the trend chart therefore excludes it and the full table keeps it.</p>
-<div id="92881568" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:13:27.481834Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:13:27.481671Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:13:27.580616Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:13:27.579979Z&quot;}}" data-execution_count="5">
+<p><strong>The question:</strong> for a category that carries real signal, does the encoding you pick change accuracy, and does that depend on the model and on the cardinality?</p>
+<p><strong>The setup</strong>, kept deliberately simple:</p>
+<ul>
+<li>One categorical <code>g</code> with <code>K</code> categories, at skewed frequencies (a few common, many rare).</li>
+<li><strong>Each category has its own positive-class rate, and the label is a coin flip at that rate.</strong> So <code>g</code> is predictive, but only through its per-category rate, which is exactly what frequency and target encoding try to recover. There is no order to exploit.</li>
+<li>Plus two pure-noise numeric columns, so the model has to find the signal.</li>
+</ul>
+<p>For example, with four categories the construction is just:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>category</th>
+<th>positive-class rate</th>
+<th>so a label is</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>lvl_0</td>
+<td>0.80</td>
+<td>1 with probability 0.80</td>
+</tr>
+<tr class="even">
+<td>lvl_1</td>
+<td>0.20</td>
+<td>1 with probability 0.20</td>
+</tr>
+<tr class="odd">
+<td>lvl_2</td>
+<td>0.55</td>
+<td>1 with probability 0.55</td>
+</tr>
+<tr class="even">
+<td>lvl_3</td>
+<td>0.90</td>
+<td>1 with probability 0.90</td>
+</tr>
+</tbody>
+</table>
+<p>We sweep <code>K</code> (the cardinality) and compare the five encodings across the full model roster, AUC over three seeds. The generator and encoders are right below.</p>
+<div id="92881568" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:41:24.796804Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:41:24.796627Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:41:24.885883Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:41:24.885222Z&quot;}}" data-execution_count="5">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_data(K, seed, n<span class="op">=</span><span class="dv">4000</span>, n_noise<span class="op">=</span><span class="dv">2</span>):</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Binary task whose only signal is the per-level mean of one nominal categorical g</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">    with K levels (skewed Zipf frequencies, no real order), plus n_noise pure-noise numerics."""</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Each of K categories has its own positive-class rate; the label is a coin flip at that rate.</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">    So the category is predictive, but only through its rate (no order), plus n_noise noise columns."""</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> <span class="fl">1.0</span> <span class="op">/</span> np.arange(<span class="dv">1</span>, K <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> p <span class="op">/</span> p.<span class="bu">sum</span>()</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> rng.choice(K, size<span class="op">=</span>n, p<span class="op">=</span>p)</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    beta <span class="op">=</span> rng.normal(<span class="fl">0.0</span>, <span class="fl">1.5</span>, size<span class="op">=</span>K)                       <span class="co"># per-level log-odds, no order</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> (rng.random(n) <span class="op">&lt;</span> <span class="fl">1.0</span> <span class="op">/</span> (<span class="fl">1.0</span> <span class="op">+</span> np.exp(<span class="op">-</span>beta[g]))).astype(<span class="bu">int</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    freq <span class="op">=</span> <span class="fl">1.0</span> <span class="op">/</span> np.arange(<span class="dv">1</span>, K <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    freq <span class="op">=</span> freq <span class="op">/</span> freq.<span class="bu">sum</span>()                                  <span class="co"># skewed: some categories are rare</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> rng.choice(K, size<span class="op">=</span>n, p<span class="op">=</span>freq)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    rate <span class="op">=</span> rng.uniform(<span class="fl">0.05</span>, <span class="fl">0.95</span>, size<span class="op">=</span>K)                    <span class="co"># each category's own positive-class rate</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> (rng.random(n) <span class="op">&lt;</span> rate[g]).astype(<span class="bu">int</span>)                 <span class="co"># the label is a coin flip at that rate</span></span>
 <span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> pd.DataFrame({<span class="st">"g"</span>: [<span class="ss">f"lvl_</span><span class="sc">{</span>v<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> v <span class="kw">in</span> g]})</span>
 <span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(n_noise):</span>
 <span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        X[<span class="ss">f"x</span><span class="sc">{</span>j<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> rng.normal(size<span class="op">=</span>n)</span>
@@ -456,7 +515,7 @@ true_numeric       -&gt; numerical</code></pre>
 <span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a, b</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div id="589122c3" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:13:27.582122Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:13:27.581957Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:16:47.984594Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:16:47.983857Z&quot;}}" data-execution_count="6">
+<div id="589122c3" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:41:24.887763Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:41:24.887518Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:44:37.217799Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:44:37.217033Z&quot;}}" data-execution_count="6">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_model(name, seed):</span>
@@ -504,35 +563,50 @@ true_numeric       -&gt; numerical</code></pre>
 <span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>synth <span class="op">=</span> run_sweep([<span class="dv">10</span>, <span class="dv">40</span>, <span class="dv">120</span>], [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>])</span>
 <span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>order <span class="op">=</span> [<span class="st">"native"</span>, <span class="st">"ordinal"</span>, <span class="st">"onehot"</span>, <span class="st">"frequency"</span>, <span class="st">"target"</span>]</span>
-<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Mean AUC at K=120 (high cardinality):"</span>)</span>
-<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>printdf(synth[synth.K <span class="op">==</span> <span class="dv">120</span>].pivot_table(index<span class="op">=</span><span class="st">"model"</span>, columns<span class="op">=</span><span class="st">"rep"</span>, values<span class="op">=</span><span class="st">"auc"</span>)[order].<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>piv120 <span class="op">=</span> synth[synth.K <span class="op">==</span> <span class="dv">120</span>].pivot_table(index<span class="op">=</span><span class="st">"model"</span>, columns<span class="op">=</span><span class="st">"rep"</span>, values<span class="op">=</span><span class="st">"auc"</span>)[order]</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Mean AUC at K=120 (high cardinality):"</span>)</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>printdf(piv120.<span class="bu">round</span>(<span class="dv">4</span>))</span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Same table, relative to passing the column raw (+ helps, - hurts):"</span>)</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>printdf(relative_to_raw(piv120).<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
 <pre><code>
-cardinality:   0%|                                                                                                                                                  | 0/3 [00:00&lt;?, ?it/s]
-cardinality:  33%|██████████████████████████████████████████████                                                                                            | 1/3 [01:01&lt;02:02, 61.49s/it]
-cardinality:  67%|████████████████████████████████████████████████████████████████████████████████████████████                                              | 2/3 [02:07&lt;01:04, 64.08s/it]
-cardinality: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [03:20&lt;00:00, 68.11s/it]
-cardinality: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [03:20&lt;00:00, 66.76s/it]</code></pre>
+cardinality:   0%|                                                  | 0/3 [00:00&lt;?, ?it/s]
+cardinality:  33%|██████████████                            | 1/3 [00:59&lt;01:58, 59.33s/it]
+cardinality:  67%|████████████████████████████              | 2/3 [02:00&lt;01:00, 60.65s/it]
+cardinality: 100%|██████████████████████████████████████████| 3/3 [03:12&lt;00:00, 65.51s/it]
+cardinality: 100%|██████████████████████████████████████████| 3/3 [03:12&lt;00:00, 64.07s/it]</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Mean AUC at K=120 (high cardinality):
 +--------------+----------+-----------+----------+-------------+----------+
 | model        |   native |   ordinal |   onehot |   frequency |   target |
 |--------------+----------+-----------+----------+-------------+----------|
-| catboost     |   0.7791 |    0.7525 |   0.775  |      0.7363 |   0.7753 |
-| lightgbm     |   0.747  |    0.7402 |   0.7116 |      0.7206 |   0.7599 |
-| logreg       | nan      |    0.5887 |   0.7871 |      0.5385 |   0.7879 |
-| randomforest | nan      |    0.7132 |   0.7553 |      0.7048 |   0.7615 |
-| tabpfn       |   0.7835 |    0.7835 |   0.7918 |      0.758  |   0.7869 |
-| xgboost      |   0.7444 |    0.736  |   0.7573 |      0.7106 |   0.7437 |
+| catboost     |   0.7225 |    0.6768 |   0.7161 |      0.6417 |   0.7142 |
+| lightgbm     |   0.6603 |    0.658  |   0.6277 |      0.624  |   0.6856 |
+| logreg       | nan      |    0.5452 |   0.7324 |      0.5528 |   0.7329 |
+| randomforest | nan      |    0.6342 |   0.6791 |      0.6119 |   0.6917 |
+| tabpfn       |   0.7244 |    0.7244 |   0.7337 |      0.6788 |   0.7308 |
+| xgboost      |   0.6791 |    0.6575 |   0.6872 |      0.6206 |   0.6723 |
++--------------+----------+-----------+----------+-------------+----------+
+
+Same table, relative to passing the column raw (+ helps, - hurts):
++--------------+----------+-----------+----------+-------------+----------+
+| model        |   native |   ordinal |   onehot |   frequency |   target |
+|--------------+----------+-----------+----------+-------------+----------|
+| catboost     |        0 |   -0.0457 |  -0.0064 |     -0.0808 |  -0.0082 |
+| lightgbm     |        0 |   -0.0023 |  -0.0326 |     -0.0363 |   0.0253 |
+| logreg       |      nan |    0      |   0.1872 |      0.0076 |   0.1877 |
+| randomforest |      nan |    0      |   0.045  |     -0.0222 |   0.0575 |
+| tabpfn       |        0 |    0      |   0.0093 |     -0.0457 |   0.0063 |
+| xgboost      |        0 |   -0.0216 |   0.0081 |     -0.0585 |  -0.0068 |
 +--------------+----------+-----------+----------+-------------+----------+</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code></code></pre>
 </div>
 </div>
-<div id="af908bb7" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:16:47.986351Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:16:47.986149Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:16:48.277069Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:16:48.276389Z&quot;}}" data-execution_count="7">
+<div id="af908bb7" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:44:37.219421Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:44:37.219237Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:44:37.532639Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:44:37.531841Z&quot;}}" data-execution_count="7">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># how much the encoding choice moves AUC, per model and cardinality (excluding the frequency floor)</span></span>
@@ -566,18 +640,18 @@ cardinality: 100%|████████████████████�
 +--------------+--------+--------+--------+
 | model        |     10 |     40 |    120 |
 |--------------+--------+--------+--------|
-| catboost     | 0.0053 | 0.0156 | 0.0279 |
-| lightgbm     | 0.0045 | 0.0234 | 0.0488 |
-| logreg       | 0.1438 | 0.1993 | 0.1992 |
-| randomforest | 0.0133 | 0.0372 | 0.0506 |
-| tabpfn       | 0.0056 | 0.0016 | 0.0105 |
-| xgboost      | 0.0144 | 0.0219 | 0.0245 |
+| catboost     | 0.0066 | 0.0214 | 0.0457 |
+| lightgbm     | 0.0087 | 0.0286 | 0.0579 |
+| logreg       | 0.1146 | 0.1977 | 0.1878 |
+| randomforest | 0.0232 | 0.0408 | 0.0575 |
+| tabpfn       | 0.0033 | 0.0099 | 0.0093 |
+| xgboost      | 0.0112 | 0.0202 | 0.0297 |
 +--------------+--------+--------+--------+</code></pre>
 </div>
 </div>
-<p>Read the chart top to bottom. TabPFN’s line is flat and lowest, and the gap is clearest at high cardinality: the encoding choice barely moves it, while every classic model’s line climbs as K grows. They climb roughly in the order a practitioner would guess, LogReg by far the most encoding-dependent, then the tree models, with RandomForest the most representation-sensitive of those once the cardinality is high. TabPFN-raw also sits at the top of the AUC table, so you reach top-tier accuracy with none of the choices the other models force.</p>
+<p>Read the chart top to bottom. TabPFN’s line is flat and lowest, and the gap is clearest at high cardinality: the encoding choice barely moves it, while every classic model’s line climbs as K grows. They climb roughly in the order a practitioner would guess, LogReg by far the most encoding-dependent, then the tree models, with RandomForest and LightGBM the most representation-sensitive of those once the cardinality is high. TabPFN-raw lands near the top of the pack, so you reach top-tier accuracy with none of the choices the other models force.</p>
 <p>The synthetic result is structural but it is still one construction. The decisive check is real high-cardinality data, where the levels are genuine identifiers, not a signal we planted. Amazon Employee Access is the canonical case: nine integer-ID columns, some with thousands of levels.</p>
-<div id="1e100e09" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:16:48.279130Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:16:48.278939Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:16:48.450339Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:16:48.449584Z&quot;}}" data-execution_count="8">
+<div id="1e100e09" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:44:37.534334Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:44:37.534142Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:44:37.699108Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:44:37.698379Z&quot;}}" data-execution_count="8">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> fetch_openml(data_id<span class="op">=</span><span class="dv">4135</span>, as_frame<span class="op">=</span><span class="va">True</span>)              <span class="co"># Amazon Employee Access</span></span>
@@ -593,7 +667,7 @@ per-column cardinality: {'RESOURCE': 7518, 'MGR_ID': 4243, 'ROLE_ROLLUP_1': 128,
 one-hot would create 15626 columns, so we omit it here</code></pre>
 </div>
 </div>
-<div id="24d91e2f" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:16:48.452192Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:16:48.452009Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:18:46.348930Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:18:46.347968Z&quot;}}" data-execution_count="9">
+<div id="24d91e2f" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:44:37.700841Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:44:37.700661Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:46:34.475607Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:46:34.474873Z&quot;}}" data-execution_count="9">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>cols <span class="op">=</span> <span class="bu">list</span>(Xfull.columns)</span>
@@ -654,34 +728,48 @@ one-hot would create 15626 columns, so we omit it here</code></pre>
 <span id="cb17-56"><a href="#cb17-56" aria-hidden="true" tabindex="-1"></a>amazon <span class="op">=</span> pd.DataFrame(rows)</span>
 <span id="cb17-57"><a href="#cb17-57" aria-hidden="true" tabindex="-1"></a>amazon_table <span class="op">=</span> amazon.pivot_table(index<span class="op">=</span><span class="st">"model"</span>, columns<span class="op">=</span><span class="st">"rep"</span>, values<span class="op">=</span><span class="st">"auc"</span>)[[<span class="st">"native"</span>, <span class="st">"ordinal"</span>, <span class="st">"frequency"</span>, <span class="st">"target"</span>]]</span>
 <span id="cb17-58"><a href="#cb17-58" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Amazon: mean AUC by model and representation (one-hot omitted):"</span>)</span>
-<span id="cb17-59"><a href="#cb17-59" aria-hidden="true" tabindex="-1"></a>printdf(amazon_table.<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb17-59"><a href="#cb17-59" aria-hidden="true" tabindex="-1"></a>printdf(amazon_table.<span class="bu">round</span>(<span class="dv">4</span>))</span>
+<span id="cb17-60"><a href="#cb17-60" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Same table, relative to passing the column raw (+ helps, - hurts):"</span>)</span>
+<span id="cb17-61"><a href="#cb17-61" aria-hidden="true" tabindex="-1"></a>printdf(relative_to_raw(amazon_table).<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
 <pre><code>
-seed:   0%|                                                                                                                                                         | 0/3 [00:00&lt;?, ?it/s]
-seed:  33%|████████████████████████████████████████████████▎                                                                                                | 1/3 [00:39&lt;01:19, 39.57s/it]
-seed:  67%|████████████████████████████████████████████████████████████████████████████████████████████████▋                                                | 2/3 [01:18&lt;00:39, 39.33s/it]
-seed: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [01:57&lt;00:00, 39.24s/it]
-seed: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [01:57&lt;00:00, 39.29s/it]</code></pre>
+seed:   0%|                                                         | 0/3 [00:00&lt;?, ?it/s]
+seed:  33%|████████████████▎                                | 1/3 [00:38&lt;01:16, 38.48s/it]
+seed:  67%|████████████████████████████████▋                | 2/3 [01:17&lt;00:38, 38.99s/it]
+seed: 100%|█████████████████████████████████████████████████| 3/3 [01:56&lt;00:00, 38.96s/it]
+seed: 100%|█████████████████████████████████████████████████| 3/3 [01:56&lt;00:00, 38.92s/it]</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Amazon: mean AUC by model and representation (one-hot omitted):
 +--------------+----------+-----------+-------------+----------+
 | model        |   native |   ordinal |   frequency |   target |
 |--------------+----------+-----------+-------------+----------|
-| catboost     |   0.7809 |    0.6692 |      0.7218 |   0.7276 |
-| lightgbm     |   0.751  |    0.674  |      0.7377 |   0.7012 |
-| logreg       | nan      |    0.5921 |      0.5849 |   0.763  |
-| randomforest | nan      |    0.7433 |      0.7497 |   0.7357 |
-| tabpfn       |   0.7486 |    0.7486 |      0.7614 |   0.7633 |
-| xgboost      |   0.7244 |    0.6871 |      0.7389 |   0.6783 |
+| catboost     |   0.7809 |    0.6692 |      0.7218 |   0.7274 |
+| lightgbm     |   0.751  |    0.674  |      0.7377 |   0.7198 |
+| logreg       | nan      |    0.5921 |      0.5849 |   0.7656 |
+| randomforest | nan      |    0.7433 |      0.7497 |   0.733  |
+| tabpfn       |   0.7486 |    0.7486 |      0.7614 |   0.7638 |
+| xgboost      |   0.7244 |    0.6871 |      0.7389 |   0.6849 |
++--------------+----------+-----------+-------------+----------+
+
+Same table, relative to passing the column raw (+ helps, - hurts):
++--------------+----------+-----------+-------------+----------+
+| model        |   native |   ordinal |   frequency |   target |
+|--------------+----------+-----------+-------------+----------|
+| catboost     |        0 |   -0.1117 |     -0.0591 |  -0.0534 |
+| lightgbm     |        0 |   -0.077  |     -0.0134 |  -0.0312 |
+| logreg       |      nan |    0      |     -0.0071 |   0.1736 |
+| randomforest |      nan |    0      |      0.0064 |  -0.0103 |
+| tabpfn       |        0 |    0      |      0.0128 |   0.0152 |
+| xgboost      |        0 |   -0.0373 |      0.0145 |  -0.0395 |
 +--------------+----------+-----------+-------------+----------+</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code></code></pre>
 </div>
 </div>
-<div id="b01eb4ba" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:18:46.350634Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:18:46.350450Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:18:46.599083Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:18:46.598373Z&quot;}}" data-execution_count="10">
+<div id="b01eb4ba" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:46:34.477298Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:46:34.477117Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:46:34.744206Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:46:34.743569Z&quot;}}" data-execution_count="10">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> amazon_table.plot(kind<span class="op">=</span><span class="st">"bar"</span>, figsize<span class="op">=</span>(<span class="fl">8.5</span>, <span class="fl">4.5</span>))</span>
@@ -722,7 +810,7 @@ MIN_NUMBER_SAMPLES_FOR_CATEGORICAL_INFERENCE = 100</code></pre>
 <p>This is the part worth knowing. Text is not a real pathway in the local package. In <code>tabpfn/preprocessing/clean.py</code> (<code>clean_data</code>), every non-numeric column, category and string alike, is ordinal-encoded to integer codes by one shared encoder (<code>get_ordinal_encoder</code> in <code>tabpfn/preprocessing/steps/preprocessing_helpers.py</code>), and the whole frame is cast to float. The only thing separating a categorical from a text column afterward is bookkeeping: every later step asks the schema for <code>indices_for(FeatureModality.CATEGORICAL)</code> (in <code>tabpfn/inference.py</code>, the categorical-encode step, the distribution-reshape step) and nothing ever asks for the text indices.</p>
 <p>So a high-cardinality string becomes arbitrary integer codes handed to the model as a plain numeric feature. The string content is gone the moment it is coded; there is no semantic understanding at all. Per the Prior Labs FAQ, the hosted API does the opposite, it detects text features and embeds their meaning. Same column: meaning through the API, identity only through the local package.</p>
 <p>That is exactly what our experiment ran into, and we can see it directly. Our high-cardinality <code>lvl_*</code> labels route to text, which is the same as ordinal-encoding them, so for TabPFN raw and ordinal should land on top of each other:</p>
-<div id="18a7ae84" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:18:46.601015Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:18:46.600832Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:18:50.226675Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:18:50.225740Z&quot;}}" data-execution_count="11">
+<div id="18a7ae84" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:46:34.746206Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:46:34.746029Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:46:38.350748Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:46:38.350003Z&quot;}}" data-execution_count="11">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>train, test, y_train, y_test <span class="op">=</span> make_data(<span class="dv">120</span>, <span class="dv">0</span>)</span>
@@ -733,8 +821,8 @@ MIN_NUMBER_SAMPLES_FOR_CATEGORICAL_INFERENCE = 100</code></pre>
 <span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"TabPFN, ordinal integer codes (numerical)     </span><span class="sc">{</span>ordinal_codes<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>TabPFN, raw high-card string (text modality)  0.7440
-TabPFN, ordinal integer codes (numerical)     0.7440</code></pre>
+<pre><code>TabPFN, raw high-card string (text modality)  0.7532
+TabPFN, ordinal integer codes (numerical)     0.7532</code></pre>
 </div>
 </div>
 </section>
@@ -742,7 +830,7 @@ TabPFN, ordinal integer codes (numerical)     0.7440</code></pre>
 <h3 class="anchored" data-anchor-id="why-an-arbitrary-integer-order-helps-tabpfn-but-breaks-a-boosted-tree">Why an arbitrary integer order helps TabPFN but breaks a boosted tree</h3>
 <p>The same input, an arbitrary integer code, is read very differently by the two model families, and that is the whole story of the chart. A gradient-boosted tree makes axis-aligned threshold splits. On a column of arbitrary codes (<code>lvl_5 &lt; lvl_6 &lt; ...</code>) a threshold only separates one contiguous run of codes from another, which is meaningless for a nominal category. Isolating a single level costs about two splits, so across thousands of levels the tree runs out of budget and falls toward the base rate. Native CatBoost avoids this by encoding each level with ordered target statistics (a leakage-safe per-level target mean); ordinal-as-numeric throws that machinery away, and LightGBM and XGBoost collapse the same way.</p>
 <p>TabPFN is not splitting on the axis. It is a transformer reading the actual values in context, so two rows that share a code are simply two rows with an equal feature value, and it can learn a non-monotonic response per code. An arbitrary order does not trap it. The three numbers below are the whole mechanism:</p>
-<div id="b0c25aa2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T09:18:50.228457Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T09:18:50.228261Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T09:19:04.418612Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T09:19:04.417832Z&quot;}}" data-execution_count="12">
+<div id="b0c25aa2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:46:38.352459Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:46:38.352274Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:46:52.118907Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:46:52.118183Z&quot;}}" data-execution_count="12">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>train, test, y_train, y_test <span class="op">=</span> amazon_subsample(<span class="dv">0</span>)</span>
@@ -1256,8 +1344,8 @@ TabPFN,   ordinal-as-numeric      0.7511</code></pre>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./MissingValues.html" class="pagination-link" aria-label="Missing values, with TabPFN">
-        <span class="nav-page-text">Missing values, with TabPFN</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./FeatureEngineering.html" class="pagination-link" aria-label="Feature engineering, with TabPFN">
+        <span class="nav-page-text">Feature engineering, with TabPFN</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
