@@ -37,3 +37,9 @@ jobs:
           path: notebooks
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload rendered site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: quarto-site
+          path: notebooks/_site
