@@ -33,6 +33,12 @@ sequenced last.
   construction) or shown across several settings, and caveat what is dataset-dependent.
 - Each notebook should run top to bottom and be easy to excerpt for a post.
 
+## How we work
+
+- Be skeptical, including of the author's own claims. Do not indulge a result you cannot reproduce, and flag thin evidence rather than dressing it up.
+- Work in small steps and check as you go. One change or one question at a time beats a long batch that is hard to verify.
+- Keep answers short and concrete. Say what you did and what it showed, then stop. Skip the preamble and the recap.
+
 ## Style
 
 - No em-dashes or double hyphens. Use commas, colons, parentheses, or split the sentence.
