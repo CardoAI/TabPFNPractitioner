@@ -226,7 +226,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#the-map" id="toc-the-map" class="nav-link active" data-scroll-target="#the-map">The map</a></li>
   <li><a href="#n_estimators-the-accuracy-vs-speed-dial" id="toc-n_estimators-the-accuracy-vs-speed-dial" class="nav-link" data-scroll-target="#n_estimators-the-accuracy-vs-speed-dial"><code>n_estimators</code>: the accuracy-vs-speed dial</a></li>
   <li><a href="#what-the-calibration-knobs-do-to-the-output" id="toc-what-the-calibration-knobs-do-to-the-output" class="nav-link" data-scroll-target="#what-the-calibration-knobs-do-to-the-output">What the calibration knobs do to the output</a></li>
+  <li><a href="#speed-and-memory-fit_mode-and-the-shape-of-in-context-learning" id="toc-speed-and-memory-fit_mode-and-the-shape-of-in-context-learning" class="nav-link" data-scroll-target="#speed-and-memory-fit_mode-and-the-shape-of-in-context-learning">Speed and memory: fit_mode and the shape of in-context learning</a></li>
   <li><a href="#inspect-what-tabpfn-decided" id="toc-inspect-what-tabpfn-decided" class="nav-link" data-scroll-target="#inspect-what-tabpfn-decided">Inspect what TabPFN decided</a></li>
+  <li><a href="#pointing-at-the-model-model_path-and-inference_config" id="toc-pointing-at-the-model-model_path-and-inference_config" class="nav-link" data-scroll-target="#pointing-at-the-model-model_path-and-inference_config">Pointing at the model: model_path and inference_config</a></li>
+  <li><a href="#every-other-knob-in-one-place" id="toc-every-other-knob-in-one-place" class="nav-link" data-scroll-target="#every-other-knob-in-one-place">Every other knob, in one place</a></li>
   <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
   </ul>
 </nav>
@@ -253,9 +256,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>With a gradient booster you spend real effort searching hyperparameters: tree depth, learning rate, number of trees, subsample, column sample, regularization. With TabPFN that search is gone. The model is <strong>pretrained</strong>, its weights are fixed, and there is no train-time fit to tune. What is left is a short list of <strong>inference settings</strong>, and the defaults are strong.</p>
+<p>With a gradient-boosting model you spend real effort searching hyperparameters: tree depth, learning rate, number of trees, number of leaves, minimum number of instances in leaf, subsample, column sample, regularization. With TabPFN that search is gone. The model is <strong>pretrained</strong>, its weights are fixed, and there is no train-time fit to tune. What is left is a short list of <strong>inference settings</strong>, and the defaults are strong.</p>
 <p>This notebook tours them, measures the few that actually move the needle, and shows how to inspect what TabPFN decided about your data. Everything runs on a small synthetic task so it stays self-contained.</p>
-<div id="c01" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:04:38.844175Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:04:38.844007Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:04:57.218896Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:04:57.218121Z&quot;}}" data-execution_count="1">
+<div id="c01" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T13:47:54.366109Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T13:47:54.365933Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T13:48:05.010872Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T13:48:05.009982Z&quot;}}" data-execution_count="1">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
@@ -304,6 +307,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <section id="the-map" class="level2">
 <h2 class="anchored" data-anchor-id="the-map">The map</h2>
+<p>Every TabPFN inference setting, with its default and when you would reach for it:</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -324,118 +328,152 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>lower for speed, higher for a small accuracy bump</td>
 </tr>
 <tr class="even">
+<td><code>softmax_temperature</code> (0.9)</td>
+<td>sharpen or soften the predicted probabilities</td>
+<td>calibration, fixed-threshold decisions</td>
+</tr>
+<tr class="odd">
+<td><code>balance_probabilities</code> (False)</td>
+<td>reweight outputs toward balanced classes</td>
+<td>imbalanced data, to move the operating point</td>
+</tr>
+<tr class="even">
+<td><code>average_before_softmax</code> (False)</td>
+<td>average estimator logits before the softmax, not after</td>
+<td>many classes or calibration, with <code>n_estimators &gt; 1</code></td>
+</tr>
+<tr class="odd">
 <td><code>categorical_features_indices</code> (None)</td>
 <td>which columns are treated as categorical</td>
 <td>when auto-detection mis-types a column</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>ignore_pretraining_limits</code> (False)</td>
 <td>allow data beyond the recommended size</td>
 <td>many rows or features (expect some degradation)</td>
 </tr>
-<tr class="even">
-<td><code>balance_probabilities</code> (False)</td>
-<td>reweight outputs toward balanced classes</td>
-<td>imbalanced data, to move the 0.5 operating point</td>
-</tr>
 <tr class="odd">
-<td><code>softmax_temperature</code> (0.9)</td>
-<td>sharpen or soften the predicted probabilities</td>
-<td>calibration</td>
-</tr>
-<tr class="even">
 <td><code>inference_config</code> (None)</td>
 <td>override the internal preprocessing</td>
 <td>advanced: scaling, outlier clip, categorical thresholds</td>
 </tr>
+<tr class="even">
+<td><code>model_path</code> (‘auto’)</td>
+<td>which checkpoint to load</td>
+<td>‘auto’ loads the v3 default; rarely changed</td>
+</tr>
 <tr class="odd">
-<td><code>device</code>, <code>inference_precision</code>, <code>memory_saving_mode</code>, <code>fit_mode</code></td>
-<td>hardware and memory</td>
-<td>performance</td>
+<td><code>fit_mode</code> (‘fit_preprocessors’)</td>
+<td>how much of the context is cached at fit time</td>
+<td>speed against memory for repeated prediction</td>
 </tr>
 <tr class="even">
-<td><code>model_path</code> (<code>'auto'</code>)</td>
-<td>which checkpoint to load</td>
-<td><code>'auto'</code> loads v3; rarely changed</td>
+<td><code>memory_saving_mode</code> (‘auto’)</td>
+<td>batch internal computations to save memory</td>
+<td>tight GPU, or hand-tuning speed</td>
 </tr>
 <tr class="odd">
-<td><code>tuning_config</code> (None)</td>
-<td>optional post-hoc tuning search</td>
-<td>when you want an AutoML-style sweep</td>
+<td><code>inference_precision</code> (‘auto’)</td>
+<td>numeric precision of the forward pass</td>
+<td>reproducibility (pin a dtype) against speed</td>
+</tr>
+<tr class="even">
+<td><code>device</code> (‘auto’)</td>
+<td>CPU or GPU</td>
+<td>force a specific device</td>
+</tr>
+<tr class="odd">
+<td><code>n_preprocessing_jobs</code> (1)</td>
+<td>CPU workers for preprocessing</td>
+<td>many cores and <code>n_estimators &gt; 1</code></td>
+</tr>
+<tr class="even">
+<td><code>eval_metric</code> / <code>tuning_config</code> (None)</td>
+<td>post-hoc calibration and threshold tuning for a metric</td>
+<td>when you optimize a specific metric</td>
+</tr>
+<tr class="odd">
+<td><code>differentiable_input</code> (False)</td>
+<td>make the preprocessing differentiable</td>
+<td>explainability, prompt-tuning</td>
 </tr>
 <tr class="even">
 <td><code>random_state</code> (0)</td>
 <td>reproducibility</td>
-<td>set it for reproducible runs</td>
+<td>already fixed to 0 by default</td>
+</tr>
+<tr class="odd">
+<td><code>show_progress_bar</code> (False)</td>
+<td>progress bar during inference</td>
+<td>long runs</td>
 </tr>
 </tbody>
 </table>
-<p>The next cells measure the three a practitioner actually reaches for, then inspect the rest.</p>
+<p>The defaults are strong almost everywhere. The next cells measure the ones that actually move accuracy or the clock, then show how to read and override the rest.</p>
 </section>
 <section id="n_estimators-the-accuracy-vs-speed-dial" class="level2">
 <h2 class="anchored" data-anchor-id="n_estimators-the-accuracy-vs-speed-dial"><code>n_estimators</code>: the accuracy-vs-speed dial</h2>
 <p>Each estimator is a differently-preprocessed copy of the data, and TabPFN averages over them. More estimators reduce the variance of the prediction, at a <strong>linear</strong> compute cost: eight estimators take about eight times as long to predict as one. The accuracy gain saturates quickly, and exactly how quickly is dataset-dependent, so there is no universal number. The default of 8 is a reasonable middle: drop it to 1 or 2 when you need speed, raise it for a marginal, diminishing gain.</p>
+<div id="nestsweep" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T13:48:05.012977Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T13:48:05.012583Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T13:48:16.678225Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T13:48:16.677512Z&quot;}}" data-execution_count="2">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># n_estimators trades compute for accuracy: each estimator is one differently-preprocessed copy of</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># the data, and TabPFN averages over them. We warm up once first, so the timing measures compute and</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># not the one-time model download and load.</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>X, y <span class="op">=</span> make_data(n<span class="op">=</span><span class="dv">4000</span>, seed<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>half <span class="op">=</span> <span class="bu">len</span>(y) <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> X.iloc[:half], X.iloc[half:], y[:half], y[half:]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>TabPFNClassifier(n_estimators<span class="op">=</span><span class="dv">1</span>, random_state<span class="op">=</span><span class="dv">0</span>).fit(X_train, y_train).predict_proba(X_test)  <span class="co"># warm up</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> n_estimators <span class="kw">in</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">16</span>]:</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time.perf_counter()</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> TabPFNClassifier(n_estimators<span class="op">=</span>n_estimators, random_state<span class="op">=</span><span class="dv">0</span>).fit(X_train, y_train)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    proba <span class="op">=</span> model.predict_proba(X_test)[:, <span class="dv">1</span>]</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    rows.append({<span class="st">"n_estimators"</span>: n_estimators,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"test_auc"</span>: <span class="bu">round</span>(roc_auc_score(y_test, proba), <span class="dv">4</span>),</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"fit_predict_seconds"</span>: <span class="bu">round</span>(time.perf_counter() <span class="op">-</span> start, <span class="dv">2</span>)})</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(pd.DataFrame(rows).to_string(index<span class="op">=</span><span class="va">False</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> n_estimators  test_auc  fit_predict_seconds
+            1    0.8534                 0.90
+            2    0.8574                 0.96
+            4    0.8570                 1.31
+            8    0.8573                 2.16
+           16    0.8572                 3.36</code></pre>
+</div>
+</div>
+<p>The table makes the dial concrete: accuracy is settled by two estimators and flat by four, while the time climbs with the count (each estimator is another pass over the data). The default of 8 gives you the saturated accuracy at a modest cost; drop it to 1 or 2 when you need speed, and raise it only for a fraction of a point. This is the one accuracy knob, and most of the time it is not even that.</p>
 </section>
 <section id="what-the-calibration-knobs-do-to-the-output" class="level2">
 <h2 class="anchored" data-anchor-id="what-the-calibration-knobs-do-to-the-output">What the calibration knobs do to the output</h2>
 <p><code>balance_probabilities</code> and <code>softmax_temperature</code> reshape the predicted probabilities <em>without touching the ranking</em>. That part is not an empirical claim: both are monotone transforms of the probability, and a monotone transform cannot change which examples score higher, so AUC and AUPRC are unchanged by construction. What they change is the <em>shape</em> of the output distribution, and with it the calibration and any fixed-threshold decision. The plots below show that directly, on a deliberately hard task where the model is uncertain enough for the effect to be visible.</p>
-<div id="hlbal" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:04:57.221344Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:04:57.220947Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:05:05.496331Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:05:05.495611Z&quot;}}" data-execution_count="2">
+<div id="hlbal" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T13:48:16.680295Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T13:48:16.680104Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T13:48:21.704399Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T13:48:21.703600Z&quot;}}" data-execution_count="3">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># balance_probabilities on a HARD, imbalanced task (uncertain model, so the shift is visible).</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">1</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> <span class="dv">6000</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>Xb <span class="op">=</span> rng.randn(m, <span class="dv">4</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>logit <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> Xb[:, <span class="dv">0</span>] <span class="op">-</span> <span class="fl">2.2</span>                                 <span class="co"># weak signal + low base rate (uncertain, ~11% positive)</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>yb <span class="op">=</span> (rng.rand(m) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span>logit))).astype(<span class="bu">int</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>Xtr, Xte <span class="op">=</span> pd.DataFrame(Xb[:m <span class="op">//</span> <span class="dv">2</span>]), pd.DataFrame(Xb[m <span class="op">//</span> <span class="dv">2</span>:])<span class="op">;</span> ytr, yte <span class="op">=</span> yb[:m <span class="op">//</span> <span class="dv">2</span>], yb[m <span class="op">//</span> <span class="dv">2</span>:]</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>p_off <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>]</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>p_on  <span class="op">=</span> TabPFNClassifier(balance_probabilities<span class="op">=</span><span class="va">True</span>, random_state<span class="op">=</span><span class="dv">0</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>]</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"calibration error (ECE):  default </span><span class="sc">{</span>expected_calibration_error(yte, p_off)<span class="sc">:.3f}</span><span class="ss">"</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"   balanced </span><span class="sc">{</span>expected_calibration_error(yte, p_on)<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">3</span>))</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>plt.hist(p_off, bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.6</span>, label<span class="op">=</span><span class="st">"balance_probabilities=False"</span>)</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>plt.hist(p_on,  bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.6</span>, label<span class="op">=</span><span class="st">"balance_probabilities=True"</span>)</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>plt.legend()<span class="op">;</span> plt.xlabel(<span class="st">"predicted P(class 1)"</span>)<span class="op">;</span> plt.title(<span class="st">"balance_probabilities reshapes the output"</span>)</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># balance_probabilities on a HARD, imbalanced task (uncertain model, so the shift is visible).</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">1</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> <span class="dv">6000</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>Xb <span class="op">=</span> rng.randn(m, <span class="dv">4</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>logit <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> Xb[:, <span class="dv">0</span>] <span class="op">-</span> <span class="fl">2.2</span>                                 <span class="co"># weak signal + low base rate (uncertain, ~11% positive)</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>yb <span class="op">=</span> (rng.rand(m) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span>logit))).astype(<span class="bu">int</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>Xtr, Xte <span class="op">=</span> pd.DataFrame(Xb[:m <span class="op">//</span> <span class="dv">2</span>]), pd.DataFrame(Xb[m <span class="op">//</span> <span class="dv">2</span>:])<span class="op">;</span> ytr, yte <span class="op">=</span> yb[:m <span class="op">//</span> <span class="dv">2</span>], yb[m <span class="op">//</span> <span class="dv">2</span>:]</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>p_off <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>]</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>p_on  <span class="op">=</span> TabPFNClassifier(balance_probabilities<span class="op">=</span><span class="va">True</span>, random_state<span class="op">=</span><span class="dv">0</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>]</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"calibration error (ECE):  default </span><span class="sc">{</span>expected_calibration_error(yte, p_off)<span class="sc">:.3f}</span><span class="ss">"</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"   balanced </span><span class="sc">{</span>expected_calibration_error(yte, p_on)<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">3</span>))</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>plt.hist(p_off, bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.6</span>, label<span class="op">=</span><span class="st">"balance_probabilities=False"</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>plt.hist(p_on,  bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.6</span>, label<span class="op">=</span><span class="st">"balance_probabilities=True"</span>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>plt.legend()<span class="op">;</span> plt.xlabel(<span class="st">"predicted P(class 1)"</span>)<span class="op">;</span> plt.title(<span class="st">"balance_probabilities reshapes the output"</span>)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>calibration error (ECE):  default 0.021   balanced 0.311</code></pre>
-</div>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="Parameters_files/figure-html/cell-3-output-2.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-<div id="hltemp" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:05:05.498242Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:05:05.498048Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:05:13.199675Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:05:13.198930Z&quot;}}" data-execution_count="3">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># softmax_temperature on a HARD, balanced task (uncertain model, so sharpen/soften shows).</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">2</span>)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> <span class="dv">6000</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>Xt <span class="op">=</span> rng.randn(m, <span class="dv">6</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>logit <span class="op">=</span> <span class="fl">0.6</span> <span class="op">*</span> Xt[:, <span class="dv">0</span>] <span class="op">+</span> <span class="fl">0.4</span> <span class="op">*</span> Xt[:, <span class="dv">1</span>]</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>yt <span class="op">=</span> (rng.rand(m) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span>logit))).astype(<span class="bu">int</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>Xtr, Xte <span class="op">=</span> pd.DataFrame(Xt[:m <span class="op">//</span> <span class="dv">2</span>]), pd.DataFrame(Xt[m <span class="op">//</span> <span class="dv">2</span>:])<span class="op">;</span> ytr, yte <span class="op">=</span> yt[:m <span class="op">//</span> <span class="dv">2</span>], yt[m <span class="op">//</span> <span class="dv">2</span>:]</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">3</span>))</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> [<span class="fl">0.5</span>, <span class="fl">0.9</span>, <span class="fl">2.0</span>]:</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> TabPFNClassifier(softmax_temperature<span class="op">=</span>t, random_state<span class="op">=</span><span class="dv">0</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>]</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"temperature </span><span class="sc">{</span>t<span class="sc">}</span><span class="ss">: calibration error (ECE) </span><span class="sc">{</span>expected_calibration_error(yte, p)<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    plt.hist(p, bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, label<span class="op">=</span><span class="ss">f"temperature=</span><span class="sc">{</span>t<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>plt.legend()<span class="op">;</span> plt.xlabel(<span class="st">"predicted P(class 1)"</span>)<span class="op">;</span> plt.title(<span class="st">"softmax_temperature: &lt;1 more confident (toward 0/1), &gt;1 less confident (toward 0.5)"</span>)</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>temperature 0.5: calibration error (ECE) 0.110
-temperature 0.9: calibration error (ECE) 0.029
-temperature 2.0: calibration error (ECE) 0.056</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div>
@@ -445,30 +483,107 @@ temperature 2.0: calibration error (ECE) 0.056</code></pre>
 </div>
 </div>
 </div>
-<p><code>balance_probabilities</code> pushes mass toward the minority class: it raises recall at a 0.5 threshold and, on imbalanced data, worsens calibration (the probabilities drift away from the true base rate). The printed numbers show it directly, the expected calibration error jumps from about 0.02 to 0.31.<code>softmax_temperature</code> controls confidence. Below 1 the model is more confident, probabilities are pushed toward 0 and 1, so the across-example histogram spreads to the extremes. Above 1 it is less confident, probabilities are pulled toward 0.5, so the histogram collapses into a peak at 0.5. (Note: less confident per example gives a <em>more concentrated</em> histogram, not a flatter one, which is easy to misread.) The default 0.9 sits near the best-calibrated point, the lowest error of the three above (about 0.03, versus 0.11 at 0.5 and 0.06 at 2.0).Neither knob moves a ranking metric, so reach for them only when you threshold at a fixed cutoff or need calibrated probabilities, not to improve AUC. (A booster’s <code>scale_pos_weight</code> is what people often expect to help ranking; this is not that.)</p>
+<div id="hltemp" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T13:48:21.706140Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T13:48:21.705938Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T13:48:29.288840Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T13:48:29.288234Z&quot;}}" data-execution_count="4">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># softmax_temperature on a HARD, balanced task (uncertain model, so sharpen/soften shows).</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">2</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> <span class="dv">6000</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>Xt <span class="op">=</span> rng.randn(m, <span class="dv">6</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>logit <span class="op">=</span> <span class="fl">0.6</span> <span class="op">*</span> Xt[:, <span class="dv">0</span>] <span class="op">+</span> <span class="fl">0.4</span> <span class="op">*</span> Xt[:, <span class="dv">1</span>]</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>yt <span class="op">=</span> (rng.rand(m) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span>logit))).astype(<span class="bu">int</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>Xtr, Xte <span class="op">=</span> pd.DataFrame(Xt[:m <span class="op">//</span> <span class="dv">2</span>]), pd.DataFrame(Xt[m <span class="op">//</span> <span class="dv">2</span>:])<span class="op">;</span> ytr, yte <span class="op">=</span> yt[:m <span class="op">//</span> <span class="dv">2</span>], yt[m <span class="op">//</span> <span class="dv">2</span>:]</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">3</span>))</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> [<span class="fl">0.5</span>, <span class="fl">0.9</span>, <span class="fl">2.0</span>]:</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> TabPFNClassifier(softmax_temperature<span class="op">=</span>t, random_state<span class="op">=</span><span class="dv">0</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>]</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"temperature </span><span class="sc">{</span>t<span class="sc">}</span><span class="ss">: calibration error (ECE) </span><span class="sc">{</span>expected_calibration_error(yte, p)<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    plt.hist(p, bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, label<span class="op">=</span><span class="ss">f"temperature=</span><span class="sc">{</span>t<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>plt.legend()<span class="op">;</span> plt.xlabel(<span class="st">"predicted P(class 1)"</span>)<span class="op">;</span> plt.title(<span class="st">"softmax_temperature: &lt;1 more confident (toward 0/1), &gt;1 less confident (toward 0.5)"</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>temperature 0.5: calibration error (ECE) 0.110
+temperature 0.9: calibration error (ECE) 0.029
+temperature 2.0: calibration error (ECE) 0.056</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Parameters_files/figure-html/cell-5-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><code>balance_probabilities</code> pushes mass toward the minority class: it raises recall at a 0.5 threshold and, on imbalanced data, worsens calibration (the probabilities drift away from the true base rate). The printed numbers show it directly, the expected calibration error jumps from about 0.02 to 0.31.</p>
+<p><code>softmax_temperature</code> controls confidence. Below 1 the model is more confident, probabilities are pushed toward 0 and 1, so the across-example histogram spreads to the extremes. Above 1 it is less confident, probabilities are pulled toward 0.5, so the histogram collapses into a peak at 0.5. (Note: less confident per example gives a <em>more concentrated</em> histogram, not a flatter one, which is easy to misread.) The default 0.9 sits near the best-calibrated point, the lowest error of the three above (about 0.03, versus 0.11 at 0.5 and 0.06 at 2.0).</p>
+<p>Neither knob moves a ranking metric, so reach for them only when you threshold at a fixed cutoff or need calibrated probabilities, not to improve AUC. (XGBoost’s <code>scale_pos_weight</code> is what people often expect to help ranking; this is not that.)</p>
+</section>
+<section id="speed-and-memory-fit_mode-and-the-shape-of-in-context-learning" class="level2">
+<h2 class="anchored" data-anchor-id="speed-and-memory-fit_mode-and-the-shape-of-in-context-learning">Speed and memory: fit_mode and the shape of in-context learning</h2>
+<p>TabPFN has no training loop, so its <code>.fit()</code> does something unusual: it stores your training data as the <em>context</em> that the forward pass will condition on. <code>fit_mode</code> decides how much of that conditioning is precomputed and cached, which is the clearest window into how in-context learning actually runs.</p>
+<ul>
+<li><code>low_memory</code>: preprocess the data again on every <code>.predict()</code>. Smallest memory footprint, slowest repeated prediction. Good for a single fit-then-predict on a tight GPU.</li>
+<li><code>fit_preprocessors</code> (the default): preprocess once at <code>.fit()</code> and reuse the cached result.</li>
+<li><code>fit_with_cache</code>: also build the transformer’s key-value cache at <code>.fit()</code>, so repeated predictions on the same training data skip most of the work, at a real memory cost.</li>
+</ul>
+<p>The trade is fit time and memory against repeated-predict speed. None of the three changes a single prediction. The next cell times all three on the same data.</p>
+<div id="fitmodedemo" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T13:48:29.291003Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T13:48:29.290817Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T13:48:47.909846Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T13:48:47.908954Z&quot;}}" data-execution_count="5">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>X, y <span class="op">=</span> make_data(n<span class="op">=</span><span class="dv">6000</span>, seed<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>half <span class="op">=</span> <span class="bu">len</span>(y) <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> X.iloc[:half], X.iloc[half:], y[:half], y[half:]</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fit_mode <span class="kw">in</span> [<span class="st">"low_memory"</span>, <span class="st">"fit_preprocessors"</span>, <span class="st">"fit_with_cache"</span>]:</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time.perf_counter()</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> TabPFNClassifier(fit_mode<span class="op">=</span>fit_mode, random_state<span class="op">=</span><span class="dv">0</span>).fit(X_train, y_train)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    fit_seconds <span class="op">=</span> time.perf_counter() <span class="op">-</span> start</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time.perf_counter()</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>):                       <span class="co"># repeated predictions on the same training data</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        model.predict_proba(X_test)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    predict_seconds <span class="op">=</span> (time.perf_counter() <span class="op">-</span> start) <span class="op">/</span> <span class="dv">3</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    rows.append({<span class="st">"fit_mode"</span>: fit_mode, <span class="st">"fit_seconds"</span>: <span class="bu">round</span>(fit_seconds, <span class="dv">2</span>),</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"predict_seconds (avg of 3)"</span>: <span class="bu">round</span>(predict_seconds, <span class="dv">2</span>)})</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(pd.DataFrame(rows).to_string(index<span class="op">=</span><span class="va">False</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>         fit_mode  fit_seconds  predict_seconds (avg of 3)
+       low_memory         0.62                        2.11
+fit_preprocessors         0.62                        2.09
+   fit_with_cache         1.86                        0.97</code></pre>
+</div>
+</div>
+<p>The shape is the point. <code>fit_with_cache</code> pays more at <code>.fit()</code>, where it builds the key-value cache, and then predicts roughly twice as fast, because the expensive context conditioning is already done. <code>low_memory</code> and <code>fit_preprocessors</code> fit cheaply and pay it back at predict time. So if you score the same training data many times, <code>fit_with_cache</code> wins; if memory is tight or you predict only once, stay with the default. Again, none of this moves a prediction, only the clock and the memory bill.</p>
+<p>Two more performance knobs in the same spirit, neither of which touches the output:</p>
+<ul>
+<li><code>memory_saving_mode</code> (<code>"auto"</code> by default, or <code>True</code>/<code>False</code>) batches some internal computations to avoid out-of-memory errors, and can even speed things up by easing memory pressure. Leave it on <code>"auto"</code>, force a value only when hand-tuning a tight GPU: <code>TabPFNClassifier(memory_saving_mode=True)</code>.</li>
+<li><code>inference_precision</code> (<code>"auto"</code>, <code>"autocast"</code>, or a <code>torch.dtype</code>) uses mixed precision for speed by default; pinning a dtype trades speed for reproducibility: <code>TabPFNClassifier(inference_precision=torch.float32)</code> for the most repeatable run.</li>
+</ul>
 </section>
 <section id="inspect-what-tabpfn-decided" class="level2">
 <h2 class="anchored" data-anchor-id="inspect-what-tabpfn-decided">Inspect what TabPFN decided</h2>
 <p>You do not tune the preprocessing, but you can read it. After a fit, <code>inference_config_</code> holds the resolved limits and thresholds, and <code>inferred_feature_schema_</code> shows the modality TabPFN assigned to each column (which is what <code>categorical_features_indices</code> would override).</p>
-<div id="c11" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:05:13.201559Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:05:13.201367Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:05:13.815811Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:05:13.815113Z&quot;}}" data-execution_count="4">
+<div id="c11" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T13:48:47.911641Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T13:48:47.911457Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T13:48:48.555590Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T13:48:48.554897Z&quot;}}" data-execution_count="6">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>Xq <span class="op">=</span> pd.DataFrame(np.random.RandomState(<span class="dv">0</span>).randn(<span class="dv">200</span>, <span class="dv">5</span>), columns<span class="op">=</span>[<span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"e"</span>])</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>yq <span class="op">=</span> (Xq[<span class="st">"a"</span>] <span class="op">&gt;</span> <span class="dv">0</span>).astype(<span class="bu">int</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>).fit(Xq, yq)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Envelope (hard ceilings):"</span>)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> field <span class="kw">in</span> [<span class="st">"MAX_NUMBER_OF_SAMPLES"</span>, <span class="st">"MAX_NUMBER_OF_FEATURES"</span>, <span class="st">"MAX_NUMBER_OF_CLASSES"</span>]:</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>field<span class="sc">}</span><span class="ss"> = </span><span class="sc">{</span><span class="bu">getattr</span>(model.inference_config_, field)<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Preprocessing thresholds:"</span>)</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> field <span class="kw">in</span> [<span class="st">"MAX_UNIQUE_FOR_CATEGORICAL_FEATURES"</span>, <span class="st">"MIN_UNIQUE_FOR_NUMERICAL_FEATURES"</span>,</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>              <span class="st">"MIN_NUMBER_SAMPLES_FOR_CATEGORICAL_INFERENCE"</span>, <span class="st">"OUTLIER_REMOVAL_STD"</span>]:</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>field<span class="sc">}</span><span class="ss"> = </span><span class="sc">{</span><span class="bu">getattr</span>(model.inference_config_, field)<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Inferred column modality (first five columns):"</span>)</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> feature <span class="kw">in</span> model.inferred_feature_schema_.features[:<span class="dv">5</span>]:</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>feature<span class="sc">.</span>name<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>feature<span class="sc">.</span>modality<span class="sc">.</span>value<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>Xq <span class="op">=</span> pd.DataFrame(np.random.RandomState(<span class="dv">0</span>).randn(<span class="dv">200</span>, <span class="dv">5</span>), columns<span class="op">=</span>[<span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"e"</span>])</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>yq <span class="op">=</span> (Xq[<span class="st">"a"</span>] <span class="op">&gt;</span> <span class="dv">0</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>).fit(Xq, yq)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Envelope (hard ceilings):"</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> field <span class="kw">in</span> [<span class="st">"MAX_NUMBER_OF_SAMPLES"</span>, <span class="st">"MAX_NUMBER_OF_FEATURES"</span>, <span class="st">"MAX_NUMBER_OF_CLASSES"</span>]:</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>field<span class="sc">}</span><span class="ss"> = </span><span class="sc">{</span><span class="bu">getattr</span>(model.inference_config_, field)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Preprocessing thresholds:"</span>)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> field <span class="kw">in</span> [<span class="st">"MAX_UNIQUE_FOR_CATEGORICAL_FEATURES"</span>, <span class="st">"MIN_UNIQUE_FOR_NUMERICAL_FEATURES"</span>,</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>              <span class="st">"MIN_NUMBER_SAMPLES_FOR_CATEGORICAL_INFERENCE"</span>, <span class="st">"OUTLIER_REMOVAL_STD"</span>]:</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>field<span class="sc">}</span><span class="ss"> = </span><span class="sc">{</span><span class="bu">getattr</span>(model.inference_config_, field)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Inferred column modality (first five columns):"</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> feature <span class="kw">in</span> model.inferred_feature_schema_.features[:<span class="dv">5</span>]:</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>feature<span class="sc">.</span>name<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>feature<span class="sc">.</span>modality<span class="sc">.</span>value<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Envelope (hard ceilings):
@@ -491,6 +606,44 @@ Inferred column modality (first five columns):
 </div>
 </div>
 <p>The <strong>envelope</strong> is the hard ceiling the checkpoint was built for (a million rows, two thousand features, a hundred and sixty classes). Separately, <code>ignore_pretraining_limits</code> guards a softer <em>recommended</em> operating range, and pushing well past it is where accuracy starts to slip. The <strong>thresholds</strong> are the rules behind the auto-detection: a string column with 30 or fewer distinct values is treated as categorical, a numeric column needs at least 4 distinct values to stay numeric, and category inference needs at least 100 rows. Those are the knobs the scaling and categorical chapters open up through <code>inference_config</code>.</p>
+</section>
+<section id="pointing-at-the-model-model_path-and-inference_config" class="level2">
+<h2 class="anchored" data-anchor-id="pointing-at-the-model-model_path-and-inference_config">Pointing at the model: model_path and inference_config</h2>
+<p><code>model_path</code> selects the checkpoint. <code>"auto"</code> (the default) downloads the v3 default classifier on first use and caches it; you can redirect the cache with the <code>TABPFN_MODEL_CACHE_DIR</code> environment variable. The envelope and thresholds printed above are read straight off that v3 checkpoint.</p>
+<p>The package ships more than one checkpoint, and several map onto problems we meet elsewhere in the series: a v2.5 family with large-features and large-samples variants for wide or tall data, and v3 variants tuned for different numeric priors (a low-skew and a quantiles checkpoint that connect to the skewed-variables chapter), small samples, and so on. You point at one with a filesystem path to a <code>.ckpt</code>, for example <code>TabPFNClassifier(model_path="path/to/checkpoint.ckpt")</code>; the repository README lists the exact identifiers. For almost every use the <code>"auto"</code> v3 default is the right answer.</p>
+<p><code>inference_config</code> is the door to the internal preprocessing. Pass a dict to override defaults, and an unknown key raises rather than failing silently, so you cannot misspell one. The cell below clips outliers more aggressively and reads the change back off the fitted model.</p>
+<div id="infcfgdemo" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T13:48:48.557556Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T13:48:48.557373Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T13:48:50.002658Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T13:48:50.001786Z&quot;}}" data-execution_count="7">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>sample <span class="op">=</span> pd.DataFrame(np.random.RandomState(<span class="dv">0</span>).randn(<span class="dv">200</span>, <span class="dv">5</span>), columns<span class="op">=</span><span class="bu">list</span>(<span class="st">"abcde"</span>))</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>sample_label <span class="op">=</span> (sample[<span class="st">"a"</span>] <span class="op">&gt;</span> <span class="dv">0</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>default_model <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>).fit(sample, sample_label)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>custom_model <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>                                inference_config<span class="op">=</span>{<span class="st">"OUTLIER_REMOVAL_STD"</span>: <span class="fl">6.0</span>}).fit(sample, sample_label)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"default  OUTLIER_REMOVAL_STD:"</span>, default_model.inference_config_.OUTLIER_REMOVAL_STD)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"override OUTLIER_REMOVAL_STD:"</span>, custom_model.inference_config_.OUTLIER_REMOVAL_STD)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>default  OUTLIER_REMOVAL_STD: auto
+override OUTLIER_REMOVAL_STD: 6.0</code></pre>
+</div>
+</div>
+<p>The override takes, and you can read it back off the fitted model. <code>inference_config</code> is what the scaling and categorical chapters open up: the outlier-clip width, the categorical-detection thresholds, the preprocessing transforms. For most work you never touch it; when you do, it is one dict and the model validates your keys.</p>
+</section>
+<section id="every-other-knob-in-one-place" class="level2">
+<h2 class="anchored" data-anchor-id="every-other-knob-in-one-place">Every other knob, in one place</h2>
+<p>For completeness, the settings that did not need their own section, each as a one-line example:</p>
+<ul>
+<li><code>TabPFNClassifier(average_before_softmax=True)</code>: average the estimators’ logits before the softmax instead of their probabilities (only matters with <code>n_estimators &gt; 1</code>, can help calibration and many-class problems).</li>
+<li><code>TabPFNClassifier(n_preprocessing_jobs=1)</code>: CPU worker processes for preprocessing; <code>1</code> (the default) is usually best, raise it only with many cores and <code>n_estimators &gt; 1</code>.</li>
+<li><code>TabPFNClassifier(device="cuda")</code>: where inference runs; <code>"auto"</code> picks the GPU if one is present.</li>
+<li><code>TabPFNClassifier(random_state=0)</code>: the seed; TabPFN fixes it to 0 by default, unlike most scikit-learn estimators.</li>
+<li><code>TabPFNClassifier(show_progress_bar=True)</code>: a progress bar during inference.</li>
+<li><code>TabPFNClassifier(eval_metric="roc_auc", tuning_config=...)</code>: opt into a post-hoc search that calibrates probabilities and tunes the decision threshold for the chosen metric.</li>
+<li><code>TabPFNClassifier(differentiable_input=True)</code>: make the preprocessing end-to-end differentiable, for explainability and prompt-tuning work.</li>
+</ul>
 </section>
 <section id="takeaways" class="level2">
 <h2 class="anchored" data-anchor-id="takeaways">Takeaways</h2>
