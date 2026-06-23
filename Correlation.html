@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Correlated variables, with TabPFN – TabPFN Practitioner</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./FeatureEngineering.html" rel="next">
+<link href="./Categoricals.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-1f0383365d55c353df76ff428ca87abd.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-5a3118da9a7072767d500adb0b6529fa.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">TabPFN Practitioner</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="./index.html" aria-current="page"> 
+<span class="menu-text">Overview</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/CardoAI/TabPFNPractitioner"> 
+<span class="menu-text">Source</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Needs metadata</a></li><li class="breadcrumb-item"><a href="./Correlation.html">Correlated variables, with TabPFN</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TabPFN Practitioner</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Needs metadata</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Categoricals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">High-cardinality and categorical variables, with TabPFN</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Correlation.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Correlated variables, with TabPFN</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./FeatureEngineering.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Feature engineering, with TabPFN</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./MissingValues.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Missing values, with TabPFN</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Parameters.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TabPFN parameters, for a gradient-boosting practitioner</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-reflex-on-the-data-that-made-it-famous" id="toc-the-reflex-on-the-data-that-made-it-famous" class="nav-link active" data-scroll-target="#the-reflex-on-the-data-that-made-it-famous">The reflex, on the data that made it famous</a></li>
+  <li><a href="#does-correlation-cost-you-accuracy" id="toc-does-correlation-cost-you-accuracy" class="nav-link" data-scroll-target="#does-correlation-cost-you-accuracy">Does correlation cost you accuracy?</a></li>
+  <li><a href="#the-real-cost-which-feature-gets-the-credit" id="toc-the-real-cost-which-feature-gets-the-credit" class="nav-link" data-scroll-target="#the-real-cost-which-feature-gets-the-credit">The real cost: which feature gets the credit</a></li>
+  <li><a href="#a-real-competition-drowning-in-duplicates" id="toc-a-real-competition-drowning-in-duplicates" class="nav-link" data-scroll-target="#a-real-competition-drowning-in-duplicates">A real competition drowning in duplicates</a></li>
+  <li><a href="#noise-correlation-and-the-feature-ceiling" id="toc-noise-correlation-and-the-feature-ceiling" class="nav-link" data-scroll-target="#noise-correlation-and-the-feature-ceiling">Noise, correlation, and the feature ceiling</a></li>
+  <li><a href="#a-bridge-correlation-can-hide-in-the-missingness" id="toc-a-bridge-correlation-can-hide-in-the-missingness" class="nav-link" data-scroll-target="#a-bridge-correlation-can-hide-in-the-missingness">A bridge: correlation can hide in the missingness</a></li>
+  <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Needs metadata</a></li><li class="breadcrumb-item"><a href="./Correlation.html">Correlated variables, with TabPFN</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Correlated variables, with TabPFN</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Two columns that say almost the same thing are the oldest smell in a feature matrix. The gradient-boosting reflex is well drilled: build a correlation heatmap, find the near-duplicate pairs, drop one of each. The most-upvoted exploratory notebook on Kaggle, Pedro Marcelino’s <em>Comprehensive data exploration with Python</em> for House Prices (over 33,000 upvotes), does exactly this. The question for a pretrained model is whether the reflex still earns its place.</p>
+<p>The short answer splits along one line that is easy to miss: correlation barely touches <strong>accuracy</strong>, but it corrupts <strong>attribution</strong>, which feature gets the credit. The drop-a-twin habit is not an accuracy fix. It is an interpretation fix. This chapter shows that on synthetic data, on the House Prices data that made the reflex famous, and on a real Kaggle competition riddled with duplicate columns, then closes on a twist: correlation can hide in the <em>missingness</em> pattern, not the values.</p>
+<p>Two words we will use throughout:</p>
+<ul>
+<li><strong>Copy</strong>: a feature that carries the same signal as a useful one, a near-duplicate (garage cars and garage area).</li>
+<li><strong>Distractor</strong>: a feature correlated with another feature but not with the label, correlated dead weight.</li>
+</ul>
+<div id="91763624" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:31:34.661566Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:31:34.661395Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:31:54.921060Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:31:54.920189Z&quot;}}" data-execution_count="1">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>warnings.filterwarnings(<span class="st">"ignore"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>plt.style.use(<span class="st">"fivethirtyeight"</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm <span class="im">import</span> tqdm</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabulate <span class="im">import</span> tabulate</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> roc_auc_score</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.impute <span class="im">import</span> SimpleImputer</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> Pipeline</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LogisticRegression</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestClassifier</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.inspection <span class="im">import</span> permutation_importance</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.datasets <span class="im">import</span> fetch_openml, load_breast_cancer</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> spearmanr</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.cluster <span class="im">import</span> hierarchy</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.spatial.distance <span class="im">import</span> squareform</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> xgboost <span class="im">import</span> XGBClassifier</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lightgbm <span class="im">import</span> LGBMClassifier</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> catboost <span class="im">import</span> CatBoostClassifier</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn <span class="im">import</span> TabPFNClassifier</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>ROSTER <span class="op">=</span> [<span class="st">"logreg"</span>, <span class="st">"randomforest"</span>, <span class="st">"xgboost"</span>, <span class="st">"lightgbm"</span>, <span class="st">"catboost"</span>, <span class="st">"tabpfn"</span>]</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> printdf(df, nrows<span class="op">=</span><span class="dv">20</span>, showindex<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Print a small dataframe as an aligned text table."""</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(tabulate(df.head(nrows), headers<span class="op">=</span><span class="st">"keys"</span>, tablefmt<span class="op">=</span><span class="st">"psql"</span>, showindex<span class="op">=</span>showindex))</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sigmoid(z):</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Convert a log-odds score into a probability."""</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fl">1.0</span> <span class="op">/</span> (<span class="fl">1.0</span> <span class="op">+</span> np.exp(<span class="op">-</span>z))</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_model(model_name, seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Build one classifier. Models without native missing-value handling get a</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="co">    median-imputer in front (and the linear model a scaler); the tree ensembles and</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="co">    TabPFN take the raw frame, NaNs and all."""</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model_name <span class="op">==</span> <span class="st">"logreg"</span>:</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> Pipeline([(<span class="st">"impute"</span>, SimpleImputer(strategy<span class="op">=</span><span class="st">"median"</span>)),</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>                         (<span class="st">"scale"</span>, StandardScaler()),</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>                         (<span class="st">"lr"</span>, LogisticRegression(max_iter<span class="op">=</span><span class="dv">2000</span>))])</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model_name <span class="op">==</span> <span class="st">"randomforest"</span>:</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> Pipeline([(<span class="st">"impute"</span>, SimpleImputer(strategy<span class="op">=</span><span class="st">"median"</span>)),</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>                         (<span class="st">"rf"</span>, RandomForestClassifier(n_estimators<span class="op">=</span><span class="dv">300</span>, random_state<span class="op">=</span>seed, n_jobs<span class="op">=-</span><span class="dv">1</span>))])</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model_name <span class="op">==</span> <span class="st">"xgboost"</span>:</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> XGBClassifier(n_estimators<span class="op">=</span><span class="dv">300</span>, max_depth<span class="op">=</span><span class="dv">4</span>, learning_rate<span class="op">=</span><span class="fl">0.05</span>,</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>                             subsample<span class="op">=</span><span class="fl">0.9</span>, eval_metric<span class="op">=</span><span class="st">"logloss"</span>, n_jobs<span class="op">=-</span><span class="dv">1</span>, random_state<span class="op">=</span>seed)</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model_name <span class="op">==</span> <span class="st">"lightgbm"</span>:</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> LGBMClassifier(n_estimators<span class="op">=</span><span class="dv">300</span>, max_depth<span class="op">=</span><span class="dv">4</span>, learning_rate<span class="op">=</span><span class="fl">0.05</span>,</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>                              subsample<span class="op">=</span><span class="fl">0.9</span>, verbose<span class="op">=-</span><span class="dv">1</span>, random_state<span class="op">=</span>seed)</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model_name <span class="op">==</span> <span class="st">"catboost"</span>:</span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> CatBoostClassifier(iterations<span class="op">=</span><span class="dv">300</span>, depth<span class="op">=</span><span class="dv">4</span>, learning_rate<span class="op">=</span><span class="fl">0.05</span>, verbose<span class="op">=</span><span class="dv">0</span>, random_state<span class="op">=</span>seed)</span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> TabPFNClassifier(random_state<span class="op">=</span>seed)</span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> score(model_name, X_train, y_train, X_test, y_test, seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Fit one model on numeric features and return test ROC AUC."""</span></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> make_model(model_name, seed<span class="op">=</span>seed)</span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a>    model.fit(X_train, y_train)</span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> roc_auc_score(y_test, model.predict_proba(X_test)[:, <span class="dv">1</span>])</span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> relative_to(table, baseline_col):</span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Re-express every numeric column as its difference from `baseline_col`, then drop</span></span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a><span class="co">    the baseline column. Turns a wall of absolute AUCs into 'how much did this help'."""</span></span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a>    out <span class="op">=</span> table.copy()</span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a>    base <span class="op">=</span> out[baseline_col]</span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> col <span class="kw">in</span> out.columns:</span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> col <span class="op">!=</span> baseline_col <span class="kw">and</span> np.issubdtype(out[col].dtype, np.number):</span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a>            out[col] <span class="op">=</span> out[col] <span class="op">-</span> base</span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> out.drop(columns<span class="op">=</span>[baseline_col])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<section id="the-reflex-on-the-data-that-made-it-famous" class="level2">
+<h2 class="anchored" data-anchor-id="the-reflex-on-the-data-that-made-it-famous">The reflex, on the data that made it famous</h2>
+<p>Before any TabPFN twist, let us reproduce the habit on the real House Prices data. We pull the numeric columns and ask which pairs are strongly correlated. These are the “twins” the Marcelino notebook flags and trims. We make the task binary in the spirit of the series: predict whether a house sells above the median price.</p>
+<div id="30c52a0d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:31:54.923152Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:31:54.922765Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:31:55.046774Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:31:55.046104Z&quot;}}" data-execution_count="2">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>house <span class="op">=</span> fetch_openml(name<span class="op">=</span><span class="st">"house_prices"</span>, version<span class="op">=</span><span class="dv">1</span>, as_frame<span class="op">=</span><span class="va">True</span>).frame</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>numeric <span class="op">=</span> house.select_dtypes(include<span class="op">=</span>[np.number]).drop(columns<span class="op">=</span>[<span class="st">"Id"</span>])</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>sale_price <span class="op">=</span> numeric[<span class="st">"SalePrice"</span>].astype(<span class="bu">float</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>house_X <span class="op">=</span> numeric.drop(columns<span class="op">=</span>[<span class="st">"SalePrice"</span>]).astype(<span class="bu">float</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>house_y <span class="op">=</span> (sale_price <span class="op">&gt;</span> sale_price.median()).astype(<span class="bu">int</span>).values   <span class="co"># expensive vs not</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>correlation <span class="op">=</span> house_X.fillna(house_X.median()).corr().<span class="bu">abs</span>()</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>twin_pairs <span class="op">=</span> [(a, b, correlation.loc[a, b])</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>              <span class="cf">for</span> i, a <span class="kw">in</span> <span class="bu">enumerate</span>(house_X.columns) <span class="cf">for</span> b <span class="kw">in</span> house_X.columns[i <span class="op">+</span> <span class="dv">1</span>:]</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>              <span class="cf">if</span> correlation.loc[a, b] <span class="op">&gt;</span> <span class="fl">0.8</span>]</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>twin_pairs.sort(key<span class="op">=</span><span class="kw">lambda</span> triple: <span class="op">-</span>triple[<span class="dv">2</span>])</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"House Prices: </span><span class="sc">{</span>house_X<span class="sc">.</span>shape[<span class="dv">0</span>]<span class="sc">}</span><span class="ss"> rows, </span><span class="sc">{</span>house_X<span class="sc">.</span>shape[<span class="dv">1</span>]<span class="sc">}</span><span class="ss"> numeric features"</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Strongly correlated pairs (|r| &gt; 0.8), the twins the reflex would trim:"</span>)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> a, b, r <span class="kw">in</span> twin_pairs:</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>a<span class="sc">:14s}</span><span class="ss"> &lt;-&gt;  </span><span class="sc">{</span>b<span class="sc">:14s}</span><span class="ss">  r = </span><span class="sc">{</span>r<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>House Prices: 1460 rows, 36 numeric features
+
+Strongly correlated pairs (|r| &gt; 0.8), the twins the reflex would trim:
+  GarageCars     &lt;-&gt;  GarageArea      r = 0.882
+  GrLivArea      &lt;-&gt;  TotRmsAbvGrd    r = 0.825
+  TotalBsmtSF    &lt;-&gt;  1stFlrSF        r = 0.820</code></pre>
+</div>
+</div>
+<div id="b3bb1b26" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:31:55.048439Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:31:55.048262Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:31:55.570147Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:31:55.569381Z&quot;}}" data-execution_count="3">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># the heatmap a practitioner would actually look at</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>focus <span class="op">=</span> [<span class="st">"GrLivArea"</span>, <span class="st">"TotRmsAbvGrd"</span>, <span class="st">"GarageCars"</span>, <span class="st">"GarageArea"</span>, <span class="st">"TotalBsmtSF"</span>, <span class="st">"1stFlrSF"</span>]</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>block <span class="op">=</span> house_X[focus].fillna(house_X.median()).corr()</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="fl">6.5</span>, <span class="fl">5.5</span>))</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> ax.imshow(block, vmin<span class="op">=-</span><span class="dv">1</span>, vmax<span class="op">=</span><span class="dv">1</span>, cmap<span class="op">=</span><span class="st">"RdBu_r"</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>ax.set_xticks(<span class="bu">range</span>(<span class="bu">len</span>(focus)))<span class="op">;</span> ax.set_xticklabels(focus, rotation<span class="op">=</span><span class="dv">40</span>, ha<span class="op">=</span><span class="st">"right"</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>ax.set_yticks(<span class="bu">range</span>(<span class="bu">len</span>(focus)))<span class="op">;</span> ax.set_yticklabels(focus)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(focus)):</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(focus)):</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        ax.text(j, i, <span class="ss">f"</span><span class="sc">{</span>block<span class="sc">.</span>iloc[i, j]<span class="sc">:.2f}</span><span class="ss">"</span>, ha<span class="op">=</span><span class="st">"center"</span>, va<span class="op">=</span><span class="st">"center"</span>, fontsize<span class="op">=</span><span class="dv">9</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"House Prices: the correlated twins"</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>fig.colorbar(image, fraction<span class="op">=</span><span class="fl">0.046</span>, pad<span class="op">=</span><span class="fl">0.04</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Correlation_files/figure-html/cell-4-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="does-correlation-cost-you-accuracy" class="level2">
+<h2 class="anchored" data-anchor-id="does-correlation-cost-you-accuracy">Does correlation cost you accuracy?</h2>
+<p>Start synthetic, where we control everything. We build a labelled dataset from a handful of informative features, then bolt on <code>copies</code> of one of them. A copy carries the same signal feature 0 already carries, so it adds nothing new, it just repeats. If correlation hurt accuracy, piling on copies would show it.</p>
+<div id="8241ba65" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:31:55.571950Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:31:55.571759Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:32:23.861054Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:32:23.860317Z&quot;}}" data-execution_count="4">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_with_copies(n_copies, kind<span class="op">=</span><span class="st">"indep_noise"</span>, n<span class="op">=</span><span class="dv">2000</span>, n_informative<span class="op">=</span><span class="dv">5</span>, rho<span class="op">=</span><span class="fl">0.99</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""A labelled dataset, then `n_copies` near-duplicates of feature 0.</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">    kind="indep_noise"   each copy is feature 0 plus its own fresh noise (r ~ rho).</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">    kind="deterministic" each copy is an exact rescaling of feature 0.</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">    The label depends only on the informative features, so the copies repeat signal</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">    that feature 0 already provides, they carry nothing new.</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> rng.normal(size<span class="op">=</span>(n, n_informative))</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    beta <span class="op">=</span> rng.uniform(<span class="fl">0.7</span>, <span class="fl">1.3</span>, size<span class="op">=</span>n_informative) <span class="op">*</span> rng.choice([<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>], size<span class="op">=</span>n_informative)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> (rng.random(n) <span class="op">&lt;</span> sigmoid(X <span class="op">@</span> beta)).astype(<span class="bu">int</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    frame <span class="op">=</span> pd.DataFrame(X, columns<span class="op">=</span>[<span class="ss">f"x</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n_informative)])</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    original <span class="op">=</span> X[:, <span class="dv">0</span>]</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> c <span class="kw">in</span> <span class="bu">range</span>(n_copies):</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> kind <span class="op">==</span> <span class="st">"deterministic"</span>:</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>            frame[<span class="ss">f"copy</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> <span class="fl">2.0</span> <span class="op">*</span> original <span class="op">+</span> <span class="fl">0.5</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>            frame[<span class="ss">f"copy</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> rho <span class="op">*</span> original <span class="op">+</span> np.sqrt(<span class="dv">1</span> <span class="op">-</span> rho <span class="op">**</span> <span class="dv">2</span>) <span class="op">*</span> rng.normal(size<span class="op">=</span>n)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> frame, y</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> n_copies <span class="kw">in</span> tqdm([<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">6</span>], desc<span class="op">=</span><span class="st">"copies"</span>):</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    record <span class="op">=</span> {<span class="st">"copies"</span>: n_copies}</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> model_name <span class="kw">in</span> ROSTER:</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>        aucs <span class="op">=</span> []</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> seed <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>]:</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>            frame, y <span class="op">=</span> make_with_copies(n_copies, seed<span class="op">=</span>seed)</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>            half <span class="op">=</span> <span class="bu">len</span>(y) <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>            aucs.append(score(model_name, frame.iloc[:half], y[:half], frame.iloc[half:], y[half:], seed<span class="op">=</span>seed))</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>        record[model_name] <span class="op">=</span> np.mean(aucs)</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>    rows.append(record)</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>copies_auc <span class="op">=</span> pd.DataFrame(rows).set_index(<span class="st">"copies"</span>)</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>printdf(copies_auc)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+copies:   0%|                                                       | 0/4 [00:00&lt;?, ?it/s]
+copies:  25%|███████████▊                                   | 1/4 [00:09&lt;00:27,  9.33s/it]
+copies:  50%|███████████████████████▌                       | 2/4 [00:15&lt;00:14,  7.19s/it]
+copies:  75%|███████████████████████████████████▎           | 3/4 [00:20&lt;00:06,  6.48s/it]
+copies: 100%|███████████████████████████████████████████████| 4/4 [00:28&lt;00:00,  6.93s/it]
+copies: 100%|███████████████████████████████████████████████| 4/4 [00:28&lt;00:00,  7.07s/it]</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>+----------+----------+----------------+-----------+------------+------------+----------+
+|   copies |   logreg |   randomforest |   xgboost |   lightgbm |   catboost |   tabpfn |
+|----------+----------+----------------+-----------+------------+------------+----------|
+|        0 | 0.891623 |       0.867158 |  0.862506 |   0.861708 |   0.876171 | 0.89176  |
+|        2 | 0.891448 |       0.865187 |  0.862823 |   0.858787 |   0.874024 | 0.891916 |
+|        4 | 0.891155 |       0.86341  |  0.862125 |   0.860282 |   0.873338 | 0.891287 |
+|        6 | 0.890113 |       0.861614 |  0.862556 |   0.859712 |   0.874592 | 0.890872 |
++----------+----------+----------------+-----------+------------+------------+----------+</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+</div>
+<p>Flat almost everywhere. TabPFN, XGBoost, LightGBM, CatBoost and logistic regression do not care how many copies of feature 0 we add. The one mover is <strong>RandomForest</strong>, which sags a little as copies pile up: its per-split feature sampling keeps proposing the redundant copies, crowding the genuinely informative features out of the candidate set. That is the exception that proves the rule, the others have no such bottleneck.</p>
+<p>Now the real reflex on real data: drop one of each House Prices twin, and compare keeping both.</p>
+<div id="91166db7" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:32:23.862898Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:32:23.862710Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:32:43.409945Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:32:43.409231Z&quot;}}" data-execution_count="5">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>drop_twin <span class="op">=</span> <span class="bu">set</span>()</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> a, b, r <span class="kw">in</span> twin_pairs:</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    loser <span class="op">=</span> a <span class="cf">if</span> house_X[a].nunique() <span class="op">&lt;</span> house_X[b].nunique() <span class="cf">else</span> b</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> a <span class="kw">not</span> <span class="kw">in</span> drop_twin <span class="kw">and</span> b <span class="kw">not</span> <span class="kw">in</span> drop_twin:</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>        drop_twin.add(loser)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>kept <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> house_X.columns <span class="cf">if</span> c <span class="kw">not</span> <span class="kw">in</span> drop_twin]</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"drop one of each twin: </span><span class="sc">{</span><span class="bu">sorted</span>(drop_twin)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"features: keep all </span><span class="sc">{</span>house_X<span class="sc">.</span>shape[<span class="dv">1</span>]<span class="sc">}</span><span class="ss">  -&gt;  reduced </span><span class="sc">{</span><span class="bu">len</span>(kept)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_name <span class="kw">in</span> tqdm(ROSTER, desc<span class="op">=</span><span class="st">"house prices"</span>):</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    keep_all, reduced <span class="op">=</span> [], []</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> seed <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>]:</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        Xtr, Xte, ytr, yte <span class="op">=</span> train_test_split(house_X, house_y, test_size<span class="op">=</span><span class="fl">0.3</span>,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>                                              random_state<span class="op">=</span>seed, stratify<span class="op">=</span>house_y)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        keep_all.append(score(model_name, Xtr, ytr, Xte, yte, seed<span class="op">=</span>seed))</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        reduced.append(score(model_name, Xtr[kept], ytr, Xte[kept], yte, seed<span class="op">=</span>seed))</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    rows.append({<span class="st">"model"</span>: model_name, <span class="st">"keep_all"</span>: np.mean(keep_all), <span class="st">"drop_twin"</span>: np.mean(reduced)})</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>house_auc <span class="op">=</span> pd.DataFrame(rows).set_index(<span class="st">"model"</span>)</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>printdf(house_auc)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">drop_twin minus keep_all:"</span>)</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>printdf(relative_to(house_auc, <span class="st">"keep_all"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>drop one of each twin: ['GarageCars', 'TotRmsAbvGrd', 'TotalBsmtSF']
+features: keep all 36  -&gt;  reduced 33</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+house prices:   0%|                                                 | 0/6 [00:00&lt;?, ?it/s]
+house prices:  17%|██████▊                                  | 1/6 [00:04&lt;00:20,  4.15s/it]
+house prices:  33%|█████████████▋                           | 2/6 [00:07&lt;00:15,  3.80s/it]
+house prices:  50%|████████████████████▌                    | 3/6 [00:08&lt;00:07,  2.46s/it]
+house prices:  67%|███████████████████████████▎             | 4/6 [00:09&lt;00:03,  1.71s/it]
+house prices:  83%|██████████████████████████████████▏      | 5/6 [00:11&lt;00:01,  1.80s/it]
+house prices: 100%|█████████████████████████████████████████| 6/6 [00:19&lt;00:00,  4.06s/it]
+house prices: 100%|█████████████████████████████████████████| 6/6 [00:19&lt;00:00,  3.26s/it]</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>+--------------+------------+-------------+
+| model        |   keep_all |   drop_twin |
+|--------------+------------+-------------|
+| logreg       |   0.97393  |    0.973784 |
+| randomforest |   0.977662 |    0.978406 |
+| xgboost      |   0.975681 |    0.975348 |
+| lightgbm     |   0.973228 |    0.974145 |
+| catboost     |   0.975737 |    0.975639 |
+| tabpfn       |   0.981081 |    0.980421 |
++--------------+------------+-------------+
+
+drop_twin minus keep_all:
++--------------+--------------+
+| model        |    drop_twin |
+|--------------+--------------|
+| logreg       | -0.000145955 |
+| randomforest |  0.000743675 |
+| xgboost      | -0.000333611 |
+| lightgbm     |  0.000917431 |
+| catboost     | -9.73033e-05 |
+| tabpfn       | -0.000660272 |
++--------------+--------------+</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+</div>
+<p>The 33,000-upvote move changes test AUC by a few ten-thousandths, in either direction, for every model including logistic regression, where multicollinearity is the textbook worry. Dropping the twin does not buy accuracy. So what is it for?</p>
+</section>
+<section id="the-real-cost-which-feature-gets-the-credit" class="level2">
+<h2 class="anchored" data-anchor-id="the-real-cost-which-feature-gets-the-credit">The real cost: which feature gets the credit</h2>
+<p>Correlation does not break the score, it breaks the <em>story</em>. Permutation importance asks “how much does the score drop if I scramble this column?” With a twin present, scrambling one column changes little, because its partner still carries the signal. So both twins look unimportant, and the credit dissolves.</p>
+<p>First synthetically: watch the permutation importance of the original feature 0 as we add copies of it.</p>
+<div id="c59fb039" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:32:43.412098Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:32:43.411903Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:34:06.193200Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:34:06.192379Z&quot;}}" data-execution_count="6">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> importance_of_original(model_name, n_copies, seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Permutation importance of feature x0 as copies of it are added."""</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    frame, y <span class="op">=</span> make_with_copies(n_copies, n<span class="op">=</span><span class="dv">1600</span>, seed<span class="op">=</span>seed)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    half <span class="op">=</span> <span class="bu">len</span>(y) <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> make_model(model_name, seed<span class="op">=</span>seed)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    model.fit(frame.iloc[:half], y[:half])</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> permutation_importance(model, frame.iloc[half:], y[half:], scoring<span class="op">=</span><span class="st">"roc_auc"</span>,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>                                    n_repeats<span class="op">=</span><span class="dv">4</span>, random_state<span class="op">=</span>seed)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result.importances_mean[frame.columns.get_loc(<span class="st">"x0"</span>)]</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> n_copies <span class="kw">in</span> tqdm([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">6</span>], desc<span class="op">=</span><span class="st">"importance"</span>):</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    rows.append({<span class="st">"copies"</span>: n_copies,</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"RF imp(x0)"</span>: importance_of_original(<span class="st">"randomforest"</span>, n_copies),</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"TabPFN imp(x0)"</span>: importance_of_original(<span class="st">"tabpfn"</span>, n_copies)})</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>printdf(pd.DataFrame(rows).set_index(<span class="st">"copies"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+importance:   0%|                                                   | 0/4 [00:00&lt;?, ?it/s]
+importance:  25%|██████████▊                                | 1/4 [00:14&lt;00:43, 14.40s/it]
+importance:  50%|█████████████████████▌                     | 2/4 [00:31&lt;00:31, 15.85s/it]
+importance:  75%|████████████████████████████████▎          | 3/4 [00:53&lt;00:18, 18.70s/it]
+importance: 100%|███████████████████████████████████████████| 4/4 [01:22&lt;00:00, 22.93s/it]
+importance: 100%|███████████████████████████████████████████| 4/4 [01:22&lt;00:00, 20.69s/it]</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>+----------+--------------+------------------+
+|   copies |   RF imp(x0) |   TabPFN imp(x0) |
+|----------+--------------+------------------|
+|        0 |  0.0904386   |       0.0967589  |
+|        1 |  0.0146803   |       0.0123468  |
+|        3 | -0.000317386 |       0.00263446 |
+|        6 | -0.000397123 |       0.0161992  |
++----------+--------------+------------------+</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+</div>
+<p>The importance of the very same feature falls toward zero as its copies arrive, for RandomForest and for TabPFN alike, while the accuracy table above never moved. TabPFN is not immune: like a tree, it spreads its reliance across the redundant substitutes, and single-feature importance can no longer see the signal.</p>
+<p>This is the famous scikit-learn pitfall, and it is worth seeing on real data. Breast Cancer is the canonical case: its radius, perimeter and area columns are near-perfect twins (r &gt; 0.99).</p>
+<div id="78e5ce96" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:34:06.194952Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:34:06.194763Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:36:34.909223Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:36:34.908504Z&quot;}}" data-execution_count="7">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>cancer <span class="op">=</span> load_breast_cancer()</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>Xc, yc <span class="op">=</span> cancer.data, cancer.target</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>Xc_tr, Xc_te, yc_tr, yc_te <span class="op">=</span> train_test_split(Xc, yc, test_size<span class="op">=</span><span class="fl">0.3</span>, random_state<span class="op">=</span><span class="dv">0</span>, stratify<span class="op">=</span>yc)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Strong model, yet every single-feature importance is tiny:"</span>)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_name <span class="kw">in</span> [<span class="st">"randomforest"</span>, <span class="st">"tabpfn"</span>]:</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> make_model(model_name).fit(Xc_tr, yc_tr)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    auc <span class="op">=</span> roc_auc_score(yc_te, model.predict_proba(Xc_te)[:, <span class="dv">1</span>])</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    pi <span class="op">=</span> permutation_importance(model, Xc_te, yc_te, scoring<span class="op">=</span><span class="st">"roc_auc"</span>, n_repeats<span class="op">=</span><span class="dv">8</span>, random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>model_name<span class="sc">:12s}</span><span class="ss"> AUC=</span><span class="sc">{</span>auc<span class="sc">:.3f}</span><span class="ss">   largest importance over 30 features = </span><span class="sc">{</span>pi<span class="sc">.</span>importances_mean<span class="sc">.</span><span class="bu">max</span>()<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Strong model, yet every single-feature importance is tiny:
+  randomforest AUC=0.979   largest importance over 30 features = 0.0016
+  tabpfn       AUC=0.995   largest importance over 30 features = 0.0166</code></pre>
+</div>
+</div>
+<div id="2e9fc90a" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:36:34.911319Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:36:34.911125Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:36:44.513305Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:36:44.512533Z&quot;}}" data-execution_count="8">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># the fix: cluster features by |Spearman| correlation, keep one per cluster</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>spearman <span class="op">=</span> spearmanr(Xc).correlation</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>spearman <span class="op">=</span> np.nan_to_num((spearman <span class="op">+</span> spearman.T) <span class="op">/</span> <span class="fl">2.0</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>np.fill_diagonal(spearman, <span class="fl">1.0</span>)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>linkage <span class="op">=</span> hierarchy.ward(squareform(<span class="fl">1.0</span> <span class="op">-</span> np.<span class="bu">abs</span>(spearman), checks<span class="op">=</span><span class="va">False</span>))</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Keep one representative per correlation cluster, and the importances return:"</span>)</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> threshold <span class="kw">in</span> [<span class="fl">0.5</span>, <span class="fl">1.0</span>]:</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    clusters <span class="op">=</span> hierarchy.fcluster(linkage, threshold, criterion<span class="op">=</span><span class="st">"distance"</span>)</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    representative, seen <span class="op">=</span> [], <span class="bu">set</span>()</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> index, cluster_id <span class="kw">in</span> <span class="bu">enumerate</span>(clusters):</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> cluster_id <span class="kw">not</span> <span class="kw">in</span> seen:</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>            seen.add(cluster_id)<span class="op">;</span> representative.append(index)</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    rf <span class="op">=</span> make_model(<span class="st">"randomforest"</span>).fit(Xc_tr[:, representative], yc_tr)</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    pi <span class="op">=</span> permutation_importance(rf, Xc_te[:, representative], yc_te, scoring<span class="op">=</span><span class="st">"roc_auc"</span>, n_repeats<span class="op">=</span><span class="dv">8</span>, random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>    auc <span class="op">=</span> roc_auc_score(yc_te, rf.predict_proba(Xc_te[:, representative])[:, <span class="dv">1</span>])</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  threshold </span><span class="sc">{</span>threshold<span class="sc">}</span><span class="ss">: kept </span><span class="sc">{</span><span class="bu">len</span>(representative)<span class="sc">:2d}</span><span class="ss">/30 features   "</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"AUC=</span><span class="sc">{</span>auc<span class="sc">:.3f}</span><span class="ss">   largest importance = </span><span class="sc">{</span>pi<span class="sc">.</span>importances_mean<span class="sc">.</span><span class="bu">max</span>()<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">4</span>))</span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>hierarchy.dendrogram(linkage, labels<span class="op">=</span><span class="bu">list</span>(cancer.feature_names), leaf_rotation<span class="op">=</span><span class="dv">90</span>,</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>                     color_threshold<span class="op">=</span><span class="fl">1.0</span>, ax<span class="op">=</span>ax)</span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Breast Cancer features cluster by |Spearman| correlation"</span>)</span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Keep one representative per correlation cluster, and the importances return:
+  threshold 0.5: kept 11/30 features   AUC=0.975   largest importance = 0.1243
+  threshold 1.0: kept  5/30 features   AUC=0.973   largest importance = 0.2248</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Correlation_files/figure-html/cell-9-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>A 0.97-AUC model where permuting any one of 30 features barely moves the score, the false reading is “nothing matters”. Keep one feature per correlation cluster and the importances come back, at a tiny accuracy cost. TabPFN shows the same collapse as the forest. The lesson: pruning correlated features is how you protect your <em>interpretation</em>, not your accuracy.</p>
+</section>
+<section id="a-real-competition-drowning-in-duplicates" class="level2">
+<h2 class="anchored" data-anchor-id="a-real-competition-drowning-in-duplicates">A real competition drowning in duplicates</h2>
+<p>House Prices is tidy. Santander Customer Satisfaction is a real Kaggle competition where the famous first move was to strip constant, duplicate and correlated columns, because the anonymized feature set is full of them. We remove them in stages, so we can see which removal actually helps, rather than crediting “dedup” as one lump. The column sets are decided without looking at the label.</p>
+<div id="30437a8d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:36:44.515181Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:36:44.514991Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:38:47.128658Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:38:47.127836Z&quot;}}" data-execution_count="9">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>santander <span class="op">=</span> fetch_openml(name<span class="op">=</span><span class="st">"Santander_customer_satisfaction"</span>, version<span class="op">=</span><span class="dv">1</span>, as_frame<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>target_name <span class="op">=</span> santander.target.name</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>san_y <span class="op">=</span> santander.frame[target_name].astype(<span class="bu">int</span>).values</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>san_X <span class="op">=</span> santander.frame.drop(columns<span class="op">=</span>[target_name])</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>san_X <span class="op">=</span> san_X.drop(columns<span class="op">=</span>[c <span class="cf">for</span> c <span class="kw">in</span> san_X.columns <span class="cf">if</span> c.lower() <span class="op">==</span> <span class="st">"id"</span>], errors<span class="op">=</span><span class="st">"ignore"</span>)</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>san_X <span class="op">=</span> san_X.<span class="bu">apply</span>(pd.to_numeric, errors<span class="op">=</span><span class="st">"coerce"</span>)</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Santander: </span><span class="sc">{</span>san_X<span class="sc">.</span>shape[<span class="dv">0</span>]<span class="sc">}</span><span class="ss"> rows, </span><span class="sc">{</span>san_X<span class="sc">.</span>shape[<span class="dv">1</span>]<span class="sc">}</span><span class="ss"> features, positive rate </span><span class="sc">{</span>san_y<span class="sc">.</span>mean()<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> staged_columns(frame):</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Three nested column sets, each decided label-free: drop constant columns, then</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a><span class="co">    exact duplicates, then one of every pair correlated above 0.95."""</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>    constant <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> frame.columns <span class="cf">if</span> frame[c].nunique(dropna<span class="op">=</span><span class="va">False</span>) <span class="op">&lt;=</span> <span class="dv">1</span>]</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>    after_constant <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> frame.columns <span class="cf">if</span> c <span class="kw">not</span> <span class="kw">in</span> constant]</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    seen, duplicate <span class="op">=</span> {}, []</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> c <span class="kw">in</span> after_constant:</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>        key <span class="op">=</span> <span class="bu">tuple</span>(np.nan_to_num(frame[c].values))</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>        duplicate.append(c) <span class="cf">if</span> key <span class="kw">in</span> seen <span class="cf">else</span> seen.setdefault(key, c)</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>    after_duplicate <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> after_constant <span class="cf">if</span> c <span class="kw">not</span> <span class="kw">in</span> duplicate]</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>    correlation <span class="op">=</span> frame[after_duplicate].corr().<span class="bu">abs</span>().fillna(<span class="fl">0.0</span>)</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>    dropped <span class="op">=</span> <span class="bu">set</span>()</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, c <span class="kw">in</span> <span class="bu">enumerate</span>(after_duplicate):</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> c <span class="kw">in</span> dropped:</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>            <span class="cf">continue</span></span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> other <span class="kw">in</span> after_duplicate[i <span class="op">+</span> <span class="dv">1</span>:]:</span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> other <span class="kw">not</span> <span class="kw">in</span> dropped <span class="kw">and</span> correlation.loc[c, other] <span class="op">&gt;</span> <span class="fl">0.95</span>:</span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>                dropped.add(other)</span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>    after_correlated <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> after_duplicate <span class="cf">if</span> c <span class="kw">not</span> <span class="kw">in</span> dropped]</span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {<span class="st">"keep_all"</span>: frame.columns.tolist(), <span class="st">"drop_const"</span>: after_constant,</span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a>            <span class="st">"drop_const_dup"</span>: after_duplicate, <span class="st">"drop_const_dup_corr"</span>: after_correlated}</span>
+<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_name <span class="kw">in</span> tqdm([<span class="st">"tabpfn"</span>, <span class="st">"xgboost"</span>, <span class="st">"randomforest"</span>], desc<span class="op">=</span><span class="st">"santander"</span>):</span>
+<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a>    stage_aucs <span class="op">=</span> {k: [] <span class="cf">for</span> k <span class="kw">in</span> [<span class="st">"keep_all"</span>, <span class="st">"drop_const"</span>, <span class="st">"drop_const_dup"</span>, <span class="st">"drop_const_dup_corr"</span>]}</span>
+<span id="cb22-36"><a href="#cb22-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> seed <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>]:</span>
+<span id="cb22-37"><a href="#cb22-37" aria-hidden="true" tabindex="-1"></a>        Xtr, Xte, ytr, yte <span class="op">=</span> train_test_split(san_X, san_y, train_size<span class="op">=</span><span class="dv">3000</span>, test_size<span class="op">=</span><span class="dv">3000</span>,</span>
+<span id="cb22-38"><a href="#cb22-38" aria-hidden="true" tabindex="-1"></a>                                              random_state<span class="op">=</span>seed, stratify<span class="op">=</span>san_y)</span>
+<span id="cb22-39"><a href="#cb22-39" aria-hidden="true" tabindex="-1"></a>        sets <span class="op">=</span> staged_columns(Xtr)</span>
+<span id="cb22-40"><a href="#cb22-40" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> stage, cols <span class="kw">in</span> sets.items():</span>
+<span id="cb22-41"><a href="#cb22-41" aria-hidden="true" tabindex="-1"></a>            stage_aucs[stage].append(score(model_name, Xtr[cols], ytr, Xte[cols], yte, seed<span class="op">=</span>seed))</span>
+<span id="cb22-42"><a href="#cb22-42" aria-hidden="true" tabindex="-1"></a>    rows.append({<span class="st">"model"</span>: model_name, <span class="op">**</span>{k: np.mean(v) <span class="cf">for</span> k, v <span class="kw">in</span> stage_aucs.items()}})</span>
+<span id="cb22-43"><a href="#cb22-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-44"><a href="#cb22-44" aria-hidden="true" tabindex="-1"></a>santander_auc <span class="op">=</span> pd.DataFrame(rows).set_index(<span class="st">"model"</span>)</span>
+<span id="cb22-45"><a href="#cb22-45" aria-hidden="true" tabindex="-1"></a>sizes <span class="op">=</span> {k: <span class="bu">len</span>(v) <span class="cf">for</span> k, v <span class="kw">in</span> staged_columns(san_X).items()}</span>
+<span id="cb22-46"><a href="#cb22-46" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"features per stage:"</span>, sizes)</span>
+<span id="cb22-47"><a href="#cb22-47" aria-hidden="true" tabindex="-1"></a>printdf(santander_auc)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Santander: 76020 rows, 369 features, positive rate 0.040</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+santander:   0%|                                                    | 0/3 [00:00&lt;?, ?it/s]
+santander:  33%|██████████████▋                             | 1/3 [01:29&lt;02:58, 89.10s/it]
+santander:  67%|█████████████████████████████▎              | 2/3 [01:33&lt;00:39, 39.17s/it]
+santander: 100%|████████████████████████████████████████████| 3/3 [01:40&lt;00:00, 24.41s/it]
+santander: 100%|████████████████████████████████████████████| 3/3 [01:40&lt;00:00, 33.39s/it]</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>features per stage: {'keep_all': 369, 'drop_const': 335, 'drop_const_dup': 306, 'drop_const_dup_corr': 205}
++--------------+------------+--------------+------------------+-----------------------+
+| model        |   keep_all |   drop_const |   drop_const_dup |   drop_const_dup_corr |
+|--------------+------------+--------------+------------------+-----------------------|
+| tabpfn       |   0.81341  |     0.828903 |         0.828133 |              0.832718 |
+| xgboost      |   0.794409 |     0.794409 |         0.794409 |              0.79404  |
+| randomforest |   0.746637 |     0.746967 |         0.755206 |              0.752621 |
++--------------+------------+--------------+------------------+-----------------------+</code></pre>
+</div>
+</div>
+<p>The dedup looks like a big TabPFN win, but the staged table tells the honest story: almost all of TabPFN’s gain lands at the <strong>constant-column</strong> step, not the correlated one. A zero-variance column is a wasted feature slot that TabPFN still normalizes and attends to, while a tree simply never splits on it (XGBoost is flat across all three stages). The genuinely-correlated removal adds only a sliver, consistent with House Prices: correlation is close to accuracy-neutral, even here. The real takeaway is a hygiene rule, drop dead columns for TabPFN, plus the same constant story we have seen all chapter.</p>
+<p>A note from the field: in the IEEE-CIS Fraud Detection competition, Chris Deotte (a Kaggle Grandmaster) reduced 339 correlated “V” columns by grouping them by shared missing-value structure, then keeping the highest-cardinality member of each cluster correlated above 0.75. The same clustering idea as Breast Cancer, at competition scale.</p>
+</section>
+<section id="noise-correlation-and-the-feature-ceiling" class="level2">
+<h2 class="anchored" data-anchor-id="noise-correlation-and-the-feature-ceiling">Noise, correlation, and the feature ceiling</h2>
+<p>A practitioner fear is that extra columns, especially correlated ones, will swamp a model. We test it directly: add either pure noise columns or aligned correlated copies, and watch TabPFN and XGBoost. (Aligned matters: a copy must track the same informative feature in train and test, or the mismatch, not the correlation, is what hurts.)</p>
+<div id="dace3c9a" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:38:47.130550Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:38:47.130268Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:39:25.061101Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:39:25.060391Z&quot;}}" data-execution_count="10">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_padded(n_pad, kind, n<span class="op">=</span><span class="dv">2000</span>, n_informative<span class="op">=</span><span class="dv">8</span>, rho<span class="op">=</span><span class="fl">0.9</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Informative features plus `n_pad` extra columns, either pure noise or correlated</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="co">    copies of a random informative feature. The whole frame is built before the split,</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="co">    so every padding column means the same thing in train and test."""</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> rng.normal(size<span class="op">=</span>(n, n_informative))</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    beta <span class="op">=</span> rng.uniform(<span class="fl">0.6</span>, <span class="fl">1.2</span>, size<span class="op">=</span>n_informative) <span class="op">*</span> rng.choice([<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>], size<span class="op">=</span>n_informative)</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> (rng.random(n) <span class="op">&lt;</span> sigmoid(X <span class="op">@</span> beta)).astype(<span class="bu">int</span>)</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    frame <span class="op">=</span> pd.DataFrame(X, columns<span class="op">=</span>[<span class="ss">f"x</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n_informative)])</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>    spec <span class="op">=</span> np.random.RandomState(<span class="dv">1000</span> <span class="op">+</span> seed)</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> p <span class="kw">in</span> <span class="bu">range</span>(n_pad):</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> kind <span class="op">==</span> <span class="st">"noise"</span>:</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>            frame[<span class="ss">f"pad</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> rng.normal(size<span class="op">=</span>n)</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>            j <span class="op">=</span> spec.randint(<span class="dv">0</span>, n_informative)</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>            frame[<span class="ss">f"pad</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> rho <span class="op">*</span> X[:, j] <span class="op">+</span> np.sqrt(<span class="dv">1</span> <span class="op">-</span> rho <span class="op">**</span> <span class="dv">2</span>) <span class="op">*</span> rng.normal(size<span class="op">=</span>n)</span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> frame, y</span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> n_pad <span class="kw">in</span> tqdm([<span class="dv">0</span>, <span class="dv">50</span>, <span class="dv">200</span>], desc<span class="op">=</span><span class="st">"padding"</span>):</span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>    record <span class="op">=</span> {<span class="st">"added_cols"</span>: n_pad}</span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> kind <span class="kw">in</span> [<span class="st">"noise"</span>, <span class="st">"correlated"</span>]:</span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> model_name <span class="kw">in</span> [<span class="st">"tabpfn"</span>, <span class="st">"xgboost"</span>]:</span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>            aucs <span class="op">=</span> []</span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> seed <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>]:</span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a>                frame, y <span class="op">=</span> make_padded(n_pad, kind, seed<span class="op">=</span>seed)</span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a>                Xtr, Xte, ytr, yte <span class="op">=</span> train_test_split(frame, y, test_size<span class="op">=</span><span class="dv">800</span>, random_state<span class="op">=</span>seed, stratify<span class="op">=</span>y)</span>
+<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a>                aucs.append(score(model_name, Xtr, ytr, Xte, yte, seed<span class="op">=</span>seed))</span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>            record[<span class="ss">f"</span><span class="sc">{</span>model_name<span class="sc">}</span><span class="ss">_</span><span class="sc">{</span>kind[:<span class="dv">4</span>]<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> np.mean(aucs)</span>
+<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>    rows.append(record)</span>
+<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>printdf(pd.DataFrame(rows).set_index(<span class="st">"added_cols"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+padding:   0%|                                                      | 0/3 [00:00&lt;?, ?it/s]
+padding:  33%|███████████████▎                              | 1/3 [00:06&lt;00:12,  6.17s/it]
+padding:  67%|██████████████████████████████▋               | 2/3 [00:16&lt;00:08,  8.48s/it]
+padding: 100%|██████████████████████████████████████████████| 3/3 [00:37&lt;00:00, 14.49s/it]
+padding: 100%|██████████████████████████████████████████████| 3/3 [00:37&lt;00:00, 12.64s/it]</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>+--------------+---------------+----------------+---------------+----------------+
+|   added_cols |   tabpfn_nois |   xgboost_nois |   tabpfn_corr |   xgboost_corr |
+|--------------+---------------+----------------+---------------+----------------|
+|            0 |      0.891716 |       0.85938  |      0.891716 |       0.85938  |
+|           50 |      0.88893  |       0.844251 |      0.883808 |       0.855037 |
+|          200 |      0.88868  |       0.837165 |      0.88575  |       0.862016 |
++--------------+---------------+----------------+---------------+----------------+</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+</div>
+<div id="ef067ea8" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:39:25.063029Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:39:25.062842Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:39:37.502298Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:39:37.501592Z&quot;}}" data-execution_count="11">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># the ceiling: grow the width toward TabPFN v3's 2000-feature envelope (pure noise padding)</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> width <span class="kw">in</span> tqdm([<span class="dv">50</span>, <span class="dv">500</span>, <span class="dv">2000</span>], desc<span class="op">=</span><span class="st">"ceiling"</span>):</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    frame, y <span class="op">=</span> make_padded(width <span class="op">-</span> <span class="dv">8</span>, <span class="st">"noise"</span>, n<span class="op">=</span><span class="dv">1500</span>, seed<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    Xtr, Xte, ytr, yte <span class="op">=</span> train_test_split(frame, y, train_size<span class="op">=</span><span class="dv">1000</span>, test_size<span class="op">=</span><span class="dv">500</span>, random_state<span class="op">=</span><span class="dv">0</span>, stratify<span class="op">=</span>y)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time.perf_counter()</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> make_model(<span class="st">"tabpfn"</span>).fit(Xtr, ytr)</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    auc <span class="op">=</span> roc_auc_score(yte, model.predict_proba(Xte)[:, <span class="dv">1</span>])</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    rows.append({<span class="st">"width"</span>: width, <span class="st">"tabpfn_auc"</span>: auc, <span class="st">"fit_predict_seconds"</span>: time.perf_counter() <span class="op">-</span> start})</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>printdf(pd.DataFrame(rows).set_index(<span class="st">"width"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+ceiling:   0%|                                                      | 0/3 [00:00&lt;?, ?it/s]
+ceiling:  33%|███████████████▎                              | 1/3 [00:01&lt;00:03,  1.67s/it]
+ceiling:  67%|██████████████████████████████▋               | 2/3 [00:05&lt;00:02,  2.90s/it]
+ceiling: 100%|██████████████████████████████████████████████| 3/3 [00:12&lt;00:00,  4.77s/it]
+ceiling: 100%|██████████████████████████████████████████████| 3/3 [00:12&lt;00:00,  4.14s/it]</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>+---------+--------------+-----------------------+
+|   width |   tabpfn_auc |   fit_predict_seconds |
+|---------+--------------+-----------------------|
+|      50 |     0.915728 |               1.65195 |
+|     500 |     0.90592  |               3.54238 |
+|    2000 |     0.897568 |               6.00408 |
++---------+--------------+-----------------------+</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+</div>
+<p>TabPFN shrugs off both noise and correlated padding at the accuracy level, the drop is under 0.01 even at 200 extra columns. XGBoost is actually bothered a little more by noise than by correlated copies, since the copies still carry usable signal. The widely-repeated idea that correlated features are qualitatively harder than noise does not show up here as an accuracy effect; it lives in the attribution, which we already saw collapse. Growing toward TabPFN’s 2000-feature envelope is a gentle accuracy bleed and a rising compute bill, not a cliff.</p>
+</section>
+<section id="a-bridge-correlation-can-hide-in-the-missingness" class="level2">
+<h2 class="anchored" data-anchor-id="a-bridge-correlation-can-hide-in-the-missingness">A bridge: correlation can hide in the missingness</h2>
+<p>Correlation does not only live in values. Columns can be correlated in <em>when they go missing</em>, several fields that tend to be blank together, or filled together. Does that pattern matter, and does TabPFN read it?</p>
+<p>We build it cleanly. Four informative features drive the base label. Then <code>order</code> extra carrier columns hold noise values, each missing independently half the time. The label gets a boost when the carriers <strong>agree</strong>, all missing or all present. That signal is invisible in any single column (each is blank half the time regardless) and only readable from the combination. We confirm that with a guard before testing models.</p>
+<div id="8a09fa3f" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:39:37.504070Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:39:37.503886Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:39:37.547726Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:39:37.546562Z&quot;}}" data-execution_count="12">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_comissing(n, order, delta, seed):</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Joint missingness signal: label boosted when the `order` carrier columns agree</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="co">    (all missing or all present). Marginally invisible, only the combination carries it."""</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    informative <span class="op">=</span> rng.normal(size<span class="op">=</span>(n, <span class="dv">4</span>))</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>    beta <span class="op">=</span> np.array([<span class="fl">1.0</span>, <span class="op">-</span><span class="fl">0.8</span>, <span class="fl">0.9</span>, <span class="op">-</span><span class="fl">0.7</span>])</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>    logit <span class="op">=</span> informative <span class="op">@</span> beta</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>    carrier <span class="op">=</span> rng.normal(size<span class="op">=</span>(n, order))</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>    missing <span class="op">=</span> rng.random((n, order)) <span class="op">&lt;</span> <span class="fl">0.5</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>    agree <span class="op">=</span> missing.<span class="bu">all</span>(axis<span class="op">=</span><span class="dv">1</span>) <span class="op">|</span> (<span class="op">~</span>missing).<span class="bu">all</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>    logit <span class="op">=</span> logit <span class="op">+</span> delta <span class="op">*</span> agree</span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> (rng.random(n) <span class="op">&lt;</span> sigmoid(logit)).astype(<span class="bu">int</span>)</span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>    carrier[missing] <span class="op">=</span> np.nan</span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.hstack([informative, carrier]), y</span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a><span class="co"># guard: is the signal really invisible in single columns?</span></span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>frame, y <span class="op">=</span> make_comissing(<span class="dv">4000</span>, order<span class="op">=</span><span class="dv">2</span>, delta<span class="op">=</span><span class="fl">3.0</span>, seed<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>isna <span class="op">=</span> np.isnan(frame[:, <span class="dv">4</span>:]).astype(<span class="bu">float</span>)</span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a>agree <span class="op">=</span> (isna[:, <span class="dv">0</span>] <span class="op">==</span> isna[:, <span class="dv">1</span>]).astype(<span class="bu">float</span>)</span>
+<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a>Xtr, Xte, ytr, yte, a_tr, a_te <span class="op">=</span> train_test_split(isna, y, agree, test_size<span class="op">=</span><span class="dv">1400</span>, random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a>marginal <span class="op">=</span> roc_auc_score(yte, LogisticRegression(max_iter<span class="op">=</span><span class="dv">1000</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>])</span>
+<span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a>joint <span class="op">=</span> roc_auc_score(yte, LogisticRegression(max_iter<span class="op">=</span><span class="dv">1000</span>).fit(a_tr.reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>), ytr)</span>
+<span id="cb34-24"><a href="#cb34-24" aria-hidden="true" tabindex="-1"></a>                      .predict_proba(a_te.reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>))[:, <span class="dv">1</span>])</span>
+<span id="cb34-25"><a href="#cb34-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"AUC from each carrier's missing flag alone : </span><span class="sc">{</span>marginal<span class="sc">:.3f}</span><span class="ss">  (a coin flip)"</span>)</span>
+<span id="cb34-26"><a href="#cb34-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"AUC from whether the carriers agree        : </span><span class="sc">{</span>joint<span class="sc">:.3f}</span><span class="ss">  (the real signal)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>AUC from each carrier's missing flag alone : 0.503  (a coin flip)
+AUC from whether the carriers agree        : 0.710  (the real signal)</code></pre>
+</div>
+</div>
+<div id="dc495f92" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:39:37.550292Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:39:37.549983Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:39:57.715374Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:39:57.714606Z&quot;}}" data-execution_count="13">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fill_random(train, test, seed):</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Replace each NaN with a random observed value of its column, so the fact that it</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="co">    was missing leaves no trace. This is impute-and-forget done honestly."""</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    train, test <span class="op">=</span> train.copy(), test.copy()</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(train.shape[<span class="dv">1</span>]):</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>        observed <span class="op">=</span> train[<span class="op">~</span>np.isnan(train[:, j]), j]</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> observed.size <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>            observed <span class="op">=</span> np.array([<span class="fl">0.0</span>])</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> matrix <span class="kw">in</span> (train, test):</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>            mask <span class="op">=</span> np.isnan(matrix[:, j])</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>            matrix[mask, j] <span class="op">=</span> rng.choice(observed, size<span class="op">=</span><span class="bu">int</span>(mask.<span class="bu">sum</span>()))</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> train, test</span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> comissing_auc(arm, order, delta, seed):</span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>    frame, y <span class="op">=</span> make_comissing(<span class="dv">4000</span>, order, delta, seed)</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>    Xtr, Xte, ytr, yte <span class="op">=</span> train_test_split(frame, y, test_size<span class="op">=</span><span class="dv">1400</span>, random_state<span class="op">=</span>seed, stratify<span class="op">=</span>y)</span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> arm <span class="op">==</span> <span class="st">"impute_then_forget"</span>:</span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>        Xtr, Xte <span class="op">=</span> fill_random(Xtr, Xte, seed)</span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> score(<span class="st">"xgboost"</span>, Xtr, ytr, Xte, yte, seed<span class="op">=</span>seed)</span>
+<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> score(<span class="st">"tabpfn"</span> <span class="cf">if</span> arm <span class="op">==</span> <span class="st">"tabpfn_native"</span> <span class="cf">else</span> <span class="st">"xgboost"</span>, Xtr, ytr, Xte, yte, seed<span class="op">=</span>seed)</span>
+<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> order <span class="kw">in</span> tqdm([<span class="dv">2</span>, <span class="dv">3</span>], desc<span class="op">=</span><span class="st">"co-missingness"</span>):</span>
+<span id="cb36-27"><a href="#cb36-27" aria-hidden="true" tabindex="-1"></a>    record <span class="op">=</span> {<span class="st">"order"</span>: order}</span>
+<span id="cb36-28"><a href="#cb36-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> arm <span class="kw">in</span> [<span class="st">"impute_then_forget"</span>, <span class="st">"xgb_native"</span>, <span class="st">"tabpfn_native"</span>]:</span>
+<span id="cb36-29"><a href="#cb36-29" aria-hidden="true" tabindex="-1"></a>        on <span class="op">=</span> np.mean([comissing_auc(arm, order, <span class="fl">3.0</span>, s) <span class="cf">for</span> s <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>]])</span>
+<span id="cb36-30"><a href="#cb36-30" aria-hidden="true" tabindex="-1"></a>        off <span class="op">=</span> np.mean([comissing_auc(arm, order, <span class="fl">0.0</span>, s) <span class="cf">for</span> s <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>]])</span>
+<span id="cb36-31"><a href="#cb36-31" aria-hidden="true" tabindex="-1"></a>        record[arm] <span class="op">=</span> on <span class="op">-</span> off   <span class="co"># lift the joint missing-signal adds over no-signal</span></span>
+<span id="cb36-32"><a href="#cb36-32" aria-hidden="true" tabindex="-1"></a>    rows.append(record)</span>
+<span id="cb36-33"><a href="#cb36-33" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Lift from the joint co-missing signal (AUC with signal minus without):"</span>)</span>
+<span id="cb36-34"><a href="#cb36-34" aria-hidden="true" tabindex="-1"></a>printdf(pd.DataFrame(rows).set_index(<span class="st">"order"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+co-missingness:   0%|                                               | 0/2 [00:00&lt;?, ?it/s]
+co-missingness:  50%|███████████████████▌                   | 1/2 [00:10&lt;00:10, 10.04s/it]
+co-missingness: 100%|███████████████████████████████████████| 2/2 [00:20&lt;00:00, 10.03s/it]
+co-missingness: 100%|███████████████████████████████████████| 2/2 [00:20&lt;00:00, 10.03s/it]</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Lift from the joint co-missing signal (AUC with signal minus without):
++---------+----------------------+--------------+-----------------+
+|   order |   impute_then_forget |   xgb_native |   tabpfn_native |
+|---------+----------------------+--------------+-----------------|
+|       2 |           -0.0737392 |    0.0347592 |       0.0397764 |
+|       3 |           -0.0377431 |    0.0190203 |       0.0333737 |
++---------+----------------------+--------------+-----------------+</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+</div>
+<p>Impute-and-forget posts zero or negative lift: filling the blanks with plausible values erases the very pattern that carried the signal. Native handling reads it, and here is the honest part, <strong>both</strong> XGBoost’s native NaN routing and TabPFN’s built-in missing-indicator channel capture it, with TabPFN only a hair ahead. Joint missingness is real signal, but it is not a TabPFN exclusive. The lesson is the older one sharpened: do not impute a missingness pattern away. (We flagged this thread at the end of the Missing Values chapter; this is where it pays off.)</p>
+</section>
+<section id="takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="takeaways">Takeaways</h2>
+<ul>
+<li>Correlation barely touches <strong>accuracy</strong>. Dropping a twin from House Prices moves test AUC by ten-thousandths, for every model. The reflex is not an accuracy fix.</li>
+<li>What correlation breaks is <strong>attribution</strong>. Twins split the credit, single-feature importance collapses for trees and TabPFN alike, and clustering on correlation (keep one per group) is what restores a readable ranking.</li>
+<li>TabPFN is <strong>not immune</strong> to the importance distortion, and it is <strong>not specially hurt</strong> by correlated or noisy columns at the accuracy level, up to its feature-count envelope (about 2,000 features for v3), where the cost is gentle accuracy bleed plus compute.</li>
+<li>The one genuine TabPFN hygiene rule from a real competition: drop <strong>constant</strong> columns. They are dead weight a tree ignores but TabPFN still pays for.</li>
+<li>Correlation can hide in the <strong>missingness</strong> pattern. Native handling (a tree’s or TabPFN’s) keeps it; impute and forget throws it away.</li>
+</ul>
+<p>The throughline: the drop-correlated reflex you carried over from gradient boosting still has a job, just not the one you thought. It protects how you read the model, not how well it predicts.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script>
+(() => {
+  const toggles = document.querySelectorAll(".cf-toggle");
+
+  toggles.forEach((toggle) => {
+    const panels = Array.from(toggle.querySelectorAll("[data-cf-setting]"));
+    if (panels.length < 2 || toggle.dataset.cfReady === "true") {
+      return;
+    }
+
+    const knob = toggle.dataset.cfKnob || "counterfactual";
+    const controls = document.createElement("div");
+    controls.className = "cf-toggle__controls";
+    controls.setAttribute("role", "group");
+    controls.setAttribute("aria-label", knob);
+
+    const settings = panels.map((panel) => panel.dataset.cfSetting);
+    const fallback = settings[0];
+    let active = settings.includes(toggle.dataset.cfDefault)
+      ? toggle.dataset.cfDefault
+      : fallback;
+
+    const show = (setting) => {
+      active = setting;
+      panels.forEach((panel) => {
+        panel.hidden = panel.dataset.cfSetting !== active;
+      });
+      controls.querySelectorAll("button").forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.cfSetting === active));
+      });
+    };
+
+    settings.forEach((setting) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "cf-toggle__button";
+      button.dataset.cfSetting = setting;
+      button.textContent = setting;
+      button.addEventListener("click", () => show(setting));
+      controls.appendChild(button);
+    });
+
+    toggle.prepend(controls);
+    toggle.dataset.cfReady = "true";
+    show(active);
+  });
+})();
+</script>
+
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/cardoai\.github\.io\/TabPFNPractitioner\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./Categoricals.html" class="pagination-link" aria-label="High-cardinality and categorical variables, with TabPFN">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">High-cardinality and categorical variables, with TabPFN</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./FeatureEngineering.html" class="pagination-link" aria-label="Feature engineering, with TabPFN">
+        <span class="nav-page-text">Feature engineering, with TabPFN</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

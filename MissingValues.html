@@ -190,6 +190,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./Correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Correlated variables, with TabPFN</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./FeatureEngineering.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Feature engineering, with TabPFN</span></a>
   </div>
@@ -259,7 +265,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <p>A hole in the table is the most common defect in real data. This notebook walks the classical toolkit for handling it, shows how much of that toolkit TabPFN makes unnecessary, and isolates the two places where it still matters. Every experiment is a small, self-contained synthetic construction, so the behaviour we observe is real but the setup stays easy to read.</p>
-<div id="c01" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:12:31.355024Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:12:31.354862Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:12:52.900083Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:12:52.899236Z&quot;}}" data-execution_count="1">
+<div id="c01" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:24:13.285873Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:24:13.285702Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:24:31.728908Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:24:31.728022Z&quot;}}" data-execution_count="1">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
@@ -329,7 +335,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>MNAR (Missing Not At Random).</strong> The gap depends on the <em>missing value itself</em>, e.g.&nbsp;high earners decline to report income. The missingness carries information you cannot fully recover from the other columns.</li>
 </ul>
 <p>The upshot: under MAR and MNAR, “this value is missing” is itself a feature. That is what a missing-indicator captures, and why imputing-and-forgetting can throw signal away.</p>
-<div id="c04" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:12:52.902334Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:12:52.901924Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:12:52.910372Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:12:52.909772Z&quot;}}" data-execution_count="2">
+<div id="c04" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:24:31.731107Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:24:31.730707Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:24:31.739138Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:24:31.738433Z&quot;}}" data-execution_count="2">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Three ways a column could go missing. We measure how much "this value is missing"</span></span>
@@ -368,7 +374,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="what-tabpfn-does" class="level2">
 <h2 class="anchored" data-anchor-id="what-tabpfn-does">What TabPFN does</h2>
 <p>Leave the NaNs in. Inside the model, before the forward pass, every missing cell is (1) filled with that feature’s <strong>mean over the training rows</strong>, and (2) recorded in a <strong>per-feature missing-indicator channel</strong> that the network reads. So TabPFN performs <em>mean-impute-plus-indicator</em> by default, the move strong neural baselines do by hand. Most of the checklist above is already inside the model. The rest of this notebook asks: which parts does that make redundant, and where does the toolkit still earn its keep?</p>
-<div id="c07" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:12:52.911970Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:12:52.911802Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:12:57.691821Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:12:57.691069Z&quot;}}" data-execution_count="3">
+<div id="c07" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:24:31.740750Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:24:31.740581Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:24:36.246089Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:24:36.245332Z&quot;}}" data-execution_count="3">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># TabPFN accepts NaNs directly. No imputation step needed.</span></span>
@@ -388,7 +394,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="can-you-change-how-tabpfn-handles-missing-values" class="level3">
 <h3 class="anchored" data-anchor-id="can-you-change-how-tabpfn-handles-missing-values">Can you change how TabPFN handles missing values?</h3>
 <p>Short answer: no. The mean-fill and the indicator channel are baked into the v3 architecture and its pretrained weights, not exposed as settings. No constructor argument and no <code>inference_config</code> field controls feature imputation. (The two parameters that touch missing values do so only indirectly: <code>categorical_features_indices</code>, which decides whether a hole-bearing column is encoded as categorical or numeric, and <code>inference_config</code>, which sets the scaling the filled value then passes through.)</p>
-<div id="c09" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:12:57.693633Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:12:57.693442Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:12:58.466761Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:12:58.466016Z&quot;}}" data-execution_count="4">
+<div id="c09" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:24:36.247898Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:24:36.247698Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:24:36.993311Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:24:36.992549Z&quot;}}" data-execution_count="4">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> inspect</span>
@@ -422,7 +428,7 @@ inference_config fields that control feature imputation: none</code></pre>
 <section id="do-the-classical-fills-even-matter" class="level2">
 <h2 class="anchored" data-anchor-id="do-the-classical-fills-even-matter">Do the classical fills even matter?</h2>
 <p>A useful numeric column <code>a</code> is 40% missing (completely at random), and it varies by an observed segment <code>seg</code> (think product or region). We try the classical fills, mean, median, an out-of-range sentinel, a segment-wise mean, and mean-plus-indicator, against just leaving the NaN in. (Mode is the same idea for a categorical column: fill with the most frequent level.) How much does the choice move each model?</p>
-<div id="c11" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:12:58.468527Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:12:58.468337Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:12:58.475066Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:12:58.474404Z&quot;}}" data-execution_count="5">
+<div id="c11" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:24:36.995162Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:24:36.994972Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:24:37.001494Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:24:37.000907Z&quot;}}" data-execution_count="5">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Build a small dataset: 'a' depends on a segment/group, the label depends on 'a' and 'b'.</span></span>
@@ -444,33 +450,40 @@ inference_config fields that control feature imputation: none</code></pre>
 <span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>y_train, y_test <span class="op">=</span> label[:n <span class="op">//</span> <span class="dv">2</span>], label[n <span class="op">//</span> <span class="dv">2</span>:]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div id="c12" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:12:58.476514Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:12:58.476340Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:12:58.573460Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:12:58.572740Z&quot;}}" data-execution_count="6">
+<div id="c12" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:24:37.003243Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:24:37.003078Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:24:37.094466Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:24:37.093748Z&quot;}}" data-execution_count="6">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fill values, all computed on the TRAIN half only (no leakage).</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>train_mean <span class="op">=</span> train[<span class="st">"a"</span>].mean()</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>train_median <span class="op">=</span> train[<span class="st">"a"</span>].median()</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>segment_mean <span class="op">=</span> train.groupby(<span class="st">"seg"</span>)[<span class="st">"a"</span>].mean()     <span class="co"># mean of 'a' within each segment</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> filled(frame, method):</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Return a copy of `frame` with column 'a' handled by the chosen method."""</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    out <span class="op">=</span> frame.copy()</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> method <span class="op">==</span> <span class="st">"mean"</span>:</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        out[<span class="st">"a"</span>] <span class="op">=</span> out[<span class="st">"a"</span>].fillna(train_mean)</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> method <span class="op">==</span> <span class="st">"median"</span>:</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>        out[<span class="st">"a"</span>] <span class="op">=</span> out[<span class="st">"a"</span>].fillna(train_median)</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> method <span class="op">==</span> <span class="st">"sentinel"</span>:</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        out[<span class="st">"a"</span>] <span class="op">=</span> out[<span class="st">"a"</span>].fillna(<span class="op">-</span><span class="dv">9999</span>)</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> method <span class="op">==</span> <span class="st">"group"</span>:</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        out[<span class="st">"a"</span>] <span class="op">=</span> out[<span class="st">"a"</span>].fillna(out[<span class="st">"seg"</span>].<span class="bu">map</span>(segment_mean))</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> method <span class="op">==</span> <span class="st">"indicator"</span>:</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        out[<span class="st">"a_missing"</span>] <span class="op">=</span> out[<span class="st">"a"</span>].isna().astype(<span class="bu">int</span>)</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>        out[<span class="st">"a"</span>] <span class="op">=</span> out[<span class="st">"a"</span>].fillna(train_mean)</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># "native" is not handled, so the NaN is left in place</span></span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> out</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>train_statistics <span class="op">=</span> {</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean"</span>: train[<span class="st">"a"</span>].mean(),</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"median"</span>: train[<span class="st">"a"</span>].median(),</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"segment_mean"</span>: train.groupby(<span class="st">"seg"</span>)[<span class="st">"a"</span>].mean(),   <span class="co"># mean of 'a' within each segment</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> filled(frame, method, train_statistics):</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Return a copy of `frame` with column 'a' handled by the chosen method.</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co">    The fill values arrive through `train_statistics` (all computed on the training</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co">    half), so the dependence on train-only quantities is explicit in the signature</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co">    rather than hidden in globals. That is the discipline that keeps the fill leakage-free.</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    out <span class="op">=</span> frame.copy()</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> method <span class="op">==</span> <span class="st">"mean"</span>:</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        out[<span class="st">"a"</span>] <span class="op">=</span> out[<span class="st">"a"</span>].fillna(train_statistics[<span class="st">"mean"</span>])</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> method <span class="op">==</span> <span class="st">"median"</span>:</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>        out[<span class="st">"a"</span>] <span class="op">=</span> out[<span class="st">"a"</span>].fillna(train_statistics[<span class="st">"median"</span>])</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> method <span class="op">==</span> <span class="st">"sentinel"</span>:</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>        out[<span class="st">"a"</span>] <span class="op">=</span> out[<span class="st">"a"</span>].fillna(<span class="op">-</span><span class="dv">9999</span>)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> method <span class="op">==</span> <span class="st">"group"</span>:</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>        out[<span class="st">"a"</span>] <span class="op">=</span> out[<span class="st">"a"</span>].fillna(out[<span class="st">"seg"</span>].<span class="bu">map</span>(train_statistics[<span class="st">"segment_mean"</span>]))</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> method <span class="op">==</span> <span class="st">"indicator"</span>:</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>        out[<span class="st">"a_missing"</span>] <span class="op">=</span> out[<span class="st">"a"</span>].isna().astype(<span class="bu">int</span>)</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>        out[<span class="st">"a"</span>] <span class="op">=</span> out[<span class="st">"a"</span>].fillna(train_statistics[<span class="st">"mean"</span>])</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># "native" is not handled, so the NaN is left in place</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> out</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div id="c13" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:12:58.574974Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:12:58.574801Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:13:26.330044Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:13:26.329002Z&quot;}}" data-execution_count="7">
+<div id="c13" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:24:37.095997Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:24:37.095821Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:25:05.007243Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:25:05.006020Z&quot;}}" data-execution_count="7">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>methods <span class="op">=</span> [<span class="st">"native"</span>, <span class="st">"mean"</span>, <span class="st">"median"</span>, <span class="st">"sentinel"</span>, <span class="st">"group"</span>, <span class="st">"indicator"</span>]</span>
@@ -479,55 +492,58 @@ inference_config fields that control feature imputation: none</code></pre>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_name, make_model <span class="kw">in</span> MODELS.items():</span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    row <span class="op">=</span> {}</span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> method <span class="kw">in</span> tqdm(methods, desc<span class="op">=</span>model_name, leave<span class="op">=</span><span class="va">False</span>):</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        row[method] <span class="op">=</span> auc(make_model(), filled(train, method), y_train, filled(test, method), y_test)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    scores[model_name] <span class="op">=</span> row</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>fills_table <span class="op">=</span> pd.DataFrame(scores).T</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>printdf(fills_table, nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Same table, relative to leaving the NaN in place (native), + helps / - hurts:"</span>)</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>printdf(relative_to(fills_table, <span class="st">"native"</span>), nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        train_filled <span class="op">=</span> filled(train, method, train_statistics)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        test_filled <span class="op">=</span> filled(test, method, train_statistics)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        row[method] <span class="op">=</span> auc(make_model(), train_filled, y_train, test_filled, y_test)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    scores[model_name] <span class="op">=</span> row</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>fills_table <span class="op">=</span> pd.DataFrame(scores).T</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>printdf(fills_table, nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Same table, relative to leaving the NaN in place (native), + helps / - hurts:"</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>printdf(relative_to(fills_table, <span class="st">"native"</span>), nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
 <pre><code>
 TabPFN:   0%|                                                       | 0/6 [00:00&lt;?, ?it/s]
-TabPFN:  17%|███████▊                                       | 1/6 [00:02&lt;00:12,  2.42s/it]
-TabPFN:  33%|███████████████▋                               | 2/6 [00:04&lt;00:09,  2.37s/it]
+TabPFN:  17%|███████▊                                       | 1/6 [00:02&lt;00:12,  2.45s/it]
+TabPFN:  33%|███████████████▋                               | 2/6 [00:04&lt;00:09,  2.35s/it]
 TabPFN:  50%|███████████████████████▌                       | 3/6 [00:07&lt;00:07,  2.43s/it]
-TabPFN:  67%|███████████████████████████████▎               | 4/6 [00:09&lt;00:04,  2.40s/it]
-TabPFN:  83%|███████████████████████████████████████▏       | 5/6 [00:11&lt;00:02,  2.38s/it]
-TabPFN: 100%|███████████████████████████████████████████████| 6/6 [00:14&lt;00:00,  2.40s/it]
+TabPFN:  67%|███████████████████████████████▎               | 4/6 [00:09&lt;00:04,  2.38s/it]
+TabPFN:  83%|███████████████████████████████████████▏       | 5/6 [00:11&lt;00:02,  2.35s/it]
+TabPFN: 100%|███████████████████████████████████████████████| 6/6 [00:14&lt;00:00,  2.36s/it]
                                                                                           
 
 LightGBM:   0%|                                                     | 0/6 [00:00&lt;?, ?it/s]
-LightGBM:  33%|███████████████                              | 2/6 [00:00&lt;00:00, 12.90it/s]
-LightGBM:  67%|██████████████████████████████               | 4/6 [00:00&lt;00:00, 13.08it/s]
-LightGBM: 100%|█████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 13.07it/s]
+LightGBM:  33%|███████████████                              | 2/6 [00:00&lt;00:00, 11.57it/s]
+LightGBM:  67%|██████████████████████████████               | 4/6 [00:00&lt;00:00, 11.57it/s]
+LightGBM: 100%|█████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 11.55it/s]
                                                                                           
 
 XGBoost:   0%|                                                      | 0/6 [00:00&lt;?, ?it/s]
-XGBoost:  33%|███████████████▎                              | 2/6 [00:00&lt;00:00, 18.90it/s]
-XGBoost:  83%|██████████████████████████████████████▎       | 5/6 [00:00&lt;00:00, 20.90it/s]
+XGBoost:  33%|███████████████▎                              | 2/6 [00:00&lt;00:00, 18.51it/s]
+XGBoost:  83%|██████████████████████████████████████▎       | 5/6 [00:00&lt;00:00, 20.05it/s]
                                                                                           
 
 CatBoost:   0%|                                                     | 0/6 [00:00&lt;?, ?it/s]
-CatBoost:  17%|███████▌                                     | 1/6 [00:01&lt;00:06,  1.38s/it]
-CatBoost:  33%|███████████████                              | 2/6 [00:02&lt;00:05,  1.36s/it]
-CatBoost:  50%|██████████████████████▌                      | 3/6 [00:04&lt;00:04,  1.35s/it]
-CatBoost:  67%|██████████████████████████████               | 4/6 [00:05&lt;00:02,  1.35s/it]
-CatBoost:  83%|█████████████████████████████████████▌       | 5/6 [00:06&lt;00:01,  1.34s/it]
+CatBoost:  17%|███████▌                                     | 1/6 [00:01&lt;00:07,  1.41s/it]
+CatBoost:  33%|███████████████                              | 2/6 [00:02&lt;00:05,  1.41s/it]
+CatBoost:  50%|██████████████████████▌                      | 3/6 [00:04&lt;00:04,  1.38s/it]
+CatBoost:  67%|██████████████████████████████               | 4/6 [00:05&lt;00:02,  1.36s/it]
+CatBoost:  83%|█████████████████████████████████████▌       | 5/6 [00:06&lt;00:01,  1.35s/it]
 CatBoost: 100%|█████████████████████████████████████████████| 6/6 [00:08&lt;00:00,  1.34s/it]
                                                                                           
 
 RandomForest:   0%|                                                 | 0/6 [00:00&lt;?, ?it/s]
 RandomForest:  17%|██████▊                                  | 1/6 [00:00&lt;00:03,  1.38it/s]
-RandomForest:  33%|█████████████▋                           | 2/6 [00:01&lt;00:02,  1.40it/s]
-RandomForest:  50%|████████████████████▌                    | 3/6 [00:02&lt;00:02,  1.41it/s]
-RandomForest:  67%|███████████████████████████▎             | 4/6 [00:02&lt;00:01,  1.41it/s]
+RandomForest:  33%|█████████████▋                           | 2/6 [00:01&lt;00:02,  1.41it/s]
+RandomForest:  50%|████████████████████▌                    | 3/6 [00:02&lt;00:02,  1.42it/s]
+RandomForest:  67%|███████████████████████████▎             | 4/6 [00:02&lt;00:01,  1.40it/s]
 RandomForest:  83%|██████████████████████████████████▏      | 5/6 [00:03&lt;00:00,  1.40it/s]
 RandomForest: 100%|█████████████████████████████████████████| 6/6 [00:04&lt;00:00,  1.36it/s]
                                                                                           
 
 Linear:   0%|                                                       | 0/6 [00:00&lt;?, ?it/s]
+Linear: 100%|███████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 23.00it/s]
                                                                                           </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
@@ -560,7 +576,7 @@ Same table, relative to leaving the NaN in place (native), + helps / - hurts:
 </div>
 <p>Read across each row. <strong>The native-handling models barely move</strong>: they read the segment directly, so how you fill <code>a</code> hardly matters. The <strong>linear model is the sensitive one</strong>: the segment-wise <code>group</code> fill helps it (it cannot use <code>seg</code> non-monotonically on its own), and the <code>-9999</code> sentinel hurts it (a giant value wrecks a linear fit, while a tree just splits it off). The <code>indicator</code> adds nothing here, because this gap is MCAR, there is no missingness signal to capture. That is the grounding in one table: for a flexible model the fill is mostly a non-decision; the care goes into weak models and into <em>informative</em> missingness, which is where the rest of the notebook goes.</p>
 <p>To check that group-fill’s benefit is entirely about <em>access to the grouping</em>, run the same comparison but drop <code>seg</code> from the columns the models see. The fill still uses <code>seg</code> to compute the group mean; the models just no longer get <code>seg</code> as a feature, so the only way the segment can reach them is through the <code>group</code> fill.</p>
-<div id="absg2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:13:26.333082Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:13:26.332730Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:13:54.367318Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:13:54.366632Z&quot;}}" data-execution_count="8">
+<div id="absg2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:25:05.010740Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:25:05.010382Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:25:32.671318Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:25:32.670551Z&quot;}}" data-execution_count="8">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Same comparison, but 'seg' is removed from the features (group-fill still uses it to fill 'a').</span></span>
@@ -568,8 +584,8 @@ Same table, relative to leaving the NaN in place (native), + helps / - hurts:
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_name, make_model <span class="kw">in</span> MODELS.items():</span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    row <span class="op">=</span> {}</span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> method <span class="kw">in</span> tqdm(methods, desc<span class="op">=</span>model_name, leave<span class="op">=</span><span class="va">False</span>):</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>        train_f <span class="op">=</span> filled(train, method).drop(columns<span class="op">=</span>[<span class="st">"seg"</span>])</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>        test_f <span class="op">=</span> filled(test, method).drop(columns<span class="op">=</span>[<span class="st">"seg"</span>])</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>        train_f <span class="op">=</span> filled(train, method, train_statistics).drop(columns<span class="op">=</span>[<span class="st">"seg"</span>])</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>        test_f <span class="op">=</span> filled(test, method, train_statistics).drop(columns<span class="op">=</span>[<span class="st">"seg"</span>])</span>
 <span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>        row[method] <span class="op">=</span> auc(make_model(), train_f, y_train, test_f, y_test)</span>
 <span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    scores_no_seg[model_name] <span class="op">=</span> row</span>
 <span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
@@ -581,41 +597,41 @@ Same table, relative to leaving the NaN in place (native), + helps / - hurts:
 <div class="cell-output cell-output-stderr">
 <pre><code>
 TabPFN:   0%|                                                       | 0/6 [00:00&lt;?, ?it/s]
-TabPFN:  17%|███████▊                                       | 1/6 [00:02&lt;00:12,  2.50s/it]
-TabPFN:  33%|███████████████▋                               | 2/6 [00:04&lt;00:09,  2.41s/it]
-TabPFN:  50%|███████████████████████▌                       | 3/6 [00:07&lt;00:07,  2.38s/it]
-TabPFN:  67%|███████████████████████████████▎               | 4/6 [00:09&lt;00:04,  2.35s/it]
-TabPFN:  83%|███████████████████████████████████████▏       | 5/6 [00:11&lt;00:02,  2.34s/it]
-TabPFN: 100%|███████████████████████████████████████████████| 6/6 [00:14&lt;00:00,  2.35s/it]
+TabPFN:  17%|███████▊                                       | 1/6 [00:02&lt;00:11,  2.31s/it]
+TabPFN:  33%|███████████████▋                               | 2/6 [00:04&lt;00:09,  2.29s/it]
+TabPFN:  50%|███████████████████████▌                       | 3/6 [00:06&lt;00:06,  2.27s/it]
+TabPFN:  67%|███████████████████████████████▎               | 4/6 [00:09&lt;00:04,  2.26s/it]
+TabPFN:  83%|███████████████████████████████████████▏       | 5/6 [00:11&lt;00:02,  2.26s/it]
+TabPFN: 100%|███████████████████████████████████████████████| 6/6 [00:13&lt;00:00,  2.29s/it]
                                                                                           
 
 LightGBM:   0%|                                                     | 0/6 [00:00&lt;?, ?it/s]
-LightGBM:  33%|███████████████                              | 2/6 [00:00&lt;00:00, 12.68it/s]
-LightGBM:  67%|██████████████████████████████               | 4/6 [00:00&lt;00:00, 12.90it/s]
-LightGBM: 100%|█████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 12.97it/s]
+LightGBM:  33%|███████████████                              | 2/6 [00:00&lt;00:00, 11.77it/s]
+LightGBM:  67%|██████████████████████████████               | 4/6 [00:00&lt;00:00, 11.86it/s]
+LightGBM: 100%|█████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 11.82it/s]
                                                                                           
 
 XGBoost:   0%|                                                      | 0/6 [00:00&lt;?, ?it/s]
-XGBoost:  33%|███████████████▎                              | 2/6 [00:00&lt;00:00, 17.69it/s]
-XGBoost:  83%|██████████████████████████████████████▎       | 5/6 [00:00&lt;00:00, 20.57it/s]
+XGBoost:  33%|███████████████▎                              | 2/6 [00:00&lt;00:00, 18.97it/s]
+XGBoost:  83%|██████████████████████████████████████▎       | 5/6 [00:00&lt;00:00, 20.80it/s]
                                                                                           
 
 CatBoost:   0%|                                                     | 0/6 [00:00&lt;?, ?it/s]
-CatBoost:  17%|███████▌                                     | 1/6 [00:01&lt;00:07,  1.40s/it]
-CatBoost:  33%|███████████████                              | 2/6 [00:02&lt;00:05,  1.37s/it]
-CatBoost:  50%|██████████████████████▌                      | 3/6 [00:04&lt;00:04,  1.36s/it]
-CatBoost:  67%|██████████████████████████████               | 4/6 [00:05&lt;00:02,  1.35s/it]
-CatBoost:  83%|█████████████████████████████████████▌       | 5/6 [00:06&lt;00:01,  1.34s/it]
+CatBoost:  17%|███████▌                                     | 1/6 [00:01&lt;00:07,  1.42s/it]
+CatBoost:  33%|███████████████                              | 2/6 [00:02&lt;00:05,  1.38s/it]
+CatBoost:  50%|██████████████████████▌                      | 3/6 [00:04&lt;00:04,  1.40s/it]
+CatBoost:  67%|██████████████████████████████               | 4/6 [00:05&lt;00:02,  1.38s/it]
+CatBoost:  83%|█████████████████████████████████████▌       | 5/6 [00:06&lt;00:01,  1.37s/it]
 CatBoost: 100%|█████████████████████████████████████████████| 6/6 [00:08&lt;00:00,  1.36s/it]
                                                                                           
 
 RandomForest:   0%|                                                 | 0/6 [00:00&lt;?, ?it/s]
-RandomForest:  17%|██████▊                                  | 1/6 [00:00&lt;00:04,  1.21it/s]
+RandomForest:  17%|██████▊                                  | 1/6 [00:00&lt;00:04,  1.20it/s]
 RandomForest:  33%|█████████████▋                           | 2/6 [00:01&lt;00:03,  1.22it/s]
-RandomForest:  50%|████████████████████▌                    | 3/6 [00:02&lt;00:02,  1.23it/s]
-RandomForest:  67%|███████████████████████████▎             | 4/6 [00:03&lt;00:01,  1.23it/s]
-RandomForest:  83%|██████████████████████████████████▏      | 5/6 [00:04&lt;00:00,  1.27it/s]
-RandomForest: 100%|█████████████████████████████████████████| 6/6 [00:04&lt;00:00,  1.26it/s]
+RandomForest:  50%|████████████████████▌                    | 3/6 [00:02&lt;00:02,  1.22it/s]
+RandomForest:  67%|███████████████████████████▎             | 4/6 [00:03&lt;00:01,  1.22it/s]
+RandomForest:  83%|██████████████████████████████████▏      | 5/6 [00:04&lt;00:00,  1.26it/s]
+RandomForest: 100%|█████████████████████████████████████████| 6/6 [00:04&lt;00:00,  1.25it/s]
                                                                                           
 
 Linear:   0%|                                                       | 0/6 [00:00&lt;?, ?it/s]
@@ -660,7 +676,7 @@ Same table, relative to native (now with the seg column removed):
 <li><code>model_based_impute(...)</code> trains a small regressor to predict <code>Z</code> from the other columns and fills the holes with its predictions.</li>
 <li><code>compare_imputations(...)</code> scores four ways of handling the holes (the true <code>Z</code>, leaving the NaN, mean-fill, and model-based) across the three models. (MICE is the iterative, multi-column version of this; KNN is another model-based method.)</li>
 </ul>
-<div id="c16" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:13:54.369387Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:13:54.369210Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:13:54.375772Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:13:54.375108Z&quot;}}" data-execution_count="9">
+<div id="c16" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:25:32.673061Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:25:32.672884Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:25:32.679480Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:25:32.678861Z&quot;}}" data-execution_count="9">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_data(make_Z, n<span class="op">=</span><span class="dv">8000</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
@@ -700,7 +716,7 @@ Same table, relative to native (now with the seg column removed):
 <span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> train, test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div id="c17" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:13:54.377278Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:13:54.377113Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:13:54.491509Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:13:54.490869Z&quot;}}" data-execution_count="10">
+<div id="c17" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:25:32.680938Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:25:32.680770Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:25:32.796739Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:25:32.796125Z&quot;}}" data-execution_count="10">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compare_imputations(table, label):</span>
@@ -736,7 +752,7 @@ Same table, relative to native (now with the seg column removed):
 <span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> rel.<span class="bu">round</span>(<span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div id="c18" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:13:54.493276Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:13:54.493106Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:14:26.287593Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:14:26.286412Z&quot;}}" data-execution_count="11">
+<div id="c18" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:25:32.798544Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:25:32.798380Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:26:04.316561Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:26:04.315384Z&quot;}}" data-execution_count="11">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># An easy Z: a small combination of three columns.</span></span>
@@ -751,40 +767,41 @@ Same table, relative to native (now with the seg column removed):
 <div class="cell-output cell-output-stderr">
 <pre><code>
 TabPFN:   0%|                                                       | 0/4 [00:00&lt;?, ?it/s]
-TabPFN:  25%|███████████▊                                   | 1/4 [00:03&lt;00:10,  3.60s/it]
-TabPFN:  50%|███████████████████████▌                       | 2/4 [00:07&lt;00:07,  3.57s/it]
-TabPFN:  75%|███████████████████████████████████▎           | 3/4 [00:10&lt;00:03,  3.57s/it]
-TabPFN: 100%|███████████████████████████████████████████████| 4/4 [00:14&lt;00:00,  3.56s/it]
+TabPFN:  25%|███████████▊                                   | 1/4 [00:03&lt;00:10,  3.49s/it]
+TabPFN:  50%|███████████████████████▌                       | 2/4 [00:06&lt;00:06,  3.48s/it]
+TabPFN:  75%|███████████████████████████████████▎           | 3/4 [00:10&lt;00:03,  3.47s/it]
+TabPFN: 100%|███████████████████████████████████████████████| 4/4 [00:13&lt;00:00,  3.48s/it]
                                                                                           
 
 LightGBM:   0%|                                                     | 0/4 [00:00&lt;?, ?it/s]
-LightGBM:  50%|██████████████████████▌                      | 2/4 [00:00&lt;00:00, 11.52it/s]
-LightGBM: 100%|█████████████████████████████████████████████| 4/4 [00:00&lt;00:00, 11.77it/s]
+LightGBM:  50%|██████████████████████▌                      | 2/4 [00:00&lt;00:00, 11.57it/s]
+LightGBM: 100%|█████████████████████████████████████████████| 4/4 [00:00&lt;00:00, 11.62it/s]
                                                                                           
 
 XGBoost:   0%|                                                      | 0/4 [00:00&lt;?, ?it/s]
-XGBoost:  50%|███████████████████████                       | 2/4 [00:00&lt;00:00, 13.23it/s]
-XGBoost: 100%|██████████████████████████████████████████████| 4/4 [00:00&lt;00:00, 13.56it/s]
+XGBoost:  50%|███████████████████████                       | 2/4 [00:00&lt;00:00, 10.59it/s]
+XGBoost: 100%|██████████████████████████████████████████████| 4/4 [00:00&lt;00:00, 11.90it/s]
                                                                                           
 
 CatBoost:   0%|                                                     | 0/4 [00:00&lt;?, ?it/s]
 CatBoost:  25%|███████████▎                                 | 1/4 [00:01&lt;00:04,  1.54s/it]
-CatBoost:  50%|██████████████████████▌                      | 2/4 [00:03&lt;00:03,  1.56s/it]
-CatBoost:  75%|█████████████████████████████████▊           | 3/4 [00:04&lt;00:01,  1.57s/it]
-CatBoost: 100%|█████████████████████████████████████████████| 4/4 [00:06&lt;00:00,  1.57s/it]
+CatBoost:  50%|██████████████████████▌                      | 2/4 [00:03&lt;00:03,  1.53s/it]
+CatBoost:  75%|█████████████████████████████████▊           | 3/4 [00:04&lt;00:01,  1.54s/it]
+CatBoost: 100%|█████████████████████████████████████████████| 4/4 [00:06&lt;00:00,  1.54s/it]
                                                                                           
 
 RandomForest:   0%|                                                 | 0/4 [00:00&lt;?, ?it/s]
-RandomForest:  25%|██████████▎                              | 1/4 [00:02&lt;00:06,  2.30s/it]
-RandomForest:  50%|████████████████████▌                    | 2/4 [00:04&lt;00:04,  2.36s/it]
-RandomForest:  75%|██████████████████████████████▊          | 3/4 [00:07&lt;00:02,  2.37s/it]
-RandomForest: 100%|█████████████████████████████████████████| 4/4 [00:09&lt;00:00,  2.33s/it]
+RandomForest:  25%|██████████▎                              | 1/4 [00:02&lt;00:06,  2.28s/it]
+RandomForest:  50%|████████████████████▌                    | 2/4 [00:04&lt;00:04,  2.34s/it]
+RandomForest:  75%|██████████████████████████████▊          | 3/4 [00:07&lt;00:02,  2.35s/it]
+RandomForest: 100%|█████████████████████████████████████████| 4/4 [00:09&lt;00:00,  2.31s/it]
                                                                                           
 
 Linear:   0%|                                                       | 0/4 [00:00&lt;?, ?it/s]
-Linear:  50%|███████████████████████▌                       | 2/4 [00:00&lt;00:00,  5.42it/s]
-Linear:  75%|███████████████████████████████████▎           | 3/4 [00:00&lt;00:00,  5.12it/s]
-Linear: 100%|███████████████████████████████████████████████| 4/4 [00:00&lt;00:00,  4.89it/s]
+Linear:  25%|███████████▊                                   | 1/4 [00:00&lt;00:00,  7.71it/s]
+Linear:  50%|███████████████████████▌                       | 2/4 [00:00&lt;00:00,  4.56it/s]
+Linear:  75%|███████████████████████████████████▎           | 3/4 [00:00&lt;00:00,  3.24it/s]
+Linear: 100%|███████████████████████████████████████████████| 4/4 [00:01&lt;00:00,  3.80it/s]
                                                                                           </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
@@ -815,7 +832,7 @@ Linear: 100%|██████████████████████�
 </div>
 <p>For TabPFN and the tree models every option ties: leaving the hole, mean-filling, or carefully rebuilding <code>Z</code> all land within noise, and all match the <em>oracle</em> that never lost <code>Z</code>. They reconstruct what they need from the other columns internally. Rebuilding <code>Z</code> explicitly only rescues the <strong>linear</strong> model, which cannot learn the combination itself. Model-based imputation is a crutch for weak models.</p>
 <p>(We also checked hand-built indicators and <code>-9999</code> sentinels: for TabPFN both land within noise too. It is forgiving about how you encode a hole.)</p>
-<div id="c20" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:14:26.291528Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:14:26.291132Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:14:57.984135Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:14:57.982925Z&quot;}}" data-execution_count="12">
+<div id="c20" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:26:04.319306Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:26:04.318991Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:26:35.320171Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:26:35.319183Z&quot;}}" data-execution_count="12">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A hard Z: a high-order, nonlinear combination of several columns.</span></span>
@@ -833,27 +850,27 @@ Linear: 100%|██████████████████████�
 <div class="cell-output cell-output-stderr">
 <pre><code>
 TabPFN:   0%|                                                       | 0/4 [00:00&lt;?, ?it/s]
-TabPFN:  25%|███████████▊                                   | 1/4 [00:03&lt;00:11,  3.80s/it]
-TabPFN:  50%|███████████████████████▌                       | 2/4 [00:07&lt;00:07,  3.70s/it]
-TabPFN:  75%|███████████████████████████████████▎           | 3/4 [00:11&lt;00:03,  3.68s/it]
-TabPFN: 100%|███████████████████████████████████████████████| 4/4 [00:14&lt;00:00,  3.67s/it]
+TabPFN:  25%|███████████▊                                   | 1/4 [00:03&lt;00:10,  3.63s/it]
+TabPFN:  50%|███████████████████████▌                       | 2/4 [00:07&lt;00:07,  3.58s/it]
+TabPFN:  75%|███████████████████████████████████▎           | 3/4 [00:10&lt;00:03,  3.55s/it]
+TabPFN: 100%|███████████████████████████████████████████████| 4/4 [00:14&lt;00:00,  3.52s/it]
                                                                                           
 
 LightGBM:   0%|                                                     | 0/4 [00:00&lt;?, ?it/s]
-LightGBM:  50%|██████████████████████▌                      | 2/4 [00:00&lt;00:00, 11.11it/s]
-LightGBM: 100%|█████████████████████████████████████████████| 4/4 [00:00&lt;00:00, 11.35it/s]
+LightGBM:  50%|██████████████████████▌                      | 2/4 [00:00&lt;00:00, 10.46it/s]
+LightGBM: 100%|█████████████████████████████████████████████| 4/4 [00:00&lt;00:00, 11.29it/s]
                                                                                           
 
 XGBoost:   0%|                                                      | 0/4 [00:00&lt;?, ?it/s]
-XGBoost:  50%|███████████████████████                       | 2/4 [00:00&lt;00:00, 12.84it/s]
-XGBoost: 100%|██████████████████████████████████████████████| 4/4 [00:00&lt;00:00, 13.25it/s]
+XGBoost:  50%|███████████████████████                       | 2/4 [00:00&lt;00:00, 13.01it/s]
+XGBoost: 100%|██████████████████████████████████████████████| 4/4 [00:00&lt;00:00, 13.46it/s]
                                                                                           
 
 CatBoost:   0%|                                                     | 0/4 [00:00&lt;?, ?it/s]
 CatBoost:  25%|███████████▎                                 | 1/4 [00:01&lt;00:04,  1.54s/it]
-CatBoost:  50%|██████████████████████▌                      | 2/4 [00:03&lt;00:03,  1.56s/it]
-CatBoost:  75%|█████████████████████████████████▊           | 3/4 [00:04&lt;00:01,  1.55s/it]
-CatBoost: 100%|█████████████████████████████████████████████| 4/4 [00:06&lt;00:00,  1.55s/it]
+CatBoost:  50%|██████████████████████▌                      | 2/4 [00:03&lt;00:03,  1.53s/it]
+CatBoost:  75%|█████████████████████████████████▊           | 3/4 [00:04&lt;00:01,  1.52s/it]
+CatBoost: 100%|█████████████████████████████████████████████| 4/4 [00:06&lt;00:00,  1.53s/it]
                                                                                           
 
 RandomForest:   0%|                                                 | 0/4 [00:00&lt;?, ?it/s]
@@ -864,10 +881,10 @@ RandomForest: 100%|████████████████████�
                                                                                           
 
 Linear:   0%|                                                       | 0/4 [00:00&lt;?, ?it/s]
-Linear:  25%|███████████▊                                   | 1/4 [00:00&lt;00:00,  7.50it/s]
-Linear:  50%|███████████████████████▌                       | 2/4 [00:00&lt;00:00,  5.50it/s]
-Linear:  75%|███████████████████████████████████▎           | 3/4 [00:00&lt;00:00,  5.26it/s]
-Linear: 100%|███████████████████████████████████████████████| 4/4 [00:00&lt;00:00,  4.95it/s]
+Linear:  25%|███████████▊                                   | 1/4 [00:00&lt;00:00,  7.96it/s]
+Linear:  50%|███████████████████████▌                       | 2/4 [00:00&lt;00:00,  4.87it/s]
+Linear:  75%|███████████████████████████████████▎           | 3/4 [00:00&lt;00:00,  4.84it/s]
+Linear: 100%|███████████████████████████████████████████████| 4/4 [00:00&lt;00:00,  4.90it/s]
                                                                                           </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
@@ -904,7 +921,7 @@ Linear: 100%|██████████████████████�
 <section id="the-vendor-trap-a-column-missing-only-at-inference" class="level3">
 <h3 class="anchored" data-anchor-id="the-vendor-trap-a-column-missing-only-at-inference">The vendor trap: a column missing only at inference</h3>
 <p>The classic schema or vendor-feed change: a feature was never missing in training, then a feed drops in production. The booster’s routing for “missing” was never learned. Below, the test set always has 30% of <code>x0</code> (a strong predictor) missing, and we sweep how much missingness the model saw during training.</p>
-<div id="c24" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:14:57.988373Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:14:57.987863Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:15:28.584231Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:15:28.583064Z&quot;}}" data-execution_count="13">
+<div id="c24" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:26:35.324274Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:26:35.323956Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:27:05.706767Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:27:05.705339Z&quot;}}" data-execution_count="13">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A strong predictor x0; the label depends on it.</span></span>
@@ -944,35 +961,35 @@ Linear: 100%|██████████████████████�
 <div class="cell-output cell-output-stderr">
 <pre><code>
 0% train-missing:   0%|                                             | 0/6 [00:00&lt;?, ?it/s]
-0% train-missing:  17%|██████▏                              | 1/6 [00:03&lt;00:18,  3.64s/it]
-0% train-missing:  33%|████████████▎                        | 2/6 [00:03&lt;00:06,  1.56s/it]
-0% train-missing:  67%|████████████████████████▋            | 4/6 [00:05&lt;00:02,  1.14s/it]
-0% train-missing:  83%|██████████████████████████████▊      | 5/6 [00:07&lt;00:01,  1.41s/it]
+0% train-missing:  17%|██████▏                              | 1/6 [00:03&lt;00:17,  3.47s/it]
+0% train-missing:  50%|██████████████████▌                  | 3/6 [00:03&lt;00:02,  1.04it/s]
+0% train-missing:  67%|████████████████████████▋            | 4/6 [00:05&lt;00:02,  1.19s/it]
+0% train-missing:  83%|██████████████████████████████▊      | 5/6 [00:07&lt;00:01,  1.47s/it]
 0% train-missing: 100%|█████████████████████████████████████| 6/6 [00:07&lt;00:00,  1.06s/it]
                                                                                           
 
 1% train-missing:   0%|                                             | 0/6 [00:00&lt;?, ?it/s]
-1% train-missing:  17%|██████▏                              | 1/6 [00:03&lt;00:18,  3.62s/it]
-1% train-missing:  50%|██████████████████▌                  | 3/6 [00:03&lt;00:03,  1.00s/it]
-1% train-missing:  67%|████████████████████████▋            | 4/6 [00:05&lt;00:02,  1.20s/it]
+1% train-missing:  17%|██████▏                              | 1/6 [00:03&lt;00:17,  3.53s/it]
+1% train-missing:  50%|██████████████████▌                  | 3/6 [00:03&lt;00:02,  1.02it/s]
+1% train-missing:  67%|████████████████████████▋            | 4/6 [00:05&lt;00:02,  1.21s/it]
 1% train-missing:  83%|██████████████████████████████▊      | 5/6 [00:07&lt;00:01,  1.49s/it]
-1% train-missing: 100%|█████████████████████████████████████| 6/6 [00:07&lt;00:00,  1.06s/it]
+1% train-missing: 100%|█████████████████████████████████████| 6/6 [00:07&lt;00:00,  1.07s/it]
                                                                                           
 
 5% train-missing:   0%|                                             | 0/6 [00:00&lt;?, ?it/s]
-5% train-missing:  17%|██████▏                              | 1/6 [00:03&lt;00:17,  3.60s/it]
-5% train-missing:  50%|██████████████████▌                  | 3/6 [00:03&lt;00:02,  1.00it/s]
-5% train-missing:  67%|████████████████████████▋            | 4/6 [00:05&lt;00:02,  1.19s/it]
-5% train-missing:  83%|██████████████████████████████▊      | 5/6 [00:07&lt;00:01,  1.48s/it]
-5% train-missing: 100%|█████████████████████████████████████| 6/6 [00:07&lt;00:00,  1.06s/it]
+5% train-missing:  17%|██████▏                              | 1/6 [00:03&lt;00:17,  3.55s/it]
+5% train-missing:  50%|██████████████████▌                  | 3/6 [00:03&lt;00:02,  1.01it/s]
+5% train-missing:  67%|████████████████████████▋            | 4/6 [00:05&lt;00:02,  1.21s/it]
+5% train-missing:  83%|██████████████████████████████▊      | 5/6 [00:07&lt;00:01,  1.49s/it]
+5% train-missing: 100%|█████████████████████████████████████| 6/6 [00:07&lt;00:00,  1.07s/it]
                                                                                           
 
 30% train-missing:   0%|                                            | 0/6 [00:00&lt;?, ?it/s]
-30% train-missing:  17%|██████                              | 1/6 [00:03&lt;00:18,  3.62s/it]
-30% train-missing:  50%|██████████████████                  | 3/6 [00:03&lt;00:03,  1.01s/it]
+30% train-missing:  17%|██████                              | 1/6 [00:03&lt;00:17,  3.58s/it]
+30% train-missing:  50%|██████████████████                  | 3/6 [00:03&lt;00:02,  1.00it/s]
 30% train-missing:  67%|████████████████████████            | 4/6 [00:05&lt;00:02,  1.19s/it]
 30% train-missing:  83%|██████████████████████████████      | 5/6 [00:07&lt;00:01,  1.49s/it]
-30% train-missing: 100%|████████████████████████████████████| 6/6 [00:07&lt;00:00,  1.05s/it]
+30% train-missing: 100%|████████████████████████████████████| 6/6 [00:07&lt;00:00,  1.06s/it]
                                                                                           </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
@@ -1052,7 +1069,7 @@ Same table, relative to the 30% train-missing column (how far each model cliffs 
 </table>
 <p>Sources: <a href="https://scikit-learn.org/stable/modules/tree.html">scikit-learn</a>, <a href="https://catboost.ai/docs/en/concepts/algorithm-missing-values-processing">CatBoost</a>, <a href="https://lightgbm.readthedocs.io/en/latest/Advanced-Topics.html">LightGBM</a>, <a href="https://xgboost.readthedocs.io/en/stable/faq.html">XGBoost</a>.</p>
 <p>A value routed to an <em>extreme</em> is catastrophic when the missingness actually sits at the <em>opposite</em> extreme; a value routed to the <em>middle</em> only loses the column’s information. The next cell makes that visible: a dominant feature <code>x</code> is made missing on its <strong>high</strong> tail versus its <strong>low</strong> tail (training always sees it, so each model falls back to its blind default), and we read off where each model sends a hole and what it costs.</p>
-<div id="c30a05b6" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:15:28.587851Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:15:28.587536Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:15:46.824328Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:15:46.823551Z&quot;}}" data-execution_count="14">
+<div id="c30a05b6" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:27:05.709772Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:27:05.709455Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:27:23.493803Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:27:23.492991Z&quot;}}" data-execution_count="14">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Control WHERE a feature goes missing: a dominant predictor x, made missing on its high tail vs its</span></span>
@@ -1071,19 +1088,19 @@ Same table, relative to the 30% train-missing column (how far each model cliffs 
 <span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>vy_train, vy_test <span class="op">=</span> vlabel[:half], vlabel[half:]</span>
 <span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> route_fraction(model):</span>
-<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 0 = a missing x lands on the low-x prediction, 1 = the high-x prediction, ~0.5 = the middle.</span></span>
-<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>    low <span class="op">=</span> model.predict_proba(v_test.assign(x<span class="op">=-</span><span class="fl">2.0</span>))[:, <span class="dv">1</span>].mean()</span>
-<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>    high <span class="op">=</span> model.predict_proba(v_test.assign(x<span class="op">=</span><span class="fl">2.0</span>))[:, <span class="dv">1</span>].mean()</span>
-<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>    nan <span class="op">=</span> model.predict_proba(v_test.assign(x<span class="op">=</span>np.nan))[:, <span class="dv">1</span>].mean()</span>
-<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (nan <span class="op">-</span> low) <span class="op">/</span> (high <span class="op">-</span> low)</span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Where a missing x lands: 0 = the low-x prediction, 1 = the high-x prediction, ~0.5 = the middle."""</span></span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>    prediction_at_low_x <span class="op">=</span> model.predict_proba(v_test.assign(x<span class="op">=-</span><span class="fl">2.0</span>))[:, <span class="dv">1</span>].mean()</span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>    prediction_at_high_x <span class="op">=</span> model.predict_proba(v_test.assign(x<span class="op">=</span><span class="fl">2.0</span>))[:, <span class="dv">1</span>].mean()</span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>    prediction_when_missing <span class="op">=</span> model.predict_proba(v_test.assign(x<span class="op">=</span>np.nan))[:, <span class="dv">1</span>].mean()</span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (prediction_when_missing <span class="op">-</span> prediction_at_low_x) <span class="op">/</span> (prediction_at_high_x <span class="op">-</span> prediction_at_low_x)</span>
 <span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> missing_tail(frame, side, frac<span class="op">=</span><span class="fl">0.30</span>):</span>
-<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Make x missing on its high tail or its low tail (MNAR).</span></span>
+<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Make x missing on its high tail or its low tail (MNAR: the gap depends on x's own value)."""</span></span>
 <span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a>    frame <span class="op">=</span> frame.copy()</span>
-<span id="cb32-26"><a href="#cb32-26" aria-hidden="true" tabindex="-1"></a>    xv <span class="op">=</span> frame[<span class="st">"x"</span>].values</span>
-<span id="cb32-27"><a href="#cb32-27" aria-hidden="true" tabindex="-1"></a>    cut <span class="op">=</span> np.quantile(xv, <span class="dv">1</span> <span class="op">-</span> frac) <span class="cf">if</span> side <span class="op">==</span> <span class="st">"high"</span> <span class="cf">else</span> np.quantile(xv, frac)</span>
-<span id="cb32-28"><a href="#cb32-28" aria-hidden="true" tabindex="-1"></a>    mask <span class="op">=</span> xv <span class="op">&gt;=</span> cut <span class="cf">if</span> side <span class="op">==</span> <span class="st">"high"</span> <span class="cf">else</span> xv <span class="op">&lt;=</span> cut</span>
-<span id="cb32-29"><a href="#cb32-29" aria-hidden="true" tabindex="-1"></a>    frame.loc[mask, <span class="st">"x"</span>] <span class="op">=</span> np.nan</span>
+<span id="cb32-26"><a href="#cb32-26" aria-hidden="true" tabindex="-1"></a>    x_values <span class="op">=</span> frame[<span class="st">"x"</span>].values</span>
+<span id="cb32-27"><a href="#cb32-27" aria-hidden="true" tabindex="-1"></a>    threshold <span class="op">=</span> np.quantile(x_values, <span class="dv">1</span> <span class="op">-</span> frac) <span class="cf">if</span> side <span class="op">==</span> <span class="st">"high"</span> <span class="cf">else</span> np.quantile(x_values, frac)</span>
+<span id="cb32-28"><a href="#cb32-28" aria-hidden="true" tabindex="-1"></a>    to_hide <span class="op">=</span> x_values <span class="op">&gt;=</span> threshold <span class="cf">if</span> side <span class="op">==</span> <span class="st">"high"</span> <span class="cf">else</span> x_values <span class="op">&lt;=</span> threshold</span>
+<span id="cb32-29"><a href="#cb32-29" aria-hidden="true" tabindex="-1"></a>    frame.loc[to_hide, <span class="st">"x"</span>] <span class="op">=</span> np.nan</span>
 <span id="cb32-30"><a href="#cb32-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> frame</span>
 <span id="cb32-31"><a href="#cb32-31" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb32-32"><a href="#cb32-32" aria-hidden="true" tabindex="-1"></a>summary <span class="op">=</span> {}</span>
@@ -1103,10 +1120,10 @@ Same table, relative to the 30% train-missing column (how far each model cliffs 
 <div class="cell-output cell-output-stderr">
 <pre><code>
   0%|                                                               | 0/6 [00:00&lt;?, ?it/s]
- 17%|█████████▏                                             | 1/6 [00:15&lt;01:15, 15.10s/it]
- 33%|██████████████████▎                                    | 2/6 [00:15&lt;00:25,  6.28s/it]
- 67%|████████████████████████████████████▋                  | 4/6 [00:16&lt;00:05,  2.83s/it]
- 83%|█████████████████████████████████████████████▊         | 5/6 [00:18&lt;00:02,  2.40s/it]
+ 17%|█████████▏                                             | 1/6 [00:14&lt;01:13, 14.64s/it]
+ 33%|██████████████████▎                                    | 2/6 [00:14&lt;00:24,  6.09s/it]
+ 67%|████████████████████████████████████▋                  | 4/6 [00:16&lt;00:05,  2.76s/it]
+ 83%|█████████████████████████████████████████████▊         | 5/6 [00:17&lt;00:02,  2.34s/it]
                                                                                           </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
@@ -1132,7 +1149,7 @@ Same table, relative to the 30% train-missing column (how far each model cliffs 
 <section id="mechanism-shift-when-the-reason-changes" class="level3">
 <h3 class="anchored" data-anchor-id="mechanism-shift-when-the-reason-changes">Mechanism shift: when the reason changes</h3>
 <p>The harder failure. A column’s missingness is informative, but the rule changes between training and production. We make a noise column <code>W</code> whose only signal is <em>whether</em> it is missing: in training “missing” means label 1, and at test the rule flips so “missing” means label 0.</p>
-<div id="c27" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T17:15:46.826105Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T17:15:46.825924Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T17:16:01.895463Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T17:16:01.894354Z&quot;}}" data-execution_count="15">
+<div id="c27" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:27:23.495546Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:27:23.495367Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:27:38.324421Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:27:38.323319Z&quot;}}" data-execution_count="15">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># W is pure noise. Only WHETHER it is missing carries signal, and we flip that rule at test.</span></span>
@@ -1141,44 +1158,47 @@ Same table, relative to the 30% train-missing column (how far each model cliffs 
 <span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>W <span class="op">=</span> rng.randn(<span class="dv">8000</span>)</span>
 <span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>label <span class="op">=</span> (rng.rand(<span class="dv">8000</span>) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span><span class="fl">1.5</span> <span class="op">*</span> X[:, <span class="dv">0</span>]))).astype(<span class="bu">int</span>)</span>
 <span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> build(rows, p_missing_if_1, p_missing_if_0, seed):</span>
-<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Make W missing with one probability when label==1 and another when label==0."""</span></span>
-<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> W[rows].copy()</span>
-<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> np.where(label[rows] <span class="op">==</span> <span class="dv">1</span>, p_missing_if_1, p_missing_if_0)</span>
-<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>    holes <span class="op">=</span> np.random.RandomState(seed).rand(<span class="bu">len</span>(w)) <span class="op">&lt;</span> p</span>
-<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>    w[holes] <span class="op">=</span> np.nan</span>
-<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [<span class="ss">f"x</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">8</span>)] <span class="op">+</span> [<span class="st">"W"</span>]</span>
-<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame(np.column_stack([X[rows], w]), columns<span class="op">=</span>columns)</span>
-<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>train_rows <span class="op">=</span> <span class="bu">slice</span>(<span class="dv">0</span>, <span class="dv">4000</span>)</span>
-<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>test_rows <span class="op">=</span> <span class="bu">slice</span>(<span class="dv">4000</span>, <span class="dv">8000</span>)</span>
-<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>y_train, y_test <span class="op">=</span> label[:<span class="dv">4000</span>], label[<span class="dv">4000</span>:]</span>
-<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>train <span class="op">=</span> build(train_rows, p_missing_if_1<span class="op">=</span><span class="fl">0.75</span>, p_missing_if_0<span class="op">=</span><span class="fl">0.25</span>, seed<span class="op">=</span><span class="dv">1</span>)   <span class="co"># missing -&gt; label 1</span></span>
-<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>test_stable <span class="op">=</span> build(test_rows, p_missing_if_1<span class="op">=</span><span class="fl">0.75</span>, p_missing_if_0<span class="op">=</span><span class="fl">0.25</span>, seed<span class="op">=</span><span class="dv">2</span>)   <span class="co"># same rule</span></span>
-<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a>test_shifted <span class="op">=</span> build(test_rows, p_missing_if_1<span class="op">=</span><span class="fl">0.25</span>, p_missing_if_0<span class="op">=</span><span class="fl">0.75</span>, seed<span class="op">=</span><span class="dv">3</span>)  <span class="co"># rule flipped</span></span>
-<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>scores <span class="op">=</span> {}</span>
-<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_name, make_model <span class="kw">in</span> tqdm(MODELS.items(), leave<span class="op">=</span><span class="va">False</span>):</span>
-<span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a>    scores[model_name] <span class="op">=</span> {</span>
-<span id="cb36-27"><a href="#cb36-27" aria-hidden="true" tabindex="-1"></a>        <span class="st">"stable"</span>: auc(make_model(), train, y_train, test_stable, y_test),</span>
-<span id="cb36-28"><a href="#cb36-28" aria-hidden="true" tabindex="-1"></a>        <span class="st">"shift (rule flips)"</span>: auc(make_model(), train, y_train, test_shifted, y_test),</span>
-<span id="cb36-29"><a href="#cb36-29" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb36-30"><a href="#cb36-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-31"><a href="#cb36-31" aria-hidden="true" tabindex="-1"></a>shift_table <span class="op">=</span> pd.DataFrame(scores).T</span>
-<span id="cb36-32"><a href="#cb36-32" aria-hidden="true" tabindex="-1"></a>printdf(shift_table, nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span>
-<span id="cb36-33"><a href="#cb36-33" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Same table, relative to the stable rule (the collapse when the rule flips):"</span>)</span>
-<span id="cb36-34"><a href="#cb36-34" aria-hidden="true" tabindex="-1"></a>printdf(relative_to(shift_table, <span class="st">"stable"</span>), nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> build_missingness_shift_dataset(rows, features, noise_column, labels,</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>                                    p_missing_if_1, p_missing_if_0, seed):</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Assemble the feature frame for `rows`, making the noise column missing with one</span></span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a><span class="co">    probability when the label is 1 and another when it is 0. The source arrays are passed</span></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a><span class="co">    in (features, noise_column, labels) so the rule is explicit, not read from globals."""</span></span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>    noise <span class="op">=</span> noise_column[rows].copy()</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>    missing_probability <span class="op">=</span> np.where(labels[rows] <span class="op">==</span> <span class="dv">1</span>, p_missing_if_1, p_missing_if_0)</span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>    holes <span class="op">=</span> np.random.RandomState(seed).rand(<span class="bu">len</span>(noise)) <span class="op">&lt;</span> missing_probability</span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>    noise[holes] <span class="op">=</span> np.nan</span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [<span class="ss">f"x</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(features.shape[<span class="dv">1</span>])] <span class="op">+</span> [<span class="st">"W"</span>]</span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame(np.column_stack([features[rows], noise]), columns<span class="op">=</span>columns)</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>train_rows <span class="op">=</span> <span class="bu">slice</span>(<span class="dv">0</span>, <span class="dv">4000</span>)</span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>test_rows <span class="op">=</span> <span class="bu">slice</span>(<span class="dv">4000</span>, <span class="dv">8000</span>)</span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>y_train, y_test <span class="op">=</span> label[:<span class="dv">4000</span>], label[<span class="dv">4000</span>:]</span>
+<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a>train <span class="op">=</span> build_missingness_shift_dataset(train_rows, X, W, label, p_missing_if_1<span class="op">=</span><span class="fl">0.75</span>, p_missing_if_0<span class="op">=</span><span class="fl">0.25</span>, seed<span class="op">=</span><span class="dv">1</span>)   <span class="co"># missing -&gt; label 1</span></span>
+<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>test_stable <span class="op">=</span> build_missingness_shift_dataset(test_rows, X, W, label, p_missing_if_1<span class="op">=</span><span class="fl">0.75</span>, p_missing_if_0<span class="op">=</span><span class="fl">0.25</span>, seed<span class="op">=</span><span class="dv">2</span>)   <span class="co"># same rule</span></span>
+<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a>test_shifted <span class="op">=</span> build_missingness_shift_dataset(test_rows, X, W, label, p_missing_if_1<span class="op">=</span><span class="fl">0.25</span>, p_missing_if_0<span class="op">=</span><span class="fl">0.75</span>, seed<span class="op">=</span><span class="dv">3</span>)  <span class="co"># rule flipped</span></span>
+<span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-27"><a href="#cb36-27" aria-hidden="true" tabindex="-1"></a>scores <span class="op">=</span> {}</span>
+<span id="cb36-28"><a href="#cb36-28" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_name, make_model <span class="kw">in</span> tqdm(MODELS.items(), leave<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb36-29"><a href="#cb36-29" aria-hidden="true" tabindex="-1"></a>    scores[model_name] <span class="op">=</span> {</span>
+<span id="cb36-30"><a href="#cb36-30" aria-hidden="true" tabindex="-1"></a>        <span class="st">"stable"</span>: auc(make_model(), train, y_train, test_stable, y_test),</span>
+<span id="cb36-31"><a href="#cb36-31" aria-hidden="true" tabindex="-1"></a>        <span class="st">"shift (rule flips)"</span>: auc(make_model(), train, y_train, test_shifted, y_test),</span>
+<span id="cb36-32"><a href="#cb36-32" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb36-33"><a href="#cb36-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-34"><a href="#cb36-34" aria-hidden="true" tabindex="-1"></a>shift_table <span class="op">=</span> pd.DataFrame(scores).T</span>
+<span id="cb36-35"><a href="#cb36-35" aria-hidden="true" tabindex="-1"></a>printdf(shift_table, nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span>
+<span id="cb36-36"><a href="#cb36-36" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Same table, relative to the stable rule (the collapse when the rule flips):"</span>)</span>
+<span id="cb36-37"><a href="#cb36-37" aria-hidden="true" tabindex="-1"></a>printdf(relative_to(shift_table, <span class="st">"stable"</span>), nrows<span class="op">=</span><span class="bu">len</span>(MODELS))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
 <pre><code>
   0%|                                                               | 0/6 [00:00&lt;?, ?it/s]
- 17%|█████████▏                                             | 1/6 [00:07&lt;00:35,  7.03s/it]
- 33%|██████████████████▎                                    | 2/6 [00:07&lt;00:11,  3.00s/it]
- 50%|███████████████████████████▌                           | 3/6 [00:07&lt;00:05,  1.70s/it]
- 67%|████████████████████████████████████▋                  | 4/6 [00:10&lt;00:04,  2.28s/it]
- 83%|█████████████████████████████████████████████▊         | 5/6 [00:14&lt;00:02,  2.95s/it]
-100%|███████████████████████████████████████████████████████| 6/6 [00:15&lt;00:00,  2.07s/it]
+ 17%|█████████▏                                             | 1/6 [00:06&lt;00:33,  6.80s/it]
+ 33%|██████████████████▎                                    | 2/6 [00:06&lt;00:11,  2.90s/it]
+ 50%|███████████████████████████▌                           | 3/6 [00:07&lt;00:04,  1.66s/it]
+ 67%|████████████████████████████████████▋                  | 4/6 [00:10&lt;00:04,  2.24s/it]
+ 83%|█████████████████████████████████████████████▊         | 5/6 [00:14&lt;00:02,  2.93s/it]
+100%|███████████████████████████████████████████████████████| 6/6 [00:14&lt;00:00,  2.06s/it]
                                                                                           </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
@@ -1220,6 +1240,7 @@ Same table, relative to the stable rule (the collapse when the rule flips):
 <li>The one survivor is <strong>model-based imputation of a genuinely complex recoverable column</strong>, where TabPFN’s internal reconstruction hits a complexity ceiling.</li>
 <li>The <strong>vendor trap</strong> (a column missing only at inference) is where TabPFN clearly wins: flat, while boosters cliff.</li>
 <li><strong>Mechanism shift</strong> is the honest limit: a changing missingness rule fools TabPFN as much as anyone, so you monitor it.</li>
+<li>One thread we leave for the <strong>Correlation</strong> chapter: when several columns go missing <em>together</em>, the missingness pattern is itself a correlated signal. The per-feature indicator channel above puts that joint pattern in front of attention for free, while a booster needs you to add the indicators by hand. Whether that gap is real, and how deep the co-missingness has to go before it shows up, we test there.</li>
 </ul>
 <p>The throughline: native handling models the <em>routing</em> of missingness learned from training. TabPFN’s prior covers the routing you never saw, but neither covers a routing that changes underneath you.</p>
 
