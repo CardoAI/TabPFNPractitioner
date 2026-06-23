@@ -168,33 +168,11 @@
     ]
   },
   {
-    "objectID": "site-contract.html",
-    "href": "site-contract.html",
-    "title": "Content Contract",
-    "section": "",
-    "text": "This site renders notebooks exactly as committed. The notebook files remain the source of truth.\nEach notebook should start with Quarto YAML front matter in the first markdown cell:\nsection is the sidebar group. section-order sorts groups using the familiarity order from the content plan. order sorts pages inside a group. Missing metadata is reported during render and the page is placed under Needs metadata.",
-    "crumbs": [
-      "Overview",
-      "Content Contract"
-    ]
-  },
-  {
-    "objectID": "site-contract.html#counterfactuals",
-    "href": "site-contract.html#counterfactuals",
-    "title": "Content Contract",
-    "section": "Counterfactuals",
-    "text": "Counterfactuals\nCounterfactual outputs must be cached in the notebook. The site only swaps already rendered results.\nUse Quarto tabsets when the notebook prose owns the comparison:\n::: {.panel-tabset}\n## easy-z\n\n![easy-z result](figures/easy-z.png)\n\n## hard-z\n\n![hard-z result](figures/hard-z.png)\n:::\nUse the cached toggle when the result should feel like one control:\n&lt;div class=\"cf-toggle\" data-cf-knob=\"z-difficulty\" data-cf-default=\"easy-z\"&gt;\n  &lt;figure data-cf-setting=\"easy-z\"&gt;\n    &lt;img src=\"figures/easy-z.png\" alt=\"easy-z result\"&gt;\n    &lt;figcaption&gt;easy-z&lt;/figcaption&gt;\n  &lt;/figure&gt;\n  &lt;figure data-cf-setting=\"hard-z\"&gt;\n    &lt;img src=\"figures/hard-z.png\" alt=\"hard-z result\"&gt;\n    &lt;figcaption&gt;hard-z&lt;/figcaption&gt;\n  &lt;/figure&gt;\n&lt;/div&gt;\nFor notebook cell metadata, add these tags to every cached counterfactual output cell:\ncounterfactual\ncf-knob:z-difficulty\ncf-setting:easy-z\nUse the same cf-knob value for all settings in a knob family. Use one cf-setting value per cached result. If a notebook has counterfactual tags without both values, the render reports it.",
-    "crumbs": [
-      "Overview",
-      "Content Contract"
-    ]
-  },
-  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "TabPFN Practitioner",
     "section": "",
-    "text": "Practical TabPFN notes for readers who already know boosted trees and want a sharper feel for missing values, categorical inputs, parameters, and counterfactual checks.\nThe notebooks are rendered as committed. Saved outputs are used as the display layer, with no runtime Python, model weights, backend, or browser recompute.\nStart from the sidebar for the authored order. New notebooks are added to navigation during render when their front matter follows the content contract.",
+    "text": "For data scientists who have spent years building tabular models with linear models, trees, gradient boosting, and neural nets, TabPFN raises a practical question: if a pretrained tabular model is already competitive with the old defaults, what does the day-to-day work change into?",
     "crumbs": [
       "Overview",
       "TabPFN Practitioner"
