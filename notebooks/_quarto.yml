@@ -18,7 +18,7 @@ execute:
 
 website:
   title: "TabPFN Practitioner"
-  description: "Rendered TabPFN notebooks for gradient boosting practitioners."
+  description: "Practical TabPFN notebooks for data scientists rethinking tabular workflows."
   site-url: "https://cardoai.github.io/TabPFNPractitioner/"
   repo-url: "https://github.com/CardoAI/TabPFNPractitioner"
   repo-subdir: "notebooks"
@@ -33,8 +33,6 @@ website:
     left:
       - href: index.qmd
         text: Overview
-      - href: site-contract.qmd
-        text: Contract
     right:
       - text: Source
         href: "https://github.com/CardoAI/TabPFNPractitioner"
@@ -53,4 +51,3 @@ format:
       - includes/counterfactual-toggle.html
     link-external-newwindow: true
     link-external-icon: true
-

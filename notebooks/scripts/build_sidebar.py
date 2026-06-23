@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 NAV_PATH = ROOT / "_site-nav.yml"
 IGNORED_PARTS = {".ipynb_checkpoints", ".quarto", "_site", "_freeze"}
 REQUIRED_KEYS = ("title", "section", "section-order")
-STATIC_PAGES = ("index.qmd", "site-contract.qmd")
+STATIC_PAGES = ("index.qmd",)
 
 
 @dataclass
@@ -194,4 +194,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
