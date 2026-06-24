@@ -984,81 +984,75 @@ default config, CLASS_SHIFT_METHOD=None     -&gt; AUC=0.8574</code></pre>
 <div id="sweepcode" class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Flip each preprocessing knob once from its default and measure the effect on the output, across several</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># datasets. mean |Δp| = how much the probabilities move; ΔAUC = whether the ranking moves.</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> replace</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn.preprocessing <span class="im">import</span> PreprocessorConfig</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>sweep_datasets <span class="op">=</span> {<span class="st">"synthetic"</span>: make_data(n<span class="op">=</span><span class="dv">4000</span>, seed<span class="op">=</span><span class="dv">0</span>)}</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name <span class="kw">in</span> [<span class="st">"credit-g"</span>, <span class="st">"diabetes"</span>, <span class="st">"blood-transfusion-service-center"</span>]:</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    sweep_datasets[name] <span class="op">=</span> load_openml_binary(name)</span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> knob_variants(default_menu):</span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""One inference_config change per knob, each starting from the default."""</span></span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>        <span class="st">"numeric transform off"</span>: {<span class="st">"PREPROCESS_TRANSFORMS"</span>: [replace(c, name<span class="op">=</span><span class="st">"none"</span>) <span class="cf">for</span> c <span class="kw">in</span> default_menu]},</span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>        <span class="st">"outlier clip off"</span>:      {<span class="st">"OUTLIER_REMOVAL_STD"</span>: <span class="va">None</span>},</span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>        <span class="st">"SVD off"</span>:               {<span class="st">"PREPROCESS_TRANSFORMS"</span>: [replace(c, global_transformer_name<span class="op">=</span><span class="va">None</span>) <span class="cf">for</span> c <span class="kw">in</span> default_menu]},</span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>        <span class="st">"fingerprint off"</span>:       {<span class="st">"FINGERPRINT_FEATURE"</span>: <span class="va">False</span>},</span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>        <span class="st">"feature reorder off"</span>:   {<span class="st">"FEATURE_SHIFT_METHOD"</span>: <span class="va">None</span>},</span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>        <span class="st">"class permutation off"</span>: {<span class="st">"CLASS_SHIFT_METHOD"</span>: <span class="va">None</span>},</span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>        <span class="st">"polynomial on"</span>:         {<span class="st">"POLYNOMIAL_FEATURES"</span>: <span class="st">"all"</span>},</span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"row subsample to 0.5"</span>:  {<span class="st">"SUBSAMPLE_SAMPLES"</span>: <span class="fl">0.5</span>},</span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>records <span class="op">=</span> []</span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> data_name, (X, y) <span class="kw">in</span> tqdm(sweep_datasets.items(), desc<span class="op">=</span><span class="st">"knob sweep"</span>):</span>
-<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>    X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">0.4</span>, random_state<span class="op">=</span><span class="dv">0</span>, stratify<span class="op">=</span>y)</span>
-<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>    default_model <span class="op">=</span> TabPFNClassifier(n_estimators<span class="op">=</span><span class="dv">8</span>, random_state<span class="op">=</span><span class="dv">0</span>).fit(X_train, y_train)</span>
-<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>    default_proba <span class="op">=</span> default_model.predict_proba(X_test)[:, <span class="dv">1</span>]</span>
-<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>    default_auc <span class="op">=</span> roc_auc_score(y_test, default_proba)</span>
-<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>    default_menu <span class="op">=</span> default_model.inference_config_.PREPROCESS_TRANSFORMS</span>
-<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> knob, change <span class="kw">in</span> knob_variants(default_menu).items():</span>
-<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>        model <span class="op">=</span> TabPFNClassifier(n_estimators<span class="op">=</span><span class="dv">8</span>, random_state<span class="op">=</span><span class="dv">0</span>, inference_config<span class="op">=</span>change).fit(X_train, y_train)</span>
-<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>        proba <span class="op">=</span> model.predict_proba(X_test)[:, <span class="dv">1</span>]</span>
-<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>        records.append({<span class="st">"dataset"</span>: data_name, <span class="st">"knob"</span>: knob,</span>
-<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"mean_abs_dp"</span>: <span class="bu">round</span>(<span class="bu">float</span>(np.<span class="bu">abs</span>(proba <span class="op">-</span> default_proba).mean()), <span class="dv">4</span>),</span>
-<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"dAUC"</span>: <span class="bu">round</span>(<span class="bu">float</span>(roc_auc_score(y_test, proba) <span class="op">-</span> default_auc), <span class="dv">4</span>)})</span>
-<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>sweep <span class="op">=</span> pd.DataFrame(records)</span>
-<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"mean |Δp|  (do the probabilities move?)"</span>)</span>
-<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(sweep.pivot(index<span class="op">=</span><span class="st">"knob"</span>, columns<span class="op">=</span><span class="st">"dataset"</span>, values<span class="op">=</span><span class="st">"mean_abs_dp"</span>).to_string())</span>
-<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">ΔAUC  (does the ranking move?)"</span>)</span>
-<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(sweep.pivot(index<span class="op">=</span><span class="st">"knob"</span>, columns<span class="op">=</span><span class="st">"dataset"</span>, values<span class="op">=</span><span class="st">"dAUC"</span>).to_string())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Flip each preprocessing knob once from its default and read four familiar metrics, averaged across</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># datasets: AUC and AUPRC (ranking), F1 (the 0.5-cutoff decision), and ECE (calibration). Each is shown as</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co"># the change from the default, so 0 means the knob did nothing.</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> replace</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn.preprocessing <span class="im">import</span> PreprocessorConfig</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> f1_score</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> all_metrics(y_true, proba):</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {<span class="st">"AUC"</span>: roc_auc_score(y_true, proba), <span class="st">"AUPRC"</span>: average_precision_score(y_true, proba),</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>            <span class="st">"F1"</span>: f1_score(y_true, (proba <span class="op">&gt;=</span> <span class="fl">0.5</span>).astype(<span class="bu">int</span>)),</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>            <span class="st">"ECE"</span>: expected_calibration_error(y_true, proba)}</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>sweep_datasets <span class="op">=</span> {<span class="st">"synthetic"</span>: make_data(n<span class="op">=</span><span class="dv">4000</span>, seed<span class="op">=</span><span class="dv">0</span>)}</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name <span class="kw">in</span> [<span class="st">"credit-g"</span>, <span class="st">"diabetes"</span>, <span class="st">"blood-transfusion-service-center"</span>]:</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>    sweep_datasets[name] <span class="op">=</span> load_openml_binary(name)</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> knob_variants(default_menu):</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""One inference_config change per knob, each starting from the default."""</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"numeric transform off"</span>: {<span class="st">"PREPROCESS_TRANSFORMS"</span>: [replace(c, name<span class="op">=</span><span class="st">"none"</span>) <span class="cf">for</span> c <span class="kw">in</span> default_menu]},</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">"outlier clip off"</span>:      {<span class="st">"OUTLIER_REMOVAL_STD"</span>: <span class="va">None</span>},</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">"SVD off"</span>:               {<span class="st">"PREPROCESS_TRANSFORMS"</span>: [replace(c, global_transformer_name<span class="op">=</span><span class="va">None</span>) <span class="cf">for</span> c <span class="kw">in</span> default_menu]},</span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>        <span class="st">"fingerprint off"</span>:       {<span class="st">"FINGERPRINT_FEATURE"</span>: <span class="va">False</span>},</span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>        <span class="st">"feature reorder off"</span>:   {<span class="st">"FEATURE_SHIFT_METHOD"</span>: <span class="va">None</span>},</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>        <span class="st">"class permutation off"</span>: {<span class="st">"CLASS_SHIFT_METHOD"</span>: <span class="va">None</span>},</span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>        <span class="st">"polynomial on"</span>:         {<span class="st">"POLYNOMIAL_FEATURES"</span>: <span class="st">"all"</span>},</span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>        <span class="st">"row subsample to 0.5"</span>:  {<span class="st">"SUBSAMPLE_SAMPLES"</span>: <span class="fl">0.5</span>},</span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>records <span class="op">=</span> []</span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> data_name, (X, y) <span class="kw">in</span> tqdm(sweep_datasets.items(), desc<span class="op">=</span><span class="st">"knob sweep"</span>):</span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>    X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">0.4</span>, random_state<span class="op">=</span><span class="dv">0</span>, stratify<span class="op">=</span>y)</span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>    default_model <span class="op">=</span> TabPFNClassifier(n_estimators<span class="op">=</span><span class="dv">8</span>, random_state<span class="op">=</span><span class="dv">0</span>).fit(X_train, y_train)</span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>    base <span class="op">=</span> all_metrics(y_test, default_model.predict_proba(X_test)[:, <span class="dv">1</span>])</span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>    default_menu <span class="op">=</span> default_model.inference_config_.PREPROCESS_TRANSFORMS</span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> knob, change <span class="kw">in</span> knob_variants(default_menu).items():</span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>        model <span class="op">=</span> TabPFNClassifier(n_estimators<span class="op">=</span><span class="dv">8</span>, random_state<span class="op">=</span><span class="dv">0</span>, inference_config<span class="op">=</span>change).fit(X_train, y_train)</span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a>        scores <span class="op">=</span> all_metrics(y_test, model.predict_proba(X_test)[:, <span class="dv">1</span>])</span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>        records.append({<span class="st">"knob"</span>: knob, <span class="op">**</span>{<span class="ss">f"d</span><span class="sc">{</span>k<span class="sc">}</span><span class="ss">"</span>: scores[k] <span class="op">-</span> base[k] <span class="cf">for</span> k <span class="kw">in</span> base}})</span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>sweep <span class="op">=</span> pd.DataFrame(records).groupby(<span class="st">"knob"</span>)[[<span class="st">"dAUC"</span>, <span class="st">"dAUPRC"</span>, <span class="st">"dF1"</span>, <span class="st">"dECE"</span>]].mean().<span class="bu">round</span>(<span class="dv">4</span>)</span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Change in each metric when a knob is flipped from default, averaged over 4 datasets."</span>)</span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"ranking: dAUC, dAUPRC (higher better) | decision: dF1 (higher better) | calibration: dECE (higher worse)</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(sweep.to_string())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>mean |Δp|  (do the probabilities move?)
-dataset                blood-transfusion-service-center  credit-g  diabetes  synthetic
-knob                                                                                  
-SVD off                                          0.0023    0.0063    0.0115     0.0125
-class permutation off                            0.0015    0.0022    0.0046     0.0055
-feature reorder off                              0.0039    0.0071    0.0097     0.0140
-fingerprint off                                  0.0036    0.0062    0.0069     0.0098
-numeric transform off                            0.0119    0.0139    0.0260     0.0160
-outlier clip off                                 0.0000    0.0000    0.0000     0.0000
-polynomial on                                    0.0130    0.0243    0.0190     0.0432
-row subsample to 0.5                             0.0238    0.0470    0.0261     0.0248
+<pre><code>Change in each metric when a knob is flipped from default, averaged over 4 datasets.
+ranking: dAUC, dAUPRC (higher better) | decision: dF1 (higher better) | calibration: dECE (higher worse)
 
-ΔAUC  (does the ranking move?)
-dataset                blood-transfusion-service-center  credit-g  diabetes  synthetic
-knob                                                                                  
-SVD off                                         -0.0009    0.0007    0.0052    -0.0007
-class permutation off                            0.0003   -0.0001   -0.0009    -0.0002
-feature reorder off                              0.0009    0.0038    0.0011    -0.0001
-fingerprint off                                 -0.0006    0.0018    0.0002    -0.0005
-numeric transform off                           -0.0012    0.0033   -0.0003     0.0005
-outlier clip off                                 0.0000    0.0000    0.0000     0.0000
-polynomial on                                   -0.0073   -0.0041   -0.0002     0.0078
-row subsample to 0.5                            -0.0119    0.0128   -0.0012     0.0000</code></pre>
+                         dAUC  dAUPRC     dF1    dECE
+knob                                                 
+SVD off                0.0011 -0.0000 -0.0021  0.0037
+class permutation off -0.0002 -0.0002 -0.0010  0.0038
+feature reorder off    0.0014  0.0016 -0.0017  0.0053
+fingerprint off        0.0003  0.0005  0.0031  0.0042
+numeric transform off  0.0006  0.0010  0.0024  0.0082
+outlier clip off       0.0000  0.0000  0.0000  0.0000
+polynomial on         -0.0010 -0.0005  0.0067 -0.0009
+row subsample to 0.5  -0.0001  0.0057 -0.0324 -0.0040</code></pre>
 </div>
 </div>
-<p>Almost every knob nudges the probabilities a little but leaves the ranking intact: TabPFN is robust to its own preprocessing. Two knobs actually move AUC, and both cut either way depending on the data:</p>
+<p>Four metrics, one knob flipped from its default, averaged over the four datasets. <code>dAUC</code>, <code>dAUPRC</code>, <code>dF1</code> higher is better; <code>dECE</code> higher means worse calibration.</p>
 <ul>
-<li><strong>row subsample</strong> (less context): the largest mover. The context <em>is</em> the model’s training data, so shrinking it can help or hurt.</li>
-<li><strong>polynomial features</strong>: help when there is a real interaction to expose (the synthetic set), hurt when they only add noise.</li>
+<li><strong>Ranking (AUC, AUPRC) barely moves for any knob</strong> (all under 0.006): TabPFN’s accuracy is robust to its own preprocessing.</li>
+<li><strong>The decision and the calibration move more.</strong> <code>row subsample to 0.5</code> leaves ranking flat but drops <strong>F1 by about 0.03</strong>: halving the context shifts where a 0.5 cutoff lands, not the ranking. <code>numeric transform off</code> hardly touches AUC but is the worst for <strong>calibration</strong> (<code>dECE</code> +0.008), dropping the scaler leaves the probabilities less calibrated.</li>
+<li><strong><code>outlier clip off</code> is inert</strong> (all zeros): the squashing and quantile transforms already bound the data inside 12σ.</li>
 </ul>
-<p><strong>outlier clip</strong> is inert at its default: the squashing and quantile transforms already bound the data well inside 12σ, so the clip never fires (it only bites if you tighten it toward 1σ). And two knobs do not show here because the data does not exercise them: <strong>categorical encoding</strong> needs categorical columns (the Categoricals chapter), and <strong>feature subsampling</strong> only activates above 200 columns.</p>
+<p>Two honesty notes. Averages hide per-dataset swings: <code>polynomial on</code> and <code>row subsample</code> flip the <em>sign</em> of their AUC effect across datasets (about ±0.01, polynomial helps synthetic and hurts blood-transfusion), so their near-zero average is cancellation, not absence. And two knobs are missing because the data does not exercise them: categorical encoding (no category columns) and feature subsampling (needs over 200 columns).</p>
 </section>
 </section>
 <section id="calibration-knobs" class="level2">
