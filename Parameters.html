@@ -490,7 +490,8 @@ window.Quarto = {
 </section>
 <section id="preprocessing-n_estimators-and-inference_config" class="level2">
 <h2 class="anchored" data-anchor-id="preprocessing-n_estimators-and-inference_config">Preprocessing: n_estimators and inference_config</h2>
-<p>The most important section. TabPFN’s “ensemble” is not bagging or boosting: one frozen pretrained network reads several differently-preprocessed views of the data, and the predictions are averaged.</p>
+<p>The most important section. TabPFN’s “ensemble” comes from differently-preprocessed views of the data, the predictions are then averaged.</p>
+<p>“Ensemble” parameters:</p>
 <ul>
 <li><code>n_estimators</code> = <strong>how many</strong> views are averaged.</li>
 <li><code>inference_config</code> = <strong>what each view is</strong> (scaling recipe, categorical handling, and what makes one view differ from the next).</li>
@@ -499,7 +500,7 @@ window.Quarto = {
 <section id="each-estimator-sees-a-different-view" class="level3">
 <h3 class="anchored" data-anchor-id="each-estimator-sees-a-different-view">Each estimator sees a different view</h3>
 <p>After <code>.fit()</code>, each estimator is a <code>TabPFNEnsembleMember</code> in <code>clf.executor_.ensemble_members</code> with its own recipe and fitted pipeline. The cell below reads them off a default 8-estimator model.</p>
-<div id="preprocinspect" class="cell" data-execution_count="9">
+<div id="preprocinspect" class="cell" data-scrolled="true" data-execution_count="9">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect the ensemble TabPFN actually built. After .fit(), each estimator is a TabPFNEnsembleMember on</span></span>
@@ -909,6 +910,88 @@ default config, CLASS_SHIFT_METHOD=None     -&gt; AUC=0.8574</code></pre>
 <p>v3 has no fixed class slots, so permuting labels and un-permuting the output is close to a no-op. A real diversity source, the weakest one.</p>
 <p><strong>Takeaway.</strong> Each estimator = the same frozen network on a differently-prepared view; averaging lowers variance. The one knob you normally touch is <code>PREPROCESS_TRANSFORMS</code> (swap the recipe). Leave the rest at defaults; <code>random_state</code> is the only handle on the exact draws.</p>
 </section>
+<section id="which-knobs-actually-move-the-output" class="level3">
+<h3 class="anchored" data-anchor-id="which-knobs-actually-move-the-output">Which knobs actually move the output</h3>
+<p>We have the knobs; which ones change the prediction? Flip each one from its default, one at a time, and measure two things on several datasets: mean |Δp| (do the probabilities move?) and ΔAUC (does the ranking move?). Running it across datasets keeps any single one from giving a false verdict.</p>
+<div id="sweepcode" class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Flip each preprocessing knob once from its default and measure the effect on the output, across several</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># datasets. mean |Δp| = how much the probabilities move; ΔAUC = whether the ranking moves.</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> replace</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn.preprocessing <span class="im">import</span> PreprocessorConfig</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>sweep_datasets <span class="op">=</span> {<span class="st">"synthetic"</span>: make_data(n<span class="op">=</span><span class="dv">4000</span>, seed<span class="op">=</span><span class="dv">0</span>)}</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name <span class="kw">in</span> [<span class="st">"credit-g"</span>, <span class="st">"diabetes"</span>, <span class="st">"blood-transfusion-service-center"</span>]:</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    sweep_datasets[name] <span class="op">=</span> load_openml_binary(name)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> knob_variants(default_menu):</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""One inference_config change per knob, each starting from the default."""</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>        <span class="st">"numeric transform off"</span>: {<span class="st">"PREPROCESS_TRANSFORMS"</span>: [replace(c, name<span class="op">=</span><span class="st">"none"</span>) <span class="cf">for</span> c <span class="kw">in</span> default_menu]},</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>        <span class="st">"outlier clip off"</span>:      {<span class="st">"OUTLIER_REMOVAL_STD"</span>: <span class="va">None</span>},</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>        <span class="st">"SVD off"</span>:               {<span class="st">"PREPROCESS_TRANSFORMS"</span>: [replace(c, global_transformer_name<span class="op">=</span><span class="va">None</span>) <span class="cf">for</span> c <span class="kw">in</span> default_menu]},</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>        <span class="st">"fingerprint off"</span>:       {<span class="st">"FINGERPRINT_FEATURE"</span>: <span class="va">False</span>},</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>        <span class="st">"feature reorder off"</span>:   {<span class="st">"FEATURE_SHIFT_METHOD"</span>: <span class="va">None</span>},</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>        <span class="st">"class permutation off"</span>: {<span class="st">"CLASS_SHIFT_METHOD"</span>: <span class="va">None</span>},</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>        <span class="st">"polynomial on"</span>:         {<span class="st">"POLYNOMIAL_FEATURES"</span>: <span class="st">"all"</span>},</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"row subsample to 0.5"</span>:  {<span class="st">"SUBSAMPLE_SAMPLES"</span>: <span class="fl">0.5</span>},</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>records <span class="op">=</span> []</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> data_name, (X, y) <span class="kw">in</span> tqdm(sweep_datasets.items(), desc<span class="op">=</span><span class="st">"knob sweep"</span>):</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>    X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">0.4</span>, random_state<span class="op">=</span><span class="dv">0</span>, stratify<span class="op">=</span>y)</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>    default_model <span class="op">=</span> TabPFNClassifier(n_estimators<span class="op">=</span><span class="dv">8</span>, random_state<span class="op">=</span><span class="dv">0</span>).fit(X_train, y_train)</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>    default_proba <span class="op">=</span> default_model.predict_proba(X_test)[:, <span class="dv">1</span>]</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>    default_auc <span class="op">=</span> roc_auc_score(y_test, default_proba)</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>    default_menu <span class="op">=</span> default_model.inference_config_.PREPROCESS_TRANSFORMS</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> knob, change <span class="kw">in</span> knob_variants(default_menu).items():</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>        model <span class="op">=</span> TabPFNClassifier(n_estimators<span class="op">=</span><span class="dv">8</span>, random_state<span class="op">=</span><span class="dv">0</span>, inference_config<span class="op">=</span>change).fit(X_train, y_train)</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>        proba <span class="op">=</span> model.predict_proba(X_test)[:, <span class="dv">1</span>]</span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>        records.append({<span class="st">"dataset"</span>: data_name, <span class="st">"knob"</span>: knob,</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"mean_abs_dp"</span>: <span class="bu">round</span>(<span class="bu">float</span>(np.<span class="bu">abs</span>(proba <span class="op">-</span> default_proba).mean()), <span class="dv">4</span>),</span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"dAUC"</span>: <span class="bu">round</span>(<span class="bu">float</span>(roc_auc_score(y_test, proba) <span class="op">-</span> default_auc), <span class="dv">4</span>)})</span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>sweep <span class="op">=</span> pd.DataFrame(records)</span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"mean |Δp|  (do the probabilities move?)"</span>)</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(sweep.pivot(index<span class="op">=</span><span class="st">"knob"</span>, columns<span class="op">=</span><span class="st">"dataset"</span>, values<span class="op">=</span><span class="st">"mean_abs_dp"</span>).to_string())</span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">ΔAUC  (does the ranking move?)"</span>)</span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(sweep.pivot(index<span class="op">=</span><span class="st">"knob"</span>, columns<span class="op">=</span><span class="st">"dataset"</span>, values<span class="op">=</span><span class="st">"dAUC"</span>).to_string())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>mean |Δp|  (do the probabilities move?)
+dataset                blood-transfusion-service-center  credit-g  diabetes  synthetic
+knob                                                                                  
+SVD off                                          0.0023    0.0063    0.0115     0.0125
+class permutation off                            0.0015    0.0022    0.0046     0.0055
+feature reorder off                              0.0039    0.0071    0.0097     0.0140
+fingerprint off                                  0.0036    0.0062    0.0069     0.0098
+numeric transform off                            0.0119    0.0139    0.0260     0.0160
+outlier clip off                                 0.0000    0.0000    0.0000     0.0000
+polynomial on                                    0.0130    0.0243    0.0190     0.0432
+row subsample to 0.5                             0.0238    0.0470    0.0261     0.0248
+
+ΔAUC  (does the ranking move?)
+dataset                blood-transfusion-service-center  credit-g  diabetes  synthetic
+knob                                                                                  
+SVD off                                         -0.0009    0.0007    0.0052    -0.0007
+class permutation off                            0.0003   -0.0001   -0.0009    -0.0002
+feature reorder off                              0.0009    0.0038    0.0011    -0.0001
+fingerprint off                                 -0.0006    0.0018    0.0002    -0.0005
+numeric transform off                           -0.0012    0.0033   -0.0003     0.0005
+outlier clip off                                 0.0000    0.0000    0.0000     0.0000
+polynomial on                                   -0.0073   -0.0041   -0.0002     0.0078
+row subsample to 0.5                            -0.0119    0.0128   -0.0012     0.0000</code></pre>
+</div>
+</div>
+<p>Almost every knob nudges the probabilities a little but leaves the ranking intact: TabPFN is robust to its own preprocessing. Two knobs actually move AUC, and both cut either way depending on the data:</p>
+<ul>
+<li><strong>row subsample</strong> (less context): the largest mover. The context <em>is</em> the model’s training data, so shrinking it can help or hurt.</li>
+<li><strong>polynomial features</strong>: help when there is a real interaction to expose (the synthetic set), hurt when they only add noise.</li>
+</ul>
+<p><strong>outlier clip</strong> is inert at its default: the squashing and quantile transforms already bound the data well inside 12σ, so the clip never fires (it only bites if you tighten it toward 1σ). And two knobs do not show here because the data does not exercise them: <strong>categorical encoding</strong> needs categorical columns (the Categoricals chapter), and <strong>feature subsampling</strong> only activates above 200 columns.</p>
+</section>
 </section>
 <section id="calibration-knobs" class="level2">
 <h2 class="anchored" data-anchor-id="calibration-knobs">Calibration knobs</h2>
@@ -916,60 +999,28 @@ default config, CLASS_SHIFT_METHOD=None     -&gt; AUC=0.8574</code></pre>
 <div id="hlbal" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T15:13:37.253980Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T15:13:37.253781Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T15:13:42.149658Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T15:13:42.148918Z&quot;}}" data-execution_count="4">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># balance_probabilities on a HARD, imbalanced task (uncertain model, so the shift is visible).</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">1</span>)</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> <span class="dv">6000</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>Xb <span class="op">=</span> rng.randn(m, <span class="dv">4</span>)</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>logit <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> Xb[:, <span class="dv">0</span>] <span class="op">-</span> <span class="fl">2.2</span>                                 <span class="co"># weak signal + low base rate (uncertain, ~11% positive)</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>yb <span class="op">=</span> (rng.rand(m) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span>logit))).astype(<span class="bu">int</span>)</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>Xtr, Xte <span class="op">=</span> pd.DataFrame(Xb[:m <span class="op">//</span> <span class="dv">2</span>]), pd.DataFrame(Xb[m <span class="op">//</span> <span class="dv">2</span>:])<span class="op">;</span> ytr, yte <span class="op">=</span> yb[:m <span class="op">//</span> <span class="dv">2</span>], yb[m <span class="op">//</span> <span class="dv">2</span>:]</span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>p_off <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>]</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>p_on  <span class="op">=</span> TabPFNClassifier(balance_probabilities<span class="op">=</span><span class="va">True</span>, random_state<span class="op">=</span><span class="dv">0</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>]</span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"calibration error (ECE):  default </span><span class="sc">{</span>expected_calibration_error(yte, p_off)<span class="sc">:.3f}</span><span class="ss">"</span></span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"   balanced </span><span class="sc">{</span>expected_calibration_error(yte, p_on)<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">3</span>))</span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>plt.hist(p_off, bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.6</span>, label<span class="op">=</span><span class="st">"balance_probabilities=False"</span>)</span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>plt.hist(p_on,  bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.6</span>, label<span class="op">=</span><span class="st">"balance_probabilities=True"</span>)</span>
-<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>plt.legend()<span class="op">;</span> plt.xlabel(<span class="st">"predicted P(class 1)"</span>)<span class="op">;</span> plt.title(<span class="st">"balance_probabilities reshapes the output"</span>)</span>
-<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># balance_probabilities on a HARD, imbalanced task (uncertain model, so the shift is visible).</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">1</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> <span class="dv">6000</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>Xb <span class="op">=</span> rng.randn(m, <span class="dv">4</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>logit <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> Xb[:, <span class="dv">0</span>] <span class="op">-</span> <span class="fl">2.2</span>                                 <span class="co"># weak signal + low base rate (uncertain, ~11% positive)</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>yb <span class="op">=</span> (rng.rand(m) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span>logit))).astype(<span class="bu">int</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>Xtr, Xte <span class="op">=</span> pd.DataFrame(Xb[:m <span class="op">//</span> <span class="dv">2</span>]), pd.DataFrame(Xb[m <span class="op">//</span> <span class="dv">2</span>:])<span class="op">;</span> ytr, yte <span class="op">=</span> yb[:m <span class="op">//</span> <span class="dv">2</span>], yb[m <span class="op">//</span> <span class="dv">2</span>:]</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>p_off <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>]</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>p_on  <span class="op">=</span> TabPFNClassifier(balance_probabilities<span class="op">=</span><span class="va">True</span>, random_state<span class="op">=</span><span class="dv">0</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>]</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"calibration error (ECE):  default </span><span class="sc">{</span>expected_calibration_error(yte, p_off)<span class="sc">:.3f}</span><span class="ss">"</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"   balanced </span><span class="sc">{</span>expected_calibration_error(yte, p_on)<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">3</span>))</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>plt.hist(p_off, bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.6</span>, label<span class="op">=</span><span class="st">"balance_probabilities=False"</span>)</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>plt.hist(p_on,  bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.6</span>, label<span class="op">=</span><span class="st">"balance_probabilities=True"</span>)</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>plt.legend()<span class="op">;</span> plt.xlabel(<span class="st">"predicted P(class 1)"</span>)<span class="op">;</span> plt.title(<span class="st">"balance_probabilities reshapes the output"</span>)</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>calibration error (ECE):  default 0.021   balanced 0.311</code></pre>
-</div>
-<div class="cell-output cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="Parameters_files/figure-html/cell-10-output-2.png" class="img-fluid figure-img"></p>
-</figure>
-</div>
-</div>
-</div>
-<div id="hltemp" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T15:13:42.151445Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T15:13:42.151260Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T15:13:49.629796Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T15:13:49.629086Z&quot;}}" data-execution_count="5">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># softmax_temperature on a HARD, balanced task (uncertain model, so sharpen/soften shows).</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">2</span>)</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> <span class="dv">6000</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>Xt <span class="op">=</span> rng.randn(m, <span class="dv">6</span>)</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>logit <span class="op">=</span> <span class="fl">0.6</span> <span class="op">*</span> Xt[:, <span class="dv">0</span>] <span class="op">+</span> <span class="fl">0.4</span> <span class="op">*</span> Xt[:, <span class="dv">1</span>]</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>yt <span class="op">=</span> (rng.rand(m) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span>logit))).astype(<span class="bu">int</span>)</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>Xtr, Xte <span class="op">=</span> pd.DataFrame(Xt[:m <span class="op">//</span> <span class="dv">2</span>]), pd.DataFrame(Xt[m <span class="op">//</span> <span class="dv">2</span>:])<span class="op">;</span> ytr, yte <span class="op">=</span> yt[:m <span class="op">//</span> <span class="dv">2</span>], yt[m <span class="op">//</span> <span class="dv">2</span>:]</span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">3</span>))</span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> [<span class="fl">0.5</span>, <span class="fl">0.9</span>, <span class="fl">2.0</span>]:</span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> TabPFNClassifier(softmax_temperature<span class="op">=</span>t, random_state<span class="op">=</span><span class="dv">0</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>]</span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"temperature </span><span class="sc">{</span>t<span class="sc">}</span><span class="ss">: calibration error (ECE) </span><span class="sc">{</span>expected_calibration_error(yte, p)<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    plt.hist(p, bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, label<span class="op">=</span><span class="ss">f"temperature=</span><span class="sc">{</span>t<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>plt.legend()<span class="op">;</span> plt.xlabel(<span class="st">"predicted P(class 1)"</span>)<span class="op">;</span> plt.title(<span class="st">"softmax_temperature: &lt;1 more confident (toward 0/1), &gt;1 less confident (toward 0.5)"</span>)</span>
-<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>temperature 0.5: calibration error (ECE) 0.110
-temperature 0.9: calibration error (ECE) 0.029
-temperature 2.0: calibration error (ECE) 0.056</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div>
@@ -979,24 +1030,56 @@ temperature 2.0: calibration error (ECE) 0.056</code></pre>
 </div>
 </div>
 </div>
+<div id="hltemp" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T15:13:42.151445Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T15:13:42.151260Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T15:13:49.629796Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T15:13:49.629086Z&quot;}}" data-execution_count="5">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># softmax_temperature on a HARD, balanced task (uncertain model, so sharpen/soften shows).</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">2</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> <span class="dv">6000</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>Xt <span class="op">=</span> rng.randn(m, <span class="dv">6</span>)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>logit <span class="op">=</span> <span class="fl">0.6</span> <span class="op">*</span> Xt[:, <span class="dv">0</span>] <span class="op">+</span> <span class="fl">0.4</span> <span class="op">*</span> Xt[:, <span class="dv">1</span>]</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>yt <span class="op">=</span> (rng.rand(m) <span class="op">&lt;</span> <span class="dv">1</span> <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> np.exp(<span class="op">-</span>logit))).astype(<span class="bu">int</span>)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>Xtr, Xte <span class="op">=</span> pd.DataFrame(Xt[:m <span class="op">//</span> <span class="dv">2</span>]), pd.DataFrame(Xt[m <span class="op">//</span> <span class="dv">2</span>:])<span class="op">;</span> ytr, yte <span class="op">=</span> yt[:m <span class="op">//</span> <span class="dv">2</span>], yt[m <span class="op">//</span> <span class="dv">2</span>:]</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">3</span>))</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> [<span class="fl">0.5</span>, <span class="fl">0.9</span>, <span class="fl">2.0</span>]:</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> TabPFNClassifier(softmax_temperature<span class="op">=</span>t, random_state<span class="op">=</span><span class="dv">0</span>).fit(Xtr, ytr).predict_proba(Xte)[:, <span class="dv">1</span>]</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"temperature </span><span class="sc">{</span>t<span class="sc">}</span><span class="ss">: calibration error (ECE) </span><span class="sc">{</span>expected_calibration_error(yte, p)<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    plt.hist(p, bins<span class="op">=</span><span class="dv">30</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, label<span class="op">=</span><span class="ss">f"temperature=</span><span class="sc">{</span>t<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>plt.legend()<span class="op">;</span> plt.xlabel(<span class="st">"predicted P(class 1)"</span>)<span class="op">;</span> plt.title(<span class="st">"softmax_temperature: &lt;1 more confident (toward 0/1), &gt;1 less confident (toward 0.5)"</span>)</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>temperature 0.5: calibration error (ECE) 0.110
+temperature 0.9: calibration error (ECE) 0.029
+temperature 2.0: calibration error (ECE) 0.056</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Parameters_files/figure-html/cell-12-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
 <div id="calusecase" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T15:13:49.631583Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T15:13:49.631397Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T15:13:54.926792Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T15:13:54.926062Z&quot;}}" data-execution_count="6">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A real threshold decision: a marketing campaign on imbalanced data (~12% subscribe). We threshold</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co"># the probability at 0.5 to decide whom to call, and watch what the knob does to that decision.</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>X, y <span class="op">=</span> load_openml_binary(<span class="st">"bank-marketing"</span>, n_cap<span class="op">=</span><span class="dv">6000</span>)</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">0.4</span>, random_state<span class="op">=</span><span class="dv">0</span>, stratify<span class="op">=</span>y)</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"positive (subscribe) rate: </span><span class="sc">{</span>y<span class="sc">.</span>mean()<span class="sc">:.3f}</span><span class="ch">\n</span><span class="ss">"</span>)</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> label, settings <span class="kw">in</span> [(<span class="st">"default"</span>, {}), (<span class="st">"balance_probabilities=True"</span>, {<span class="st">"balance_probabilities"</span>: <span class="va">True</span>})]:</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>, <span class="op">**</span>settings).fit(X_train, y_train).predict_proba(X_test)[:, <span class="dv">1</span>]</span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    flagged <span class="op">=</span> p <span class="op">&gt;=</span> <span class="fl">0.5</span></span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>label<span class="sc">}</span><span class="ss">:"</span>)</span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  AUC </span><span class="sc">{</span>roc_auc_score(y_test, p)<span class="sc">:.3f}</span><span class="ss"> (ranking)   "</span></span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"ECE </span><span class="sc">{</span>expected_calibration_error(y_test, p)<span class="sc">:.3f}</span><span class="ss"> (calibration)   mean prob </span><span class="sc">{</span>p<span class="sc">.</span>mean()<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
-<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  at threshold 0.5 -&gt; call </span><span class="sc">{</span>flagged<span class="sc">.</span>mean()<span class="sc">:.1%}</span><span class="ss"> of customers, "</span></span>
-<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"precision </span><span class="sc">{</span>precision_score(y_test, flagged, zero_division<span class="op">=</span><span class="dv">0</span>)<span class="sc">:.2f}</span><span class="ss">, "</span></span>
-<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"recall </span><span class="sc">{</span>recall_score(y_test, flagged)<span class="sc">:.2f}</span><span class="ch">\n</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A real threshold decision: a marketing campaign on imbalanced data (~12% subscribe). We threshold</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"># the probability at 0.5 to decide whom to call, and watch what the knob does to that decision.</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>X, y <span class="op">=</span> load_openml_binary(<span class="st">"bank-marketing"</span>, n_cap<span class="op">=</span><span class="dv">6000</span>)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">0.4</span>, random_state<span class="op">=</span><span class="dv">0</span>, stratify<span class="op">=</span>y)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"positive (subscribe) rate: </span><span class="sc">{</span>y<span class="sc">.</span>mean()<span class="sc">:.3f}</span><span class="ch">\n</span><span class="ss">"</span>)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> label, settings <span class="kw">in</span> [(<span class="st">"default"</span>, {}), (<span class="st">"balance_probabilities=True"</span>, {<span class="st">"balance_probabilities"</span>: <span class="va">True</span>})]:</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>, <span class="op">**</span>settings).fit(X_train, y_train).predict_proba(X_test)[:, <span class="dv">1</span>]</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    flagged <span class="op">=</span> p <span class="op">&gt;=</span> <span class="fl">0.5</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>label<span class="sc">}</span><span class="ss">:"</span>)</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  AUC </span><span class="sc">{</span>roc_auc_score(y_test, p)<span class="sc">:.3f}</span><span class="ss"> (ranking)   "</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"ECE </span><span class="sc">{</span>expected_calibration_error(y_test, p)<span class="sc">:.3f}</span><span class="ss"> (calibration)   mean prob </span><span class="sc">{</span>p<span class="sc">.</span>mean()<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  at threshold 0.5 -&gt; call </span><span class="sc">{</span>flagged<span class="sc">.</span>mean()<span class="sc">:.1%}</span><span class="ss"> of customers, "</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"precision </span><span class="sc">{</span>precision_score(y_test, flagged, zero_division<span class="op">=</span><span class="dv">0</span>)<span class="sc">:.2f}</span><span class="ss">, "</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"recall </span><span class="sc">{</span>recall_score(y_test, flagged)<span class="sc">:.2f}</span><span class="ch">\n</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>positive (subscribe) rate: 0.117
@@ -1026,22 +1109,22 @@ balance_probabilities=True:
 <div id="fitmodedemo" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T15:13:54.928611Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T15:13:54.928422Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T15:14:13.565179Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T15:14:13.564304Z&quot;}}" data-execution_count="7">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>X, y <span class="op">=</span> make_data(n<span class="op">=</span><span class="dv">6000</span>, seed<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>half <span class="op">=</span> <span class="bu">len</span>(y) <span class="op">//</span> <span class="dv">2</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> X.iloc[:half], X.iloc[half:], y[:half], y[half:]</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fit_mode <span class="kw">in</span> [<span class="st">"low_memory"</span>, <span class="st">"fit_preprocessors"</span>, <span class="st">"fit_with_cache"</span>]:</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time.perf_counter()</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> TabPFNClassifier(fit_mode<span class="op">=</span>fit_mode, random_state<span class="op">=</span><span class="dv">0</span>).fit(X_train, y_train)</span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    fit_seconds <span class="op">=</span> time.perf_counter() <span class="op">-</span> start</span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time.perf_counter()</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>):                       <span class="co"># repeated predictions on the same training data</span></span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>        model.predict_proba(X_test)</span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    predict_seconds <span class="op">=</span> (time.perf_counter() <span class="op">-</span> start) <span class="op">/</span> <span class="dv">3</span></span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    rows.append({<span class="st">"fit_mode"</span>: fit_mode, <span class="st">"fit_seconds"</span>: <span class="bu">round</span>(fit_seconds, <span class="dv">2</span>),</span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"predict_seconds (avg of 3)"</span>: <span class="bu">round</span>(predict_seconds, <span class="dv">2</span>)})</span>
-<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(pd.DataFrame(rows).to_string(index<span class="op">=</span><span class="va">False</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>X, y <span class="op">=</span> make_data(n<span class="op">=</span><span class="dv">6000</span>, seed<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>half <span class="op">=</span> <span class="bu">len</span>(y) <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> X.iloc[:half], X.iloc[half:], y[:half], y[half:]</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fit_mode <span class="kw">in</span> [<span class="st">"low_memory"</span>, <span class="st">"fit_preprocessors"</span>, <span class="st">"fit_with_cache"</span>]:</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time.perf_counter()</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> TabPFNClassifier(fit_mode<span class="op">=</span>fit_mode, random_state<span class="op">=</span><span class="dv">0</span>).fit(X_train, y_train)</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    fit_seconds <span class="op">=</span> time.perf_counter() <span class="op">-</span> start</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time.perf_counter()</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>):                       <span class="co"># repeated predictions on the same training data</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>        model.predict_proba(X_test)</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>    predict_seconds <span class="op">=</span> (time.perf_counter() <span class="op">-</span> start) <span class="op">/</span> <span class="dv">3</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    rows.append({<span class="st">"fit_mode"</span>: fit_mode, <span class="st">"fit_seconds"</span>: <span class="bu">round</span>(fit_seconds, <span class="dv">2</span>),</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"predict_seconds (avg of 3)"</span>: <span class="bu">round</span>(predict_seconds, <span class="dv">2</span>)})</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(pd.DataFrame(rows).to_string(index<span class="op">=</span><span class="va">False</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>         fit_mode  fit_seconds  predict_seconds (avg of 3)
@@ -1063,22 +1146,22 @@ fit_preprocessors         0.63                        2.09
 <div id="c11" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T15:14:13.566969Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T15:14:13.566774Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T15:14:14.395622Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T15:14:14.394851Z&quot;}}" data-execution_count="8">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>Xq <span class="op">=</span> pd.DataFrame(np.random.RandomState(<span class="dv">0</span>).randn(<span class="dv">200</span>, <span class="dv">5</span>), columns<span class="op">=</span>[<span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"e"</span>])</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>yq <span class="op">=</span> (Xq[<span class="st">"a"</span>] <span class="op">&gt;</span> <span class="dv">0</span>).astype(<span class="bu">int</span>)</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>).fit(Xq, yq)</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Envelope (hard ceilings):"</span>)</span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> field <span class="kw">in</span> [<span class="st">"MAX_NUMBER_OF_SAMPLES"</span>, <span class="st">"MAX_NUMBER_OF_FEATURES"</span>, <span class="st">"MAX_NUMBER_OF_CLASSES"</span>]:</span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>field<span class="sc">}</span><span class="ss"> = </span><span class="sc">{</span><span class="bu">getattr</span>(model.inference_config_, field)<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Preprocessing thresholds:"</span>)</span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> field <span class="kw">in</span> [<span class="st">"MAX_UNIQUE_FOR_CATEGORICAL_FEATURES"</span>, <span class="st">"MIN_UNIQUE_FOR_NUMERICAL_FEATURES"</span>,</span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>              <span class="st">"MIN_NUMBER_SAMPLES_FOR_CATEGORICAL_INFERENCE"</span>, <span class="st">"OUTLIER_REMOVAL_STD"</span>]:</span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>field<span class="sc">}</span><span class="ss"> = </span><span class="sc">{</span><span class="bu">getattr</span>(model.inference_config_, field)<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Inferred column modality (first five columns):"</span>)</span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> feature <span class="kw">in</span> model.inferred_feature_schema_.features[:<span class="dv">5</span>]:</span>
-<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>feature<span class="sc">.</span>name<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>feature<span class="sc">.</span>modality<span class="sc">.</span>value<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>Xq <span class="op">=</span> pd.DataFrame(np.random.RandomState(<span class="dv">0</span>).randn(<span class="dv">200</span>, <span class="dv">5</span>), columns<span class="op">=</span>[<span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"e"</span>])</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>yq <span class="op">=</span> (Xq[<span class="st">"a"</span>] <span class="op">&gt;</span> <span class="dv">0</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span><span class="dv">0</span>).fit(Xq, yq)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Envelope (hard ceilings):"</span>)</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> field <span class="kw">in</span> [<span class="st">"MAX_NUMBER_OF_SAMPLES"</span>, <span class="st">"MAX_NUMBER_OF_FEATURES"</span>, <span class="st">"MAX_NUMBER_OF_CLASSES"</span>]:</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>field<span class="sc">}</span><span class="ss"> = </span><span class="sc">{</span><span class="bu">getattr</span>(model.inference_config_, field)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Preprocessing thresholds:"</span>)</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> field <span class="kw">in</span> [<span class="st">"MAX_UNIQUE_FOR_CATEGORICAL_FEATURES"</span>, <span class="st">"MIN_UNIQUE_FOR_NUMERICAL_FEATURES"</span>,</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>              <span class="st">"MIN_NUMBER_SAMPLES_FOR_CATEGORICAL_INFERENCE"</span>, <span class="st">"OUTLIER_REMOVAL_STD"</span>]:</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>field<span class="sc">}</span><span class="ss"> = </span><span class="sc">{</span><span class="bu">getattr</span>(model.inference_config_, field)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Inferred column modality (first five columns):"</span>)</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> feature <span class="kw">in</span> model.inferred_feature_schema_.features[:<span class="dv">5</span>]:</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>feature<span class="sc">.</span>name<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>feature<span class="sc">.</span>modality<span class="sc">.</span>value<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Envelope (hard ceilings):
