@@ -711,50 +711,51 @@ n_estimators=16: 3.42s</code></pre>
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Is "2 to 4 estimators" universal, or a property of the default menu? An estimator only helps if its view</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># differs from the rest, and inference_config sets that. Sweep n_estimators under three configs: no</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># diversity (one recipe, shifts off), the default 2-recipe menu, and a wider 6-recipe menu.</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn.preprocessing <span class="im">import</span> PreprocessorConfig</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>config_datasets <span class="op">=</span> {<span class="st">"synthetic"</span>: make_data(n<span class="op">=</span><span class="dv">4000</span>, seed<span class="op">=</span><span class="dv">0</span>),</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"diabetes"</span>: load_openml_binary(<span class="st">"diabetes"</span>),</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"blood-transfusion"</span>: load_openml_binary(<span class="st">"blood-transfusion-service-center"</span>)}</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>diverse_menu <span class="op">=</span> [</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    PreprocessorConfig(name<span class="op">=</span><span class="st">"squashing_scaler_default"</span>, categorical_name<span class="op">=</span><span class="st">"numeric"</span>, global_transformer_name<span class="op">=</span><span class="st">"svd_quarter_components"</span>),</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    PreprocessorConfig(name<span class="op">=</span><span class="st">"quantile_uni"</span>, categorical_name<span class="op">=</span><span class="st">"numeric"</span>),</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    PreprocessorConfig(name<span class="op">=</span><span class="st">"safepower"</span>, categorical_name<span class="op">=</span><span class="st">"numeric"</span>),</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    PreprocessorConfig(name<span class="op">=</span><span class="st">"none"</span>, categorical_name<span class="op">=</span><span class="st">"numeric"</span>),</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    PreprocessorConfig(name<span class="op">=</span><span class="st">"quantile_norm"</span>, categorical_name<span class="op">=</span><span class="st">"numeric"</span>, global_transformer_name<span class="op">=</span><span class="st">"svd_quarter_components"</span>),</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    PreprocessorConfig(name<span class="op">=</span><span class="st">"robust"</span>, categorical_name<span class="op">=</span><span class="st">"numeric"</span>),</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>diversity_configs <span class="op">=</span> {</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">"no diversity"</span>: {<span class="st">"PREPROCESS_TRANSFORMS"</span>: [PreprocessorConfig(name<span class="op">=</span><span class="st">"quantile_uni"</span>, categorical_name<span class="op">=</span><span class="st">"numeric"</span>)],</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"FEATURE_SHIFT_METHOD"</span>: <span class="va">None</span>, <span class="st">"CLASS_SHIFT_METHOD"</span>: <span class="va">None</span>},</span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"default"</span>: {},</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">"wider menu (6 recipes)"</span>: {<span class="st">"PREPROCESS_TRANSFORMS"</span>: diverse_menu},</span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>estimator_grid <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">32</span>]</span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>config_rows <span class="op">=</span> []</span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> data_name, (X, y) <span class="kw">in</span> tqdm(config_datasets.items(), desc<span class="op">=</span><span class="st">"n_estimators x config"</span>):</span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">0.4</span>, random_state<span class="op">=</span><span class="dv">0</span>, stratify<span class="op">=</span>y)</span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> config_name, cfg <span class="kw">in</span> diversity_configs.items():</span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> n <span class="kw">in</span> estimator_grid:</span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>            model <span class="op">=</span> TabPFNClassifier(n_estimators<span class="op">=</span>n, random_state<span class="op">=</span><span class="dv">0</span>, inference_config<span class="op">=</span>cfg).fit(X_train, y_train)</span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>            auc <span class="op">=</span> roc_auc_score(y_test, model.predict_proba(X_test)[:, <span class="dv">1</span>])</span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>            config_rows.append({<span class="st">"dataset"</span>: data_name, <span class="st">"config"</span>: config_name, <span class="st">"n_estimators"</span>: n, <span class="st">"auc"</span>: auc})</span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>config_sweep <span class="op">=</span> pd.DataFrame(config_rows)</span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">15</span>, <span class="fl">4.5</span>))</span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, data_name <span class="kw">in</span> <span class="bu">zip</span>(axes, config_datasets):</span>
-<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>    sub <span class="op">=</span> config_sweep[config_sweep.dataset <span class="op">==</span> data_name]</span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> config_name <span class="kw">in</span> diversity_configs:</span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>        line <span class="op">=</span> sub[sub.config <span class="op">==</span> config_name].sort_values(<span class="st">"n_estimators"</span>)</span>
-<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>        ax.plot(line.n_estimators, line.auc, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span>config_name)</span>
-<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>    ax.set_xscale(<span class="st">"log"</span>, base<span class="op">=</span><span class="dv">2</span>)<span class="op">;</span> ax.set_xticks(estimator_grid)<span class="op">;</span> ax.set_xticklabels(estimator_grid)</span>
-<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>    ax.set_title(data_name)<span class="op">;</span> ax.set_xlabel(<span class="st">"n_estimators"</span>)</span>
-<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"test AUC"</span>)<span class="op">;</span> axes[<span class="op">-</span><span class="dv">1</span>].legend(fontsize<span class="op">=</span><span class="dv">8</span>)</span>
-<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># diversity (one recipe, shifts off), the default 2-recipe menu, and a wider menu that is the default plus</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># four more recipes (so default and wider share their first two and split once the extras enter).</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn.preprocessing <span class="im">import</span> PreprocessorConfig</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm.auto <span class="im">import</span> tqdm</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>config_datasets <span class="op">=</span> {<span class="st">"synthetic"</span>: make_data(n<span class="op">=</span><span class="dv">4000</span>, seed<span class="op">=</span><span class="dv">0</span>),</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"diabetes"</span>: load_openml_binary(<span class="st">"diabetes"</span>),</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"blood-transfusion"</span>: load_openml_binary(<span class="st">"blood-transfusion-service-center"</span>)}</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co"># read the default menu off a quick fit, then build "wider" as that menu plus four more recipes</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>default_menu <span class="op">=</span> <span class="bu">list</span>(TabPFNClassifier(n_estimators<span class="op">=</span><span class="dv">8</span>, random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>                    .fit(<span class="op">*</span>config_datasets[<span class="st">"synthetic"</span>]).inference_config_.PREPROCESS_TRANSFORMS)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>wider_menu <span class="op">=</span> default_menu <span class="op">+</span> [</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    PreprocessorConfig(name<span class="op">=</span><span class="st">"safepower"</span>, categorical_name<span class="op">=</span><span class="st">"numeric"</span>),</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    PreprocessorConfig(name<span class="op">=</span><span class="st">"none"</span>, categorical_name<span class="op">=</span><span class="st">"numeric"</span>),</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    PreprocessorConfig(name<span class="op">=</span><span class="st">"quantile_norm"</span>, categorical_name<span class="op">=</span><span class="st">"numeric"</span>, global_transformer_name<span class="op">=</span><span class="st">"svd_quarter_components"</span>),</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    PreprocessorConfig(name<span class="op">=</span><span class="st">"robust"</span>, categorical_name<span class="op">=</span><span class="st">"numeric"</span>),</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>diversity_configs <span class="op">=</span> {</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"no diversity"</span>: {<span class="st">"PREPROCESS_TRANSFORMS"</span>: [default_menu[<span class="dv">0</span>]], <span class="st">"FEATURE_SHIFT_METHOD"</span>: <span class="va">None</span>, <span class="st">"CLASS_SHIFT_METHOD"</span>: <span class="va">None</span>},</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">"default"</span>: {},</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">"wider menu (6 recipes)"</span>: {<span class="st">"PREPROCESS_TRANSFORMS"</span>: wider_menu},</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>estimator_grid <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">6</span>, <span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">32</span>]</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>config_rows <span class="op">=</span> []</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> data_name, (X, y) <span class="kw">in</span> tqdm(config_datasets.items(), desc<span class="op">=</span><span class="st">"n_estimators x config"</span>):</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">0.4</span>, random_state<span class="op">=</span><span class="dv">0</span>, stratify<span class="op">=</span>y)</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> config_name, cfg <span class="kw">in</span> diversity_configs.items():</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> n <span class="kw">in</span> estimator_grid:</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>            model <span class="op">=</span> TabPFNClassifier(n_estimators<span class="op">=</span>n, random_state<span class="op">=</span><span class="dv">0</span>, inference_config<span class="op">=</span>cfg).fit(X_train, y_train)</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>            auc <span class="op">=</span> roc_auc_score(y_test, model.predict_proba(X_test)[:, <span class="dv">1</span>])</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>            config_rows.append({<span class="st">"dataset"</span>: data_name, <span class="st">"config"</span>: config_name, <span class="st">"n_estimators"</span>: n, <span class="st">"auc"</span>: auc})</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>config_sweep <span class="op">=</span> pd.DataFrame(config_rows)</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">15</span>, <span class="fl">4.5</span>))</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, data_name <span class="kw">in</span> <span class="bu">zip</span>(axes, config_datasets):</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    sub <span class="op">=</span> config_sweep[config_sweep.dataset <span class="op">==</span> data_name]</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> config_name <span class="kw">in</span> diversity_configs:</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>        line <span class="op">=</span> sub[sub.config <span class="op">==</span> config_name].sort_values(<span class="st">"n_estimators"</span>)</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>        ax.plot(line.n_estimators, line.auc, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span>config_name)</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>    ax.set_xscale(<span class="st">"log"</span>, base<span class="op">=</span><span class="dv">2</span>)<span class="op">;</span> ax.set_xticks(estimator_grid)<span class="op">;</span> ax.set_xticklabels(estimator_grid)</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>    ax.set_title(data_name)<span class="op">;</span> ax.set_xlabel(<span class="st">"n_estimators"</span>)</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"test AUC"</span>)<span class="op">;</span> axes[<span class="op">-</span><span class="dv">1</span>].legend(fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -764,13 +765,13 @@ n_estimators=16: 3.42s</code></pre>
 </div>
 </div>
 </div>
-<p>Three configs, same sweep:</p>
+<p>Three configs, same sweep. The wider menu is the default plus four more recipes, so default and wider start identical and split once the extra recipes enter:</p>
 <ul>
 <li><strong>no diversity</strong> (one recipe, feature and class shifts off): flat. Every n gives the same AUC; the extra estimators are wasted.</li>
 <li><strong>default</strong> (the two-recipe menu): saturates by 2 to 4.</li>
-<li><strong>wider menu</strong> (six varied recipes): keeps climbing to about 16, and peaks a little higher.</li>
+<li><strong>wider menu</strong> (six recipes): keeps climbing past where the default flattens, to about 16.</li>
 </ul>
-<p>So the saturation point is not a law; it tracks how diverse the views are. The practical rule, qualified: 8 is a safe default <em>for the default menu</em>, a richer menu rewards more estimators, and no diversity wastes them. (Clear on synthetic and diabetes; blood-transfusion is too small and noisy to separate the curves.)</p>
+<p>So the saturation point is not a law; it tracks how diverse the views are. The wider menu pays off most where the default’s own recipe fits the data poorly: on diabetes <code>squashing+SVD</code> is the weakest single recipe and the added ones beat it, so averaging them in lifts AUC; on synthetic and blood-transfusion it is already fine, so little is gained. Rule of thumb: 8 is a safe default <em>for the default menu</em>, a richer menu rewards more estimators, and no diversity wastes them. (Clearest on diabetes; blood-transfusion is too small and noisy to read.)</p>
 </section>
 <section id="what-each-view-does-inference_config" class="level3">
 <h3 class="anchored" data-anchor-id="what-each-view-does-inference_config">What each view does: inference_config</h3>
