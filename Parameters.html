@@ -8,7 +8,7 @@
 
 <meta name="description" content="A field guide to TabPFN inference settings: estimators, calibration, fit modes, model paths, and preprocessing overrides.">
 
-<title>Parameter map – TabPFN Practitioner</title>
+<title>Inference parameters – TabPFN Practitioner</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -177,7 +177,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Parameters.html">Parameter map</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Parameters.html">Inference parameters</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -215,31 +215,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Categoricals.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Encoding checklist</span></a>
+ <span class="menu-text">Categorical variables</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">The familiar reflex</span></a>
+ <span class="menu-text">Correlated variables</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./FeatureEngineering.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Feature-engineering checklist</span></a>
+ <span class="menu-text">Feature engineering</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./MissingValues.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Classical toolkit</span></a>
+ <span class="menu-text">Missing values</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Parameters.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Parameter map</span></a>
+ <span class="menu-text">Inference parameters</span></a>
   </div>
 </li>
       </ul>
@@ -254,8 +254,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#inference-parameters" id="toc-inference-parameters" class="nav-link active" data-scroll-target="#inference-parameters">Inference parameters</a>
-  <ul class="collapse">
+  <li><a href="#parameter-map" id="toc-parameter-map" class="nav-link active" data-scroll-target="#parameter-map">Parameter map</a></li>
   <li><a href="#accuracy-versus-speedeach-estimator-is-a-differently-preprocessed-copy-of-the-data-and-tabpfn-averages-over-them.-moreestimators-reduce-the-variance-of-the-averaged-prediction-at-a-compute-cost-that-grows-with-thecount-the-timing-cell-below-makes-it-concrete.-the-accuracy-gain-saturates-quickly-and-exactlyhow-quickly-is-dataset-dependent-so-there-is-no-universal-number.-the-default-of-8-is-a-reasonablemiddle-drop-it-to-1-or-2-when-you-need-speed-raise-it-for-a-marginal-diminishing-gain." id="toc-accuracy-versus-speedeach-estimator-is-a-differently-preprocessed-copy-of-the-data-and-tabpfn-averages-over-them.-moreestimators-reduce-the-variance-of-the-averaged-prediction-at-a-compute-cost-that-grows-with-thecount-the-timing-cell-below-makes-it-concrete.-the-accuracy-gain-saturates-quickly-and-exactlyhow-quickly-is-dataset-dependent-so-there-is-no-universal-number.-the-default-of-8-is-a-reasonablemiddle-drop-it-to-1-or-2-when-you-need-speed-raise-it-for-a-marginal-diminishing-gain." class="nav-link" data-scroll-target="#accuracy-versus-speedeach-estimator-is-a-differently-preprocessed-copy-of-the-data-and-tabpfn-averages-over-them.-moreestimators-reduce-the-variance-of-the-averaged-prediction-at-a-compute-cost-that-grows-with-thecount-the-timing-cell-below-makes-it-concrete.-the-accuracy-gain-saturates-quickly-and-exactlyhow-quickly-is-dataset-dependent-so-there-is-no-universal-number.-the-default-of-8-is-a-reasonablemiddle-drop-it-to-1-or-2-when-you-need-speed-raise-it-for-a-marginal-diminishing-gain.">Accuracy versus speedEach estimator is a differently-preprocessed copy of the data, and TabPFN averages over them. Moreestimators reduce the variance of the averaged prediction, at a compute cost that grows with thecount (the timing cell below makes it concrete). The accuracy gain saturates quickly, and exactlyhow quickly is dataset-dependent, so there is no universal number. The default of 8 is a reasonablemiddle: drop it to 1 or 2 when you need speed, raise it for a marginal, diminishing gain.</a></li>
   <li><a href="#calibration-knobs" id="toc-calibration-knobs" class="nav-link" data-scroll-target="#calibration-knobs">Calibration knobs</a></li>
   <li><a href="#speed-and-memory" id="toc-speed-and-memory" class="nav-link" data-scroll-target="#speed-and-memory">Speed and memory</a></li>
@@ -263,16 +262,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#model-and-inference-configuration" id="toc-model-and-inference-configuration" class="nav-link" data-scroll-target="#model-and-inference-configuration">Model and inference configuration</a></li>
   <li><a href="#other-knobs" id="toc-other-knobs" class="nav-link" data-scroll-target="#other-knobs">Other knobs</a></li>
   <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
-  </ul></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Parameters.html">Parameter map</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Parameters.html">Inference parameters</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Parameter map</h1>
+<h1 class="title">Inference parameters</h1>
 </div>
 
 <div>
@@ -294,8 +292,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="inference-parameters" class="level1">
-<h1>Inference parameters</h1>
 <p>With a gradient-boosting model you spend real effort searching hyperparameters: tree depth, learning rate, number of trees, number of leaves, minimum number of instances in leaf, subsample, column sample, regularization. With TabPFN that search is gone. The model is <strong>pretrained</strong>, its weights are fixed, and there is no train-time fit to tune. What is left is a short list of <strong>inference settings</strong>, and the defaults are strong.</p>
 <p>This notebook tours them, measures the few that actually move the needle, and shows how to inspect what TabPFN inferred about your data. Everything runs on a small synthetic task so it stays self-contained.</p>
 <div id="c01" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T15:12:48.813320Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T15:12:48.813156Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T15:13:00.320803Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T15:13:00.319930Z&quot;}}" data-execution_count="1">
@@ -357,6 +353,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> calibration_gap</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
+<section id="parameter-map" class="level2">
+<h2 class="anchored" data-anchor-id="parameter-map">Parameter map</h2>
 <p>Every TabPFN inference setting, with its default and when you would reach for it:</p>
 <table class="caption-top table">
 <colgroup>
@@ -460,6 +458,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 <p>The defaults are strong almost everywhere. The next cells measure the ones that actually move accuracy or the clock, then show how to read and override the rest.</p>
+</section>
 <section id="accuracy-versus-speedeach-estimator-is-a-differently-preprocessed-copy-of-the-data-and-tabpfn-averages-over-them.-moreestimators-reduce-the-variance-of-the-averaged-prediction-at-a-compute-cost-that-grows-with-thecount-the-timing-cell-below-makes-it-concrete.-the-accuracy-gain-saturates-quickly-and-exactlyhow-quickly-is-dataset-dependent-so-there-is-no-universal-number.-the-default-of-8-is-a-reasonablemiddle-drop-it-to-1-or-2-when-you-need-speed-raise-it-for-a-marginal-diminishing-gain." class="level2">
 <h2 class="anchored" data-anchor-id="accuracy-versus-speedeach-estimator-is-a-differently-preprocessed-copy-of-the-data-and-tabpfn-averages-over-them.-moreestimators-reduce-the-variance-of-the-averaged-prediction-at-a-compute-cost-that-grows-with-thecount-the-timing-cell-below-makes-it-concrete.-the-accuracy-gain-saturates-quickly-and-exactlyhow-quickly-is-dataset-dependent-so-there-is-no-universal-number.-the-default-of-8-is-a-reasonablemiddle-drop-it-to-1-or-2-when-you-need-speed-raise-it-for-a-marginal-diminishing-gain.">Accuracy versus speedEach estimator is a differently-preprocessed copy of the data, and TabPFN averages over them. Moreestimators reduce the variance of the averaged prediction, at a compute cost that grows with thecount (the timing cell below makes it concrete). The accuracy gain saturates quickly, and exactlyhow quickly is dataset-dependent, so there is no universal number. The default of 8 is a reasonablemiddle: drop it to 1 or 2 when you need speed, raise it for a marginal, diminishing gain.</h2>
 <div id="nestsweep" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T15:13:00.323032Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T15:13:00.322625Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T15:13:30.706913Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T15:13:30.706207Z&quot;}}" data-execution_count="2">
@@ -781,7 +780,6 @@ Overridden to a single quantile transform:
 <p>The shift from gradient boosting: you are not tuning a model, you are configuring a fixed one, and most of the time the defaults are the right answer.</p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -1243,8 +1241,8 @@ Overridden to a single quantile transform:
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./MissingValues.html" class="pagination-link" aria-label="Classical toolkit">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Classical toolkit</span>
+      <a href="./MissingValues.html" class="pagination-link" aria-label="Missing values">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Missing values</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">

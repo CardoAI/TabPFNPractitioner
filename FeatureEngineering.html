@@ -8,7 +8,7 @@
 
 <meta name="description" content="A practical split between within-row features TabPFN can recover and cross-row aggregates it still needs.">
 
-<title>Feature-engineering checklist – TabPFN Practitioner</title>
+<title>Feature engineering – TabPFN Practitioner</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -178,7 +178,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./FeatureEngineering.html">Feature-engineering checklist</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./FeatureEngineering.html">Feature engineering</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -216,31 +216,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Categoricals.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Encoding checklist</span></a>
+ <span class="menu-text">Categorical variables</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">The familiar reflex</span></a>
+ <span class="menu-text">Correlated variables</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./FeatureEngineering.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Feature-engineering checklist</span></a>
+ <span class="menu-text">Feature engineering</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./MissingValues.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Classical toolkit</span></a>
+ <span class="menu-text">Missing values</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Parameters.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Parameter map</span></a>
+ <span class="menu-text">Inference parameters</span></a>
   </div>
 </li>
       </ul>
@@ -255,8 +255,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#feature-engineering" id="toc-feature-engineering" class="nav-link active" data-scroll-target="#feature-engineering">Feature engineering</a>
-  <ul class="collapse">
+  <li><a href="#feature-engineering-checklist" id="toc-feature-engineering-checklist" class="nav-link active" data-scroll-target="#feature-engineering-checklist">Feature-engineering checklist</a></li>
   <li><a href="#tabpfn-treatment" id="toc-tabpfn-treatment" class="nav-link" data-scroll-target="#tabpfn-treatment">TabPFN treatment</a></li>
   <li><a href="#experiment-map" id="toc-experiment-map" class="nav-link" data-scroll-target="#experiment-map">Experiment map</a></li>
   <li><a href="#within-row-features" id="toc-within-row-features" class="nav-link" data-scroll-target="#within-row-features">Within-row features</a></li>
@@ -264,16 +263,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#real-data-check" id="toc-real-data-check" class="nav-link" data-scroll-target="#real-data-check">Real data check</a></li>
   <li><a href="#why-the-split-holds" id="toc-why-the-split-holds" class="nav-link" data-scroll-target="#why-the-split-holds">Why the split holds</a></li>
   <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
-  </ul></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./FeatureEngineering.html">Feature-engineering checklist</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./FeatureEngineering.html">Feature engineering</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Feature-engineering checklist</h1>
+<h1 class="title">Feature engineering</h1>
 </div>
 
 <div>
@@ -295,8 +293,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="feature-engineering" class="level1">
-<h1>Feature engineering</h1>
 <p>Feature engineering is the lever a gradient-boosting practitioner trusts most: hand-craft the features that let the model see structure it cannot learn on its own. The question for a pretrained model is whether that lever still works. The answer is not “no” and not “yes”. It splits cleanly along one line: features computed from a <strong>single row</strong> versus features computed <strong>across rows</strong>.</p>
 <ul>
 <li><strong>Within-row</strong> (a row’s own values): interactions <code>x1*x2</code>, ratios <code>x1/x2</code>, polynomials, binning.</li>
@@ -387,12 +383,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> roc_auc_score(y_test, probabilities)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
+<section id="feature-engineering-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="feature-engineering-checklist">Feature-engineering checklist</h2>
 <p>Start with the checklist a strong Kaggle notebook would use, not with a paper taxonomy.</p>
 <ul>
 <li><strong>Within-row.</strong> Arithmetic of a row’s own columns: <code>x1*x2</code>, <code>x1/x2</code>, <code>age*hours</code>, polynomial terms. The classic reason to do it: a linear model cannot form a product, and a shallow tree forms it only clumsily, so you hand it the feature directly.</li>
 <li><strong>Cross-row.</strong> A statistic computed by scanning many rows: the mean of a numeric within a category, how often a value occurs (count / frequency), the out-of-fold target mean for a category, the average transaction for a card. You cannot compute any of these from one row alone; you need a <code>groupby</code>.</li>
 </ul>
 <p>AutoGluon and TabPrep use related feature-generator language, but they should be supporting references, not assumed background. For this chapter, the reader only needs the split above: <strong>inside one row</strong> versus <strong>across many rows</strong>.</p>
+</section>
 <section id="tabpfn-treatment" class="level2">
 <h2 class="anchored" data-anchor-id="tabpfn-treatment">TabPFN treatment</h2>
 <p>TabPFN is a transformer. <strong>Within a row</strong> it attends across the features, so it can form products and interactions internally; a within-row engineered feature mostly recomputes something it already has. But each prediction attends to the <strong>training rows as context</strong>; it does not pool an entity’s other rows into an aggregate the way a <code>groupby</code> does. So a <strong>cross-row</strong> feature is information it cannot assemble for itself.</p>
@@ -912,7 +911,6 @@ seed: 100%|███████████████████████
 
 
 </section>
-</section>
 
 </main> <!-- /main -->
 <script>
@@ -1373,13 +1371,13 @@ seed: 100%|███████████████████████
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./Correlation.html" class="pagination-link" aria-label="The familiar reflex">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">The familiar reflex</span>
+      <a href="./Correlation.html" class="pagination-link" aria-label="Correlated variables">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Correlated variables</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./MissingValues.html" class="pagination-link" aria-label="Classical toolkit">
-        <span class="nav-page-text">Classical toolkit</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./MissingValues.html" class="pagination-link" aria-label="Missing values">
+        <span class="nav-page-text">Missing values</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
