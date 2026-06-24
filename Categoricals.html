@@ -6,8 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="description" content="How TabPFN handles raw categorical columns, high cardinality, and encoding choices compared with tree and linear baselines.">
 
-<title>Categorical variables – TabPFN Practitioner</title>
+<title>Encoding checklist – TabPFN Practitioner</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -177,7 +178,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Categoricals.html">Categorical variables</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Categoricals.html">Encoding checklist</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -215,31 +216,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Categoricals.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Categorical variables</span></a>
+ <span class="menu-text">Encoding checklist</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Correlated variables</span></a>
+ <span class="menu-text">The familiar reflex</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./FeatureEngineering.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Feature engineering</span></a>
+ <span class="menu-text">Feature-engineering checklist</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./MissingValues.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Missing values</span></a>
+ <span class="menu-text">Classical toolkit</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Parameters.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Inference parameters</span></a>
+ <span class="menu-text">Parameter map</span></a>
   </div>
 </li>
       </ul>
@@ -254,22 +255,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#encoding-checklist" id="toc-encoding-checklist" class="nav-link active" data-scroll-target="#encoding-checklist">Encoding checklist</a></li>
+  <li><a href="#categorical-variables" id="toc-categorical-variables" class="nav-link active" data-scroll-target="#categorical-variables">Categorical variables</a>
+  <ul class="collapse">
   <li><a href="#tabpfn-treatment" id="toc-tabpfn-treatment" class="nav-link" data-scroll-target="#tabpfn-treatment">TabPFN treatment</a></li>
   <li><a href="#measured-result" id="toc-measured-result" class="nav-link" data-scroll-target="#measured-result">Measured result</a></li>
   <li><a href="#implementation-details" id="toc-implementation-details" class="nav-link" data-scroll-target="#implementation-details">Implementation details</a></li>
   <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Categoricals.html">Categorical variables</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Categoricals.html">Encoding checklist</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Categorical variables</h1>
+<h1 class="title">Encoding checklist</h1>
 </div>
 
+<div>
+  <div class="description">
+    How TabPFN handles raw categorical columns, high cardinality, and encoding choices compared with tree and linear baselines.
+  </div>
+</div>
 
 
 <div class="quarto-title-meta">
@@ -284,6 +292,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<section id="categorical-variables" class="level1">
+<h1>Categorical variables</h1>
 <p>A machine-learning model takes numbers, and a column like <code>country = {Germany, Brazil, Japan}</code> is not one. Every tabular pipeline turns the labels into numbers, and there is a short menu of ways to do it:</p>
 <ul>
 <li><strong>Ordinal</strong>: number the levels, Germany to 0, Brazil to 1, Japan to 2 (<code>OrdinalEncoder</code>).</li>
@@ -335,8 +345,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> table.sub(base, axis<span class="op">=</span><span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<section id="encoding-checklist" class="level2">
-<h2 class="anchored" data-anchor-id="encoding-checklist">Encoding checklist</h2>
 <p>You encode a categorical by what it represents. The practitioner’s map, the way the CardoAI course teaches it, with every mapping learned on the training split only:</p>
 <ul>
 <li><strong>Ordinal</strong>: integers <code>0..N-1</code>. For genuinely ordered categories, or for tree models. Watch the fake order it injects on nominals (is Japan greater than Brazil in any real sense?).</li>
@@ -382,7 +390,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>Each method trades off differently: ordinal spends one column but invents an order, one-hot keeps the nominal structure but spends a column per level, frequency stays compact but can collide, and target is the most informative but leaks if you do not cross-fit it. The <code>target_mean</code> above is computed in-sample purely to show the shape; the experiment below uses the out-of-fold version.</p>
-</section>
 <section id="tabpfn-treatment" class="level2">
 <h2 class="anchored" data-anchor-id="tabpfn-treatment">TabPFN treatment</h2>
 <p>You pass the raw column. TabPFN inspects each column and assigns it a modality on its own, so the encoding decision moves from you to the model. Here is the decision on four columns at once:</p>
@@ -909,6 +916,7 @@ TabPFN,   ordinal-as-numeric      0.7511</code></pre>
 
 
 </section>
+</section>
 
 </main> <!-- /main -->
 <script>
@@ -1374,8 +1382,8 @@ TabPFN,   ordinal-as-numeric      0.7511</code></pre>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./Correlation.html" class="pagination-link" aria-label="Correlated variables">
-        <span class="nav-page-text">Correlated variables</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./Correlation.html" class="pagination-link" aria-label="The familiar reflex">
+        <span class="nav-page-text">The familiar reflex</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

@@ -6,8 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="description" content="When correlated features matter for TabPFN: accuracy mostly holds, but attribution and feature importance can mislead.">
 
-<title>Correlated variables – TabPFN Practitioner</title>
+<title>The familiar reflex – TabPFN Practitioner</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -177,7 +178,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Correlation.html">Correlated variables</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Correlation.html">The familiar reflex</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -215,31 +216,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Categoricals.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Categorical variables</span></a>
+ <span class="menu-text">Encoding checklist</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Correlation.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Correlated variables</span></a>
+ <span class="menu-text">The familiar reflex</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./FeatureEngineering.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Feature engineering</span></a>
+ <span class="menu-text">Feature-engineering checklist</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./MissingValues.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Missing values</span></a>
+ <span class="menu-text">Classical toolkit</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Parameters.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Inference parameters</span></a>
+ <span class="menu-text">Parameter map</span></a>
   </div>
 </li>
       </ul>
@@ -254,24 +255,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#the-familiar-reflex" id="toc-the-familiar-reflex" class="nav-link active" data-scroll-target="#the-familiar-reflex">The familiar reflex</a></li>
+  <li><a href="#correlated-variables" id="toc-correlated-variables" class="nav-link active" data-scroll-target="#correlated-variables">Correlated variables</a>
+  <ul class="collapse">
   <li><a href="#does-correlation-cost-you-accuracy" id="toc-does-correlation-cost-you-accuracy" class="nav-link" data-scroll-target="#does-correlation-cost-you-accuracy">Does correlation cost you accuracy?</a></li>
   <li><a href="#feature-credit" id="toc-feature-credit" class="nav-link" data-scroll-target="#feature-credit">Feature credit</a></li>
   <li><a href="#real-competition-check" id="toc-real-competition-check" class="nav-link" data-scroll-target="#real-competition-check">Real competition check</a></li>
   <li><a href="#noise-correlation-and-the-feature-ceiling" id="toc-noise-correlation-and-the-feature-ceiling" class="nav-link" data-scroll-target="#noise-correlation-and-the-feature-ceiling">Noise, correlation, and the feature ceiling</a></li>
   <li><a href="#missingness-bridge" id="toc-missingness-bridge" class="nav-link" data-scroll-target="#missingness-bridge">Missingness bridge</a></li>
   <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Correlation.html">Correlated variables</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Correlation.html">The familiar reflex</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Correlated variables</h1>
+<h1 class="title">The familiar reflex</h1>
 </div>
 
+<div>
+  <div class="description">
+    When correlated features matter for TabPFN: accuracy mostly holds, but attribution and feature importance can mislead.
+  </div>
+</div>
 
 
 <div class="quarto-title-meta">
@@ -286,6 +294,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<section id="correlated-variables" class="level1">
+<h1>Correlated variables</h1>
 <p>Two columns that say almost the same thing are the oldest smell in a feature matrix. The gradient-boosting reflex is well drilled: build a correlation heatmap, find the near-duplicate pairs, drop one of each. The most-upvoted exploratory notebook on Kaggle, Pedro Marcelino’s <em>Comprehensive data exploration with Python</em> for House Prices (over 33,000 upvotes), does exactly this. The question for a pretrained model is whether the reflex still earns its place.</p>
 <p>The short answer splits along one line that is easy to miss: correlation barely touches <strong>accuracy</strong>, but it corrupts <strong>attribution</strong>, which feature gets the credit. The drop-a-twin habit is not an accuracy fix. It is an interpretation fix. This chapter shows that on synthetic data, on the House Prices data that made the reflex famous, and on a real Kaggle competition riddled with duplicate columns, then closes on a twist: correlation can hide in the <em>missingness</em> pattern, not the values.</p>
 <p>Two words we will use throughout:</p>
@@ -378,8 +388,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> out.drop(columns<span class="op">=</span>[baseline_col])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<section id="the-familiar-reflex" class="level2">
-<h2 class="anchored" data-anchor-id="the-familiar-reflex">The familiar reflex</h2>
 <p>Before any TabPFN twist, let us reproduce the habit on the real House Prices data. We pull the numeric columns and ask which pairs are strongly correlated. These are the “twins” the Marcelino notebook flags and trims. We make the task binary in the spirit of the series: predict whether a house sells above the median price.</p>
 <div id="30c52a0d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:31:54.923152Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:31:54.922765Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:31:55.046774Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:31:55.046104Z&quot;}}" data-execution_count="2">
 <details class="code-fold">
@@ -436,7 +444,6 @@ Strongly correlated pairs (|r| &gt; 0.8), the twins the reflex would trim:
 </div>
 </div>
 </div>
-</section>
 <section id="does-correlation-cost-you-accuracy" class="level2">
 <h2 class="anchored" data-anchor-id="does-correlation-cost-you-accuracy">Does correlation cost you accuracy?</h2>
 <p>Start synthetic, where we control everything. We build a labelled dataset from a handful of informative features, then bolt on <code>copies</code> of one of them. A copy carries the same signal feature 0 already carries, so it adds nothing new, it just repeats. If correlation hurt accuracy, piling on copies would show it.</p>
@@ -978,6 +985,7 @@ co-missingness: 100%|███████████████████�
 
 
 </section>
+</section>
 
 </main> <!-- /main -->
 <script>
@@ -1438,13 +1446,13 @@ co-missingness: 100%|███████████████████�
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./Categoricals.html" class="pagination-link" aria-label="Categorical variables">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Categorical variables</span>
+      <a href="./Categoricals.html" class="pagination-link" aria-label="Encoding checklist">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Encoding checklist</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./FeatureEngineering.html" class="pagination-link" aria-label="Feature engineering">
-        <span class="nav-page-text">Feature engineering</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./FeatureEngineering.html" class="pagination-link" aria-label="Feature-engineering checklist">
+        <span class="nav-page-text">Feature-engineering checklist</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
