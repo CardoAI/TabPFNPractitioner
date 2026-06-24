@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Feature engineering, with TabPFN – TabPFN Practitioner</title>
+<title>Feature engineering – TabPFN Practitioner</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -106,6 +106,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<style>
+#title-block-header .quarto-title .title {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+#title-block-header .quarto-title .title::before {
+  content: "";
+  flex: 0 0 auto;
+  width: clamp(2rem, 4vw, 3rem);
+  aspect-ratio: 34 / 21;
+  background-image: url("features_target_table_icon.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.92;
+}
+
+#TOC .nav-link {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+@media (max-width: 575.98px) {
+  #title-block-header .quarto-title .title {
+    align-items: flex-start;
+  }
+
+  #title-block-header .quarto-title .title::before {
+    width: 2rem;
+    margin-top: 0.1rem;
+  }
+}
+</style>
 
 
 </head>
@@ -147,7 +184,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Needs metadata</a></li><li class="breadcrumb-item"><a href="./FeatureEngineering.html">Feature engineering, with TabPFN</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./FeatureEngineering.html">Feature engineering</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -176,7 +213,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
- <span class="menu-text">Needs metadata</span></a>
+ <span class="menu-text">Notebooks</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -185,31 +222,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Categoricals.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">High-cardinality and categorical variables, with TabPFN</span></a>
+ <span class="menu-text">Categorical variables</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Correlated variables, with TabPFN</span></a>
+ <span class="menu-text">Correlated variables</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./FeatureEngineering.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Feature engineering, with TabPFN</span></a>
+ <span class="menu-text">Feature engineering</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./MissingValues.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Missing values, with TabPFN</span></a>
+ <span class="menu-text">Missing values</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Parameters.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">TabPFN parameters, for a gradient-boosting practitioner</span></a>
+ <span class="menu-text">Inference parameters</span></a>
   </div>
 </li>
       </ul>
@@ -223,16 +260,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
    
-  <ul>
-  <li><a href="#the-familiar-checklist" id="toc-the-familiar-checklist" class="nav-link active" data-scroll-target="#the-familiar-checklist">1. The familiar checklist</a></li>
-  <li><a href="#what-tabpfn-does-to-that-checklist" id="toc-what-tabpfn-does-to-that-checklist" class="nav-link" data-scroll-target="#what-tabpfn-does-to-that-checklist">2. What TabPFN does to that checklist</a></li>
-  <li><a href="#a.-within-row-fe-redundant-even-when-it-is-the-whole-signal" id="toc-a.-within-row-fe-redundant-even-when-it-is-the-whole-signal" class="nav-link" data-scroll-target="#a.-within-row-fe-redundant-even-when-it-is-the-whole-signal">3a. Within-row FE: redundant, even when it is the whole signal</a></li>
-  <li><a href="#b.-cross-row-fe-the-feature-tabpfn-cannot-compute" id="toc-b.-cross-row-fe-the-feature-tabpfn-cannot-compute" class="nav-link" data-scroll-target="#b.-cross-row-fe-the-feature-tabpfn-cannot-compute">3b. Cross-row FE: the feature TabPFN cannot compute</a></li>
-  <li><a href="#c.-the-same-split-on-real-data-amazon-employee-access" id="toc-c.-the-same-split-on-real-data-amazon-employee-access" class="nav-link" data-scroll-target="#c.-the-same-split-on-real-data-amazon-employee-access">3c. The same split on real data: Amazon Employee Access</a></li>
-  <li><a href="#deep-dive-one-rule-explains-all-of-it" id="toc-deep-dive-one-rule-explains-all-of-it" class="nav-link" data-scroll-target="#deep-dive-one-rule-explains-all-of-it">4. Deep dive: one rule explains all of it</a>
   <ul class="collapse">
-  <li><a href="#honest-limits" id="toc-honest-limits" class="nav-link" data-scroll-target="#honest-limits">Honest limits</a></li>
-  </ul></li>
+  <li><a href="#feature-engineering-checklist" id="toc-feature-engineering-checklist" class="nav-link active" data-scroll-target="#feature-engineering-checklist">Feature-engineering checklist</a></li>
+  <li><a href="#tabpfn-treatment" id="toc-tabpfn-treatment" class="nav-link" data-scroll-target="#tabpfn-treatment">TabPFN treatment</a></li>
+  <li><a href="#experiment-map" id="toc-experiment-map" class="nav-link" data-scroll-target="#experiment-map">Experiment map</a></li>
+  <li><a href="#within-row-features" id="toc-within-row-features" class="nav-link" data-scroll-target="#within-row-features">Within-row features</a></li>
+  <li><a href="#cross-row-features" id="toc-cross-row-features" class="nav-link" data-scroll-target="#cross-row-features">Cross-row features</a></li>
+  <li><a href="#real-data-check" id="toc-real-data-check" class="nav-link" data-scroll-target="#real-data-check">Real data check</a></li>
+  <li><a href="#why-the-split-holds" id="toc-why-the-split-holds" class="nav-link" data-scroll-target="#why-the-split-holds">Why the split holds</a></li>
   <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
   </ul>
 </nav>
@@ -240,9 +275,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Needs metadata</a></li><li class="breadcrumb-item"><a href="./FeatureEngineering.html">Feature engineering, with TabPFN</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./FeatureEngineering.html">Feature engineering</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Feature engineering, with TabPFN</h1>
+<h1 class="title">Feature engineering</h1>
 </div>
 
 
@@ -262,10 +297,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Feature engineering is the lever a gradient-boosting practitioner trusts most: hand-craft the features that let the model see structure it cannot learn on its own. The question for a pretrained model is whether that lever still works. The answer is not “no” and not “yes”. It splits cleanly along one line: features computed from a <strong>single row</strong> versus features computed <strong>across rows</strong>.</p>
 <ul>
 <li><strong>Within-row</strong> (a row’s own values): interactions <code>x1*x2</code>, ratios <code>x1/x2</code>, polynomials, binning.</li>
-<li><strong>Cross-row</strong> (statistics over many rows): group-by aggregates, count and frequency encodings, target encoding, entity aggregates (“this card’s average transaction”). This is the family that wins Kaggle.</li>
+<li><strong>Cross-row</strong> (statistics over many rows): group-by aggregates, count and frequency encodings, target encoding, entity aggregates (“this card’s average transaction”).</li>
 </ul>
+<p>That second family is not a new TabPFN idea. It is the old Kaggle feature-engineering playbook: per-client aggregates in <a href="https://www.kaggle.com/code/willkoehrsen/introduction-to-manual-feature-engineering">Home Credit</a>, per-value frequency features in <a href="https://www.kaggle.com/code/cdeotte/200-magical-models-santander-0-920">Santander</a>, and UID or count features in <a href="https://www.kaggle.com/code/cdeotte/xgb-fraud-with-magic-0-9600">IEEE-CIS fraud</a>. Recent systems such as <a href="https://arxiv.org/abs/2003.06505">AutoGluon</a> and the June 2026 <a href="https://arxiv.org/abs/2606.02384">TabPrep</a> paper help name and automate parts of this playbook, but the intuition comes from practice the reader has probably seen before.</p>
 <p>We will see that TabPFN recovers the first family for free and genuinely needs the second, the opposite of the lazy take that “TabPFN does not need feature engineering.” Every experiment is a small synthetic construction plus one real dataset. Everything here is the local <code>tabpfn</code> 8.0.3 package.</p>
-<div id="6df1edcd" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:28:43.165004Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:28:43.164831Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:28:53.840311Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:28:53.839551Z&quot;}}" data-execution_count="1">
+<div id="6df1edcd" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
@@ -288,93 +324,181 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> catboost <span class="im">import</span> CatBoostClassifier</span>
 <span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn <span class="im">import</span> TabPFNClassifier</span>
 <span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> printdf(df, nrows<span class="op">=</span><span class="dv">10</span>, showindex<span class="op">=</span><span class="va">True</span>):</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(tabulate(df.head(nrows), headers<span class="op">=</span><span class="st">"keys"</span>, tablefmt<span class="op">=</span><span class="st">"psql"</span>, showindex<span class="op">=</span>showindex))</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sigmoid(z): <span class="cf">return</span> <span class="fl">1.0</span> <span class="op">/</span> (<span class="fl">1.0</span> <span class="op">+</span> np.exp(<span class="op">-</span>z))</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> standardize(v): <span class="cf">return</span> (v <span class="op">-</span> v.mean()) <span class="op">/</span> (v.std() <span class="op">+</span> <span class="fl">1e-9</span>)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> printdf(df, nrows<span class="op">=</span><span class="dv">10</span>, showindex<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Print a small dataframe as an aligned text table."""</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(tabulate(df.head(nrows), headers<span class="op">=</span><span class="st">"keys"</span>, tablefmt<span class="op">=</span><span class="st">"psql"</span>, showindex<span class="op">=</span>showindex))</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> score(name, X_train, y_train, X_test, y_test, seed<span class="op">=</span><span class="dv">0</span>, cat_cols<span class="op">=</span>()):</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Fit one model and return test ROC AUC. Categorical columns are handled the way each</span></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="co">    model expects: TabPFN raw, LightGBM as category dtype, CatBoost via cat_features."""</span></span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> X_train.copy(), X_test.copy()</span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="op">==</span> <span class="st">"lightgbm"</span>:</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> c <span class="kw">in</span> cat_cols:</span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>            a[c] <span class="op">=</span> a[c].astype(<span class="st">"category"</span>)</span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>            b[c] <span class="op">=</span> pd.Categorical(b[c], categories<span class="op">=</span>a[c].cat.categories)</span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        clf <span class="op">=</span> LGBMClassifier(verbose<span class="op">=-</span><span class="dv">1</span>, random_state<span class="op">=</span>seed)</span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> name <span class="op">==</span> <span class="st">"catboost"</span>:</span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> c <span class="kw">in</span> cat_cols:</span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>            a[c] <span class="op">=</span> a[c].astype(<span class="bu">str</span>)<span class="op">;</span> b[c] <span class="op">=</span> b[c].astype(<span class="bu">str</span>)</span>
-<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>        idx <span class="op">=</span> [a.columns.get_loc(c) <span class="cf">for</span> c <span class="kw">in</span> cat_cols]</span>
-<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>        clf <span class="op">=</span> CatBoostClassifier(verbose<span class="op">=</span><span class="dv">0</span>, random_state<span class="op">=</span>seed, cat_features<span class="op">=</span>idx <span class="kw">or</span> <span class="va">None</span>)</span>
-<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> name <span class="op">==</span> <span class="st">"logreg"</span>:</span>
-<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>        clf <span class="op">=</span> Pipeline([(<span class="st">"scale"</span>, StandardScaler()), (<span class="st">"lr"</span>, LogisticRegression(max_iter<span class="op">=</span><span class="dv">2000</span>))])</span>
-<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>        clf <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span>seed)</span>
-<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>    clf.fit(a, y_train)</span>
-<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> roc_auc_score(y_test, clf.predict_proba(b)[:, <span class="dv">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sigmoid(z):</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Convert a log-odds score into a probability."""</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fl">1.0</span> <span class="op">/</span> (<span class="fl">1.0</span> <span class="op">+</span> np.exp(<span class="op">-</span>z))</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> standardize(values):</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Put a vector on mean 0 and standard deviation 1."""</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (values <span class="op">-</span> values.mean()) <span class="op">/</span> (values.std() <span class="op">+</span> <span class="fl">1e-9</span>)</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> score(model_name, X_train, y_train, X_test, y_test, seed<span class="op">=</span><span class="dv">0</span>, cat_cols<span class="op">=</span>()):</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Fit one model and return test ROC AUC.</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="co">    The experiments pass categorical columns in the form each model expects:</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="co">    raw values for TabPFN, pandas category dtype for LightGBM, and strings plus</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="co">    explicit categorical-column indices for CatBoost.</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>    train_features <span class="op">=</span> X_train.copy()</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>    test_features <span class="op">=</span> X_test.copy()</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> model_name <span class="op">==</span> <span class="st">"lightgbm"</span>:</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> column <span class="kw">in</span> cat_cols:</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>            train_features[column] <span class="op">=</span> train_features[column].astype(<span class="st">"category"</span>)</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>            test_features[column] <span class="op">=</span> pd.Categorical(</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>                test_features[column],</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>                categories<span class="op">=</span>train_features[column].cat.categories,</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>        model <span class="op">=</span> LGBMClassifier(verbose<span class="op">=-</span><span class="dv">1</span>, random_state<span class="op">=</span>seed)</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> model_name <span class="op">==</span> <span class="st">"catboost"</span>:</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> column <span class="kw">in</span> cat_cols:</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>            train_features[column] <span class="op">=</span> train_features[column].astype(<span class="bu">str</span>)</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>            test_features[column] <span class="op">=</span> test_features[column].astype(<span class="bu">str</span>)</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>        categorical_indices <span class="op">=</span> [train_features.columns.get_loc(column) <span class="cf">for</span> column <span class="kw">in</span> cat_cols]</span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>        model <span class="op">=</span> CatBoostClassifier(</span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>            verbose<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>            random_state<span class="op">=</span>seed,</span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>            cat_features<span class="op">=</span>categorical_indices <span class="kw">or</span> <span class="va">None</span>,</span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> model_name <span class="op">==</span> <span class="st">"logreg"</span>:</span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a>        model <span class="op">=</span> Pipeline([</span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"scale"</span>, StandardScaler()),</span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"lr"</span>, LogisticRegression(max_iter<span class="op">=</span><span class="dv">2000</span>)),</span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a>        ])</span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a>        model <span class="op">=</span> TabPFNClassifier(random_state<span class="op">=</span>seed)</span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a>    model.fit(train_features, y_train)</span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a>    probabilities <span class="op">=</span> model.predict_proba(test_features)[:, <span class="dv">1</span>]</span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> roc_auc_score(y_test, probabilities)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<section id="the-familiar-checklist" class="level2">
-<h2 class="anchored" data-anchor-id="the-familiar-checklist">1. The familiar checklist</h2>
-<p>The toolkit, organized by where the information comes from, which is also the AutoGluon / tabprep catalog (group-by aggregates, arithmetic combinations, categorical interactions, target encoding, subset compression):</p>
+<section id="feature-engineering-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="feature-engineering-checklist">Feature-engineering checklist</h2>
+<p>Start with the checklist a strong Kaggle notebook would use, not with a paper taxonomy.</p>
 <ul>
 <li><strong>Within-row.</strong> Arithmetic of a row’s own columns: <code>x1*x2</code>, <code>x1/x2</code>, <code>age*hours</code>, polynomial terms. The classic reason to do it: a linear model cannot form a product, and a shallow tree forms it only clumsily, so you hand it the feature directly.</li>
 <li><strong>Cross-row.</strong> A statistic computed by scanning many rows: the mean of a numeric within a category, how often a value occurs (count / frequency), the out-of-fold target mean for a category, the average transaction for a card. You cannot compute any of these from one row alone; you need a <code>groupby</code>.</li>
 </ul>
-<p>The split is the whole story, because TabPFN treats the two families very differently.</p>
+<p>AutoGluon and TabPrep use related feature-generator language, but they should be supporting references, not assumed background. For this chapter, the reader only needs the split above: <strong>inside one row</strong> versus <strong>across many rows</strong>.</p>
 </section>
-<section id="what-tabpfn-does-to-that-checklist" class="level2">
-<h2 class="anchored" data-anchor-id="what-tabpfn-does-to-that-checklist">2. What TabPFN does to that checklist</h2>
+<section id="tabpfn-treatment" class="level2">
+<h2 class="anchored" data-anchor-id="tabpfn-treatment">TabPFN treatment</h2>
 <p>TabPFN is a transformer. <strong>Within a row</strong> it attends across the features, so it can form products and interactions internally; a within-row engineered feature mostly recomputes something it already has. But each prediction attends to the <strong>training rows as context</strong>; it does not pool an entity’s other rows into an aggregate the way a <code>groupby</code> does. So a <strong>cross-row</strong> feature is information it cannot assemble for itself.</p>
 <p>That predicts the chapter: within-row FE should be redundant for TabPFN, cross-row FE should help it. The next three experiments measure exactly that.</p>
 </section>
-<section id="a.-within-row-fe-redundant-even-when-it-is-the-whole-signal" class="level2">
-<h2 class="anchored" data-anchor-id="a.-within-row-fe-redundant-even-when-it-is-the-whole-signal">3a. Within-row FE: redundant, even when it is the whole signal</h2>
+<section id="experiment-map" class="level2">
+<h2 class="anchored" data-anchor-id="experiment-map">Experiment map</h2>
+<p>Each experiment cell follows the same map:</p>
+<ol type="1">
+<li>Build the smallest dataset that isolates one feature-engineering idea.</li>
+<li>Add exactly one engineered feature, computed only from the training side when it scans rows.</li>
+<li>Fit the same small model roster with and without that feature.</li>
+<li>Report <strong>gain versus the raw baseline</strong>, because that is the quantity the chapter cares about.</li>
+</ol>
+<p>The helper functions below are just there to keep those four steps repeatable. The important object is not the helper itself, it is the contrast: what signal was unavailable before the engineered feature, and which models can recover it without being handed the feature explicitly?</p>
+</section>
+<section id="within-row-features" class="level2">
+<h2 class="anchored" data-anchor-id="within-row-features">Within-row features</h2>
 <p>The test is deliberately demanding. We make the target depend on an interaction <code>x0*x1</code>, and we <strong>dial how much of the signal that interaction carries</strong> (its variance share <code>w</code>, from 0 to 1, with the rest coming from a plain linear main effect). Then we measure the AUC gain from handing each model the explicit <code>x0*x1</code>. If TabPFN learns interactions internally, its gain should stay near zero no matter how important the interaction is.</p>
-<div id="42752810" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:28:53.843014Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:28:53.842612Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:29:55.933794Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:29:55.933053Z&quot;}}" data-execution_count="2">
+<div id="42752810" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_within_row(w, n<span class="op">=</span><span class="dv">4000</span>, n_noise<span class="op">=</span><span class="dv">10</span>, signal<span class="op">=</span><span class="fl">2.6</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Target = a linear main effect plus the interaction x0*x1; w is the interaction's</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">    variance share of the signal (w=1 means the interaction IS the whole target)."""</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> rng.normal(size<span class="op">=</span>(n, <span class="dv">5</span>))</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    main <span class="op">=</span> standardize(<span class="fl">1.5</span> <span class="op">*</span> x[:, <span class="dv">2</span>] <span class="op">+</span> x[:, <span class="dv">3</span>] <span class="op">-</span> x[:, <span class="dv">4</span>])</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    inter <span class="op">=</span> standardize(x[:, <span class="dv">0</span>] <span class="op">*</span> x[:, <span class="dv">1</span>])</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    logit <span class="op">=</span> signal <span class="op">*</span> (np.sqrt(<span class="dv">1</span> <span class="op">-</span> w) <span class="op">*</span> main <span class="op">+</span> np.sqrt(w) <span class="op">*</span> inter)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> (rng.random(n) <span class="op">&lt;</span> sigmoid(logit)).astype(<span class="bu">int</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    base <span class="op">=</span> pd.DataFrame(x, columns<span class="op">=</span>[<span class="ss">f"x</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>)])</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(n_noise):</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        base[<span class="ss">f"z</span><span class="sc">{</span>j<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> rng.normal(size<span class="op">=</span>n)</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> base, pd.Series(x[:, <span class="dv">0</span>] <span class="op">*</span> x[:, <span class="dv">1</span>], name<span class="op">=</span><span class="st">"x0_x1"</span>), y</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Create a dataset where `x0 * x1` carries a controlled share of the signal.</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">    `w` is the interaction's variance share. When `w=1`, the interaction is the</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">    whole target signal. When `w=0`, the target is only a linear main effect.</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    raw_features <span class="op">=</span> rng.normal(size<span class="op">=</span>(n, <span class="dv">5</span>))</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    main_effect <span class="op">=</span> standardize(</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        <span class="fl">1.5</span> <span class="op">*</span> raw_features[:, <span class="dv">2</span>] <span class="op">+</span> raw_features[:, <span class="dv">3</span>] <span class="op">-</span> raw_features[:, <span class="dv">4</span>]</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    interaction <span class="op">=</span> standardize(raw_features[:, <span class="dv">0</span>] <span class="op">*</span> raw_features[:, <span class="dv">1</span>])</span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>shares <span class="op">=</span> [<span class="fl">0.0</span>, <span class="fl">0.33</span>, <span class="fl">0.66</span>, <span class="fl">1.0</span>]</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> w <span class="kw">in</span> tqdm(shares, desc<span class="op">=</span><span class="st">"signal share"</span>):</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> seed <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>]:</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>        base, eng, y <span class="op">=</span> make_within_row(w, seed<span class="op">=</span>seed)</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>        h <span class="op">=</span> <span class="bu">len</span>(y) <span class="op">//</span> <span class="dv">2</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> label, X <span class="kw">in</span> [(<span class="st">"without"</span>, base), (<span class="st">"with_FE"</span>, pd.concat([base, eng], axis<span class="op">=</span><span class="dv">1</span>))]:</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>            Xtr, Xte, ytr, yte <span class="op">=</span> X.iloc[:h], X.iloc[h:], y[:h], y[h:]</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> model <span class="kw">in</span> [<span class="st">"logreg"</span>, <span class="st">"lightgbm"</span>, <span class="st">"tabpfn"</span>]:</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>                rows.append(<span class="bu">dict</span>(w<span class="op">=</span>w, seed<span class="op">=</span>seed, model<span class="op">=</span>model, label<span class="op">=</span>label,</span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>                                 auc<span class="op">=</span>score(model, Xtr, ytr, Xte, yte, seed)))</span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>within <span class="op">=</span> pd.DataFrame(rows)</span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> within.pivot_table(index<span class="op">=</span>[<span class="st">"model"</span>, <span class="st">"w"</span>], columns<span class="op">=</span><span class="st">"label"</span>, values<span class="op">=</span><span class="st">"auc"</span>).reset_index()</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>g[<span class="st">"gain"</span>] <span class="op">=</span> g[<span class="st">"with_FE"</span>] <span class="op">-</span> g[<span class="st">"without"</span>]</span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"AUC gain from adding the explicit interaction x0*x1, by model and signal share w:"</span>)</span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>printdf(g.pivot_table(index<span class="op">=</span><span class="st">"w"</span>, columns<span class="op">=</span><span class="st">"model"</span>, values<span class="op">=</span><span class="st">"gain"</span>)[[<span class="st">"logreg"</span>, <span class="st">"lightgbm"</span>, <span class="st">"tabpfn"</span>]].<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    logit <span class="op">=</span> signal <span class="op">*</span> (</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>        np.sqrt(<span class="dv">1</span> <span class="op">-</span> w) <span class="op">*</span> main_effect <span class="op">+</span> np.sqrt(w) <span class="op">*</span> interaction</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> (rng.random(n) <span class="op">&lt;</span> sigmoid(logit)).astype(<span class="bu">int</span>)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    base <span class="op">=</span> pd.DataFrame(raw_features, columns<span class="op">=</span>[<span class="ss">f"x</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>)])</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> noise_index <span class="kw">in</span> <span class="bu">range</span>(n_noise):</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>        base[<span class="ss">f"z</span><span class="sc">{</span>noise_index<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> rng.normal(size<span class="op">=</span>n)</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    engineered_interaction <span class="op">=</span> pd.Series(</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>        raw_features[:, <span class="dv">0</span>] <span class="op">*</span> raw_features[:, <span class="dv">1</span>],</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>        name<span class="op">=</span><span class="st">"x0_x1"</span>,</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> base, engineered_interaction, y</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>SHARES <span class="op">=</span> [<span class="fl">0.0</span>, <span class="fl">0.33</span>, <span class="fl">0.66</span>, <span class="fl">1.0</span>]</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>SEEDS <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>]</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>MODELS <span class="op">=</span> [<span class="st">"logreg"</span>, <span class="st">"lightgbm"</span>, <span class="st">"tabpfn"</span>]</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> signal_share <span class="kw">in</span> tqdm(SHARES, desc<span class="op">=</span><span class="st">"signal share"</span>):</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> seed <span class="kw">in</span> SEEDS:</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>        base, engineered_interaction, y <span class="op">=</span> make_within_row(signal_share, seed<span class="op">=</span>seed)</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>        split_at <span class="op">=</span> <span class="bu">len</span>(y) <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>        feature_sets <span class="op">=</span> {</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>            <span class="st">"without"</span>: base,</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>            <span class="st">"with_FE"</span>: pd.concat([base, engineered_interaction], axis<span class="op">=</span><span class="dv">1</span>),</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> label, features <span class="kw">in</span> feature_sets.items():</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>            X_train <span class="op">=</span> features.iloc[:split_at]</span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>            X_test <span class="op">=</span> features.iloc[split_at:]</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>            y_train <span class="op">=</span> y[:split_at]</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>            y_test <span class="op">=</span> y[split_at:]</span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> model_name <span class="kw">in</span> MODELS:</span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>                auc <span class="op">=</span> score(model_name, X_train, y_train, X_test, y_test, seed)</span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>                rows.append({</span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"w"</span>: signal_share,</span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"seed"</span>: seed,</span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"model"</span>: model_name,</span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"label"</span>: label,</span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"auc"</span>: auc,</span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>                })</span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>within <span class="op">=</span> pd.DataFrame(rows)</span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> within.pivot_table(index<span class="op">=</span>[<span class="st">"model"</span>, <span class="st">"w"</span>], columns<span class="op">=</span><span class="st">"label"</span>, values<span class="op">=</span><span class="st">"auc"</span>).reset_index()</span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>g[<span class="st">"gain"</span>] <span class="op">=</span> g[<span class="st">"with_FE"</span>] <span class="op">-</span> g[<span class="st">"without"</span>]</span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"AUC gain from adding the explicit interaction x0*x1, by model and signal share w:"</span>)</span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a>gain_table <span class="op">=</span> g.pivot_table(index<span class="op">=</span><span class="st">"w"</span>, columns<span class="op">=</span><span class="st">"model"</span>, values<span class="op">=</span><span class="st">"gain"</span>)</span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a>printdf(gain_table[[<span class="st">"logreg"</span>, <span class="st">"lightgbm"</span>, <span class="st">"tabpfn"</span>]].<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
-<pre><code>
-signal share:   0%|                                                 | 0/4 [00:00&lt;?, ?it/s]
-signal share:  25%|██████████▎                              | 1/4 [00:17&lt;00:52, 17.53s/it]
-signal share:  50%|████████████████████▌                    | 2/4 [00:32&lt;00:32, 16.14s/it]
-signal share:  75%|██████████████████████████████▊          | 3/4 [00:47&lt;00:15, 15.54s/it]
-signal share: 100%|█████████████████████████████████████████| 4/4 [01:02&lt;00:00, 15.15s/it]
-signal share: 100%|█████████████████████████████████████████| 4/4 [01:02&lt;00:00, 15.52s/it]</code></pre>
+<pre><code>signal share: 100%|██████████| 4/4 [01:10&lt;00:00, 17.52s/it]</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>AUC gain from adding the explicit interaction x0*x1, by model and signal share w:
++------+----------+------------+----------+
+|    w |   logreg |   lightgbm |   tabpfn |
+|------+----------+------------+----------|
+| 0    |  -0.0003 |     0.0013 |  -0.0002 |
+| 0.33 |   0.0701 |     0.0228 |   0.004  |
+| 0.66 |   0.141  |     0.0324 |   0.0029 |
+| 1    |   0.3332 |     0.0383 |   0.0029 |
++------+----------+------------+----------+</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>AUC gain from adding the explicit interaction x0*x1, by model and signal share w:
@@ -394,17 +518,17 @@ signal share: 100%|████████████████████�
 <div id="efce74c7" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:29:55.935595Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:29:55.935407Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:29:56.204872Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:29:56.204104Z&quot;}}" data-execution_count="3">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>gain <span class="op">=</span> g.pivot_table(index<span class="op">=</span><span class="st">"w"</span>, columns<span class="op">=</span><span class="st">"model"</span>, values<span class="op">=</span><span class="st">"gain"</span>)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="fl">8.5</span>, <span class="fl">4.5</span>))</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model <span class="kw">in</span> [<span class="st">"lightgbm"</span>, <span class="st">"tabpfn"</span>]:</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    ax.plot(gain.index, gain[model].values, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span>model)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"0.6"</span>, lw<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"interaction's share of the signal (w)"</span>)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"AUC gain from engineering x0*x1"</span>)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Within-row FE: TabPFN gains nothing, even at full signal share"</span>)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>ax.legend(loc<span class="op">=</span><span class="st">"center left"</span>, bbox_to_anchor<span class="op">=</span>(<span class="fl">1.01</span>, <span class="fl">0.5</span>), title<span class="op">=</span><span class="st">"model"</span>, fontsize<span class="op">=</span><span class="dv">9</span>, title_fontsize<span class="op">=</span><span class="dv">10</span>)</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>gain <span class="op">=</span> g.pivot_table(index<span class="op">=</span><span class="st">"w"</span>, columns<span class="op">=</span><span class="st">"model"</span>, values<span class="op">=</span><span class="st">"gain"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="fl">8.5</span>, <span class="fl">4.5</span>))</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model <span class="kw">in</span> [<span class="st">"lightgbm"</span>, <span class="st">"tabpfn"</span>]:</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    ax.plot(gain.index, gain[model].values, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span>model)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"0.6"</span>, lw<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"interaction's share of the signal (w)"</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"AUC gain from engineering x0*x1"</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Within-row FE: TabPFN gains nothing, even at full signal share"</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>ax.legend(loc<span class="op">=</span><span class="st">"center left"</span>, bbox_to_anchor<span class="op">=</span>(<span class="fl">1.01</span>, <span class="fl">0.5</span>), title<span class="op">=</span><span class="st">"model"</span>, fontsize<span class="op">=</span><span class="dv">9</span>, title_fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -417,47 +541,100 @@ signal share: 100%|████████████████████�
 <p>Two things to read. <strong>LightGBM’s gain climbs</strong> as the interaction matters more (it does not fully form <code>x0*x1</code> among the noise features), reaching about +0.04 when the interaction is the whole target. <strong>TabPFN’s gain stays flat near zero</strong> at every share: it recovers the interaction from <code>x0</code> and <code>x1</code> via attention regardless of how important it is. LogReg (in the table) gains hugely, up to +0.3, because a linear model cannot form a product at all.</p>
 <p>This is why within-row FE looks dead on real data: a hand-crafted ratio is only one weak contributor there, and even at maximum importance it buys TabPFN nothing. The mechanism section makes that precise.</p>
 </section>
-<section id="b.-cross-row-fe-the-feature-tabpfn-cannot-compute" class="level2">
-<h2 class="anchored" data-anchor-id="b.-cross-row-fe-the-feature-tabpfn-cannot-compute">3b. Cross-row FE: the feature TabPFN cannot compute</h2>
-<p>Now a feature that requires scanning rows. We build <strong>entities</strong>, each appearing several times. Each entity has a latent quality; the target depends on it. A single row sees only a noisy <code>x</code>; the entity’s quality is the <strong>average of <code>x</code> over the entity’s rows</strong>, a <code>groupby</code> mean. We add that explicit <code>entity_mean_x</code> (computed on train only) and measure the gain, sweeping how many rows each entity has.</p>
+<section id="cross-row-features" class="level2">
+<h2 class="anchored" data-anchor-id="cross-row-features">Cross-row features</h2>
+<p>Now a feature that requires scanning rows. We build <strong>entities</strong>, each appearing several times. Each entity has a latent quality; the target depends on it. A single row sees only a noisy <code>x</code>; the entity’s quality is the <strong>average of <code>x</code> over the entity’s rows</strong>, a <code>groupby</code> mean.</p>
+<p>The leakage boundary matters here. The engineered <code>entity_mean_x</code> is learned from the training rows and then mapped into the test rows. If an entity is unseen in training, the helper uses the training global mean. That is the real deployment shape of a cross-row aggregate.</p>
 <div id="130d541b" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:29:56.206822Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:29:56.206527Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:31:34.489643Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:31:34.488833Z&quot;}}" data-execution_count="4">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_cross_row(n_entities, rows_per, x_noise<span class="op">=</span><span class="fl">2.0</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    q <span class="op">=</span> rng.normal(size<span class="op">=</span>n_entities)                       <span class="co"># latent entity quality</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    ent <span class="op">=</span> np.repeat(np.arange(n_entities), rows_per)<span class="op">;</span> rng.shuffle(ent)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> q[ent] <span class="op">+</span> rng.normal(<span class="dv">0</span>, x_noise, <span class="bu">len</span>(ent))         <span class="co"># noisy per-row signal of quality</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> (rng.random(<span class="bu">len</span>(ent)) <span class="op">&lt;</span> sigmoid(<span class="fl">2.0</span> <span class="op">*</span> q[ent])).astype(<span class="bu">int</span>)</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.DataFrame({<span class="st">"x"</span>: x, <span class="st">"entity"</span>: ent.astype(<span class="bu">str</span>)})</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>):</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        df[<span class="ss">f"z</span><span class="sc">{</span>j<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> rng.normal(size<span class="op">=</span><span class="bu">len</span>(ent))</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df, y</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> add_entity_mean(train, test):</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    em <span class="op">=</span> train.groupby(<span class="st">"entity"</span>)[<span class="st">"x"</span>].mean()<span class="op">;</span> glob <span class="op">=</span> <span class="bu">float</span>(train[<span class="st">"x"</span>].mean())</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> train.copy(), test.copy()</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    a[<span class="st">"entity_mean_x"</span>] <span class="op">=</span> train[<span class="st">"entity"</span>].<span class="bu">map</span>(em).fillna(glob).values</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    b[<span class="st">"entity_mean_x"</span>] <span class="op">=</span> test[<span class="st">"entity"</span>].<span class="bu">map</span>(em).fillna(glob).values</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a, b</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>TOTAL <span class="op">=</span> <span class="dv">6000</span></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> rows_per <span class="kw">in</span> tqdm([<span class="dv">5</span>, <span class="dv">20</span>, <span class="dv">50</span>], desc<span class="op">=</span><span class="st">"rows per entity"</span>):</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    n_ent <span class="op">=</span> TOTAL <span class="op">//</span> rows_per</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> seed <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>]:</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>        df, y <span class="op">=</span> make_cross_row(n_ent, rows_per, seed<span class="op">=</span>seed)</span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>        h <span class="op">=</span> <span class="bu">len</span>(y) <span class="op">//</span> <span class="dv">2</span></span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>        tr, te <span class="op">=</span> df.iloc[:h].reset_index(drop<span class="op">=</span><span class="va">True</span>), df.iloc[h:].reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>        ytr, yte <span class="op">=</span> y[:h], y[h:]</span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>        tr_fe, te_fe <span class="op">=</span> add_entity_mean(tr, te)</span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> model <span class="kw">in</span> [<span class="st">"tabpfn"</span>, <span class="st">"lightgbm"</span>, <span class="st">"catboost"</span>]:</span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>            ab <span class="op">=</span> score(model, tr, ytr, te, yte, seed, cat_cols<span class="op">=</span>[<span class="st">"entity"</span>])</span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>            af <span class="op">=</span> score(model, tr_fe, ytr, te_fe, yte, seed, cat_cols<span class="op">=</span>[<span class="st">"entity"</span>])</span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>            rows.append(<span class="bu">dict</span>(rows_per<span class="op">=</span>rows_per, n_entities<span class="op">=</span>n_ent, seed<span class="op">=</span>seed, model<span class="op">=</span>model, gain<span class="op">=</span>af <span class="op">-</span> ab))</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>cross <span class="op">=</span> pd.DataFrame(rows)</span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"AUC gain from adding entity_mean_x, by model and rows-per-entity:"</span>)</span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>printdf(cross.pivot_table(index<span class="op">=</span><span class="st">"rows_per"</span>, columns<span class="op">=</span><span class="st">"model"</span>, values<span class="op">=</span><span class="st">"gain"</span>)[[<span class="st">"tabpfn"</span>, <span class="st">"lightgbm"</span>, <span class="st">"catboost"</span>]].<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_cross_row(n_entities, rows_per, x_noise<span class="op">=</span><span class="fl">2.0</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Create repeated entities whose average `x` is predictive of the target."""</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    entity_quality <span class="op">=</span> rng.normal(size<span class="op">=</span>n_entities)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    entity <span class="op">=</span> np.repeat(np.arange(n_entities), rows_per)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    rng.shuffle(entity)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> entity_quality[entity] <span class="op">+</span> rng.normal(<span class="dv">0</span>, x_noise, <span class="bu">len</span>(entity))</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> (rng.random(<span class="bu">len</span>(entity)) <span class="op">&lt;</span> sigmoid(<span class="fl">2.0</span> <span class="op">*</span> entity_quality[entity])).astype(<span class="bu">int</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.DataFrame({<span class="st">"x"</span>: x, <span class="st">"entity"</span>: entity.astype(<span class="bu">str</span>)})</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> noise_index <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>):</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        df[<span class="ss">f"z</span><span class="sc">{</span>noise_index<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> rng.normal(size<span class="op">=</span><span class="bu">len</span>(entity))</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> df, y</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> add_entity_mean(train, test):</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Add a train-only group mean of `x` for each entity."""</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    entity_mean <span class="op">=</span> train.groupby(<span class="st">"entity"</span>)[<span class="st">"x"</span>].mean()</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    global_mean <span class="op">=</span> <span class="bu">float</span>(train[<span class="st">"x"</span>].mean())</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    train_with_feature <span class="op">=</span> train.copy()</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    test_with_feature <span class="op">=</span> test.copy()</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    train_with_feature[<span class="st">"entity_mean_x"</span>] <span class="op">=</span> (</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>        train[<span class="st">"entity"</span>].<span class="bu">map</span>(entity_mean).fillna(global_mean).values</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    test_with_feature[<span class="st">"entity_mean_x"</span>] <span class="op">=</span> (</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>        test[<span class="st">"entity"</span>].<span class="bu">map</span>(entity_mean).fillna(global_mean).values</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> train_with_feature, test_with_feature</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>TOTAL_ROWS <span class="op">=</span> <span class="dv">6000</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>ROWS_PER_ENTITY <span class="op">=</span> [<span class="dv">5</span>, <span class="dv">20</span>, <span class="dv">50</span>]</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>SEEDS <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>]</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>MODELS <span class="op">=</span> [<span class="st">"tabpfn"</span>, <span class="st">"lightgbm"</span>, <span class="st">"catboost"</span>]</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> rows_per <span class="kw">in</span> tqdm(ROWS_PER_ENTITY, desc<span class="op">=</span><span class="st">"rows per entity"</span>):</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>    n_entities <span class="op">=</span> TOTAL_ROWS <span class="op">//</span> rows_per</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> seed <span class="kw">in</span> SEEDS:</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>        df, y <span class="op">=</span> make_cross_row(n_entities, rows_per, seed<span class="op">=</span>seed)</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>        split_at <span class="op">=</span> <span class="bu">len</span>(y) <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>        train <span class="op">=</span> df.iloc[:split_at].reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>        test <span class="op">=</span> df.iloc[split_at:].reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>        y_train <span class="op">=</span> y[:split_at]</span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>        y_test <span class="op">=</span> y[split_at:]</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>        train_with_feature, test_with_feature <span class="op">=</span> add_entity_mean(train, test)</span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> model_name <span class="kw">in</span> MODELS:</span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>            auc_without <span class="op">=</span> score(</span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>                model_name,</span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>                train,</span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a>                y_train,</span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a>                test,</span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a>                y_test,</span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>                seed,</span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a>                cat_cols<span class="op">=</span>[<span class="st">"entity"</span>],</span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a>            auc_with_feature <span class="op">=</span> score(</span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a>                model_name,</span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a>                train_with_feature,</span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a>                y_train,</span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a>                test_with_feature,</span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a>                y_test,</span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a>                seed,</span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a>                cat_cols<span class="op">=</span>[<span class="st">"entity"</span>],</span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a>            rows.append({</span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a>                <span class="st">"rows_per"</span>: rows_per,</span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a>                <span class="st">"n_entities"</span>: n_entities,</span>
+<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a>                <span class="st">"seed"</span>: seed,</span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a>                <span class="st">"model"</span>: model_name,</span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a>                <span class="st">"gain"</span>: auc_with_feature <span class="op">-</span> auc_without,</span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a>            })</span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a>cross <span class="op">=</span> pd.DataFrame(rows)</span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"AUC gain from adding entity_mean_x, by model and rows-per-entity:"</span>)</span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a>cross_gain_table <span class="op">=</span> cross.pivot_table(index<span class="op">=</span><span class="st">"rows_per"</span>, columns<span class="op">=</span><span class="st">"model"</span>, values<span class="op">=</span><span class="st">"gain"</span>)</span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a>printdf(cross_gain_table[[<span class="st">"tabpfn"</span>, <span class="st">"lightgbm"</span>, <span class="st">"catboost"</span>]].<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
 <pre><code>
@@ -484,15 +661,15 @@ rows per entity: 100%|███████████████████�
 <div id="3c346bc8" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:31:34.491510Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:31:34.491313Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:31:34.886199Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:31:34.885470Z&quot;}}" data-execution_count="5">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>piv <span class="op">=</span> cross.pivot_table(index<span class="op">=</span><span class="st">"rows_per"</span>, columns<span class="op">=</span><span class="st">"model"</span>, values<span class="op">=</span><span class="st">"gain"</span>)[[<span class="st">"tabpfn"</span>, <span class="st">"lightgbm"</span>, <span class="st">"catboost"</span>]]</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> piv.plot(kind<span class="op">=</span><span class="st">"bar"</span>, figsize<span class="op">=</span>(<span class="fl">8.5</span>, <span class="fl">4.5</span>))</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"0.6"</span>, lw<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"rows per entity (fewer = higher-cardinality, sparser)"</span>)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"AUC gain from entity_mean_x"</span>)</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Cross-row FE: large gains for TabPFN and LightGBM, none for CatBoost"</span>)</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>ax.legend(title<span class="op">=</span><span class="st">"model"</span>, loc<span class="op">=</span><span class="st">"center left"</span>, bbox_to_anchor<span class="op">=</span>(<span class="fl">1.01</span>, <span class="fl">0.5</span>), fontsize<span class="op">=</span><span class="dv">9</span>, title_fontsize<span class="op">=</span><span class="dv">10</span>)</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>plt.xticks(rotation<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>piv <span class="op">=</span> cross.pivot_table(index<span class="op">=</span><span class="st">"rows_per"</span>, columns<span class="op">=</span><span class="st">"model"</span>, values<span class="op">=</span><span class="st">"gain"</span>)[[<span class="st">"tabpfn"</span>, <span class="st">"lightgbm"</span>, <span class="st">"catboost"</span>]]</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> piv.plot(kind<span class="op">=</span><span class="st">"bar"</span>, figsize<span class="op">=</span>(<span class="fl">8.5</span>, <span class="fl">4.5</span>))</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"0.6"</span>, lw<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"rows per entity (fewer = higher-cardinality, sparser)"</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"AUC gain from entity_mean_x"</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Cross-row FE: large gains for TabPFN and LightGBM, none for CatBoost"</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>ax.legend(title<span class="op">=</span><span class="st">"model"</span>, loc<span class="op">=</span><span class="st">"center left"</span>, bbox_to_anchor<span class="op">=</span>(<span class="fl">1.01</span>, <span class="fl">0.5</span>), fontsize<span class="op">=</span><span class="dv">9</span>, title_fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>plt.xticks(rotation<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -505,51 +682,105 @@ rows per entity: 100%|███████████████████�
 <p>The opposite picture. When entities are <strong>high-cardinality and sparsely observed</strong>, the engineered aggregate gives <strong>large gains to both TabPFN and LightGBM</strong>, because neither can pool an entity’s rows from a single observation. TabPFN’s gain <strong>peaks at about +0.15</strong> in the moderate-cardinality regime (20 rows per entity), well above LightGBM; at the most extreme sparsity (5 rows per entity, 1,200 entities) the two are comparable. The gain <strong>vanishes when entities are well sampled</strong> (50 rows each, only 120 entities): there both models recover the entity effect from the id itself, so the aggregate is redundant.</p>
 <p>And <strong>CatBoost gains nothing throughout</strong>, because its native ordered target statistics already encode the entity from its id, the same shortcut that made CatBoost special in the categoricals chapter, and the one shortcut TabPFN lacks. So the cross-row gain is real, conditional on the aggregate carrying signal the id alone does not.</p>
 </section>
-<section id="c.-the-same-split-on-real-data-amazon-employee-access" class="level2">
-<h2 class="anchored" data-anchor-id="c.-the-same-split-on-real-data-amazon-employee-access">3c. The same split on real data: Amazon Employee Access</h2>
-<p>Synthetic constructions can be engineered to make a point, so here is the real version. Amazon Employee Access is nine high-cardinality id columns (RESOURCE has ~7,500 values) and a binary approval target, the canonical case where count and combination-count encodings take gradient boosting from about 0.87 to 0.92. Those counts (“how common is this resource”, “how often do these co-occur”) are pure cross-row features. We add them, computed train-only, and measure the gain per model.</p>
+<section id="real-data-check" class="level2">
+<h2 class="anchored" data-anchor-id="real-data-check">Real data check</h2>
+<p>Synthetic constructions can be engineered to make a point, so here is the real version. Amazon Employee Access is nine high-cardinality id columns (RESOURCE has ~7,500 values) and a binary approval target. This is the kind of table where old Kaggle feature engineering often starts with counts: “how common is this id?” and “how often do these two ids appear together?”</p>
+<p>Those counts are pure cross-row features. We add single-column frequency counts and a small set of combination counts, computed from the training rows only, and measure the gain per model.</p>
 <div id="b4efb8b4" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:31:34.887988Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:31:34.887800Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:34:12.547960Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:34:12.547189Z&quot;}}" data-execution_count="6">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>amazon <span class="op">=</span> fetch_openml(data_id<span class="op">=</span><span class="dv">4135</span>, as_frame<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>Xa <span class="op">=</span> amazon.data.copy()<span class="op">;</span> ya <span class="op">=</span> amazon.target.astype(<span class="bu">int</span>).values</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>id_cols <span class="op">=</span> <span class="bu">list</span>(Xa.columns)</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>combo_pairs <span class="op">=</span> [(<span class="st">"RESOURCE"</span>, <span class="st">"MGR_ID"</span>), (<span class="st">"RESOURCE"</span>, <span class="st">"ROLE_DEPTNAME"</span>), (<span class="st">"MGR_ID"</span>, <span class="st">"ROLE_DEPTNAME"</span>),</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>               (<span class="st">"RESOURCE"</span>, <span class="st">"ROLE_FAMILY"</span>), (<span class="st">"ROLE_DEPTNAME"</span>, <span class="st">"ROLE_TITLE"</span>)]</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> add_counts(train, test, combos<span class="op">=</span><span class="va">False</span>):</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    a, b <span class="op">=</span> train.copy(), test.copy()</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> c <span class="kw">in</span> id_cols:                                   <span class="co"># single-column frequency</span></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        cnt <span class="op">=</span> train[c].value_counts()</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>        a[<span class="ss">f"</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">_freq"</span>] <span class="op">=</span> train[c].<span class="bu">map</span>(cnt).fillna(<span class="dv">0</span>).astype(<span class="bu">float</span>).values</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        b[<span class="ss">f"</span><span class="sc">{</span>c<span class="sc">}</span><span class="ss">_freq"</span>] <span class="op">=</span> test[c].<span class="bu">map</span>(cnt).fillna(<span class="dv">0</span>).astype(<span class="bu">float</span>).values</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> combos:                                          <span class="co"># 2-way combination counts</span></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> c1, c2 <span class="kw">in</span> combo_pairs:</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>            ktr <span class="op">=</span> train[c1].astype(<span class="bu">str</span>) <span class="op">+</span> <span class="st">"_"</span> <span class="op">+</span> train[c2].astype(<span class="bu">str</span>)</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>            kte <span class="op">=</span> test[c1].astype(<span class="bu">str</span>) <span class="op">+</span> <span class="st">"_"</span> <span class="op">+</span> test[c2].astype(<span class="bu">str</span>)</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>            cnt <span class="op">=</span> ktr.value_counts()</span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>            a[<span class="ss">f"</span><span class="sc">{</span>c1<span class="sc">}</span><span class="ss">_</span><span class="sc">{</span>c2<span class="sc">}</span><span class="ss">_cnt"</span>] <span class="op">=</span> ktr.<span class="bu">map</span>(cnt).fillna(<span class="dv">0</span>).astype(<span class="bu">float</span>).values</span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>            b[<span class="ss">f"</span><span class="sc">{</span>c1<span class="sc">}</span><span class="ss">_</span><span class="sc">{</span>c2<span class="sc">}</span><span class="ss">_cnt"</span>] <span class="op">=</span> kte.<span class="bu">map</span>(cnt).fillna(<span class="dv">0</span>).astype(<span class="bu">float</span>).values</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a, b</span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> seed <span class="kw">in</span> tqdm([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>], desc<span class="op">=</span><span class="st">"seed"</span>):</span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
-<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    idx <span class="op">=</span> rng.permutation(<span class="bu">len</span>(Xa))[:<span class="dv">16000</span>]<span class="op">;</span> h <span class="op">=</span> <span class="dv">8000</span></span>
-<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    tr, te <span class="op">=</span> Xa.iloc[idx[:h]].reset_index(drop<span class="op">=</span><span class="va">True</span>), Xa.iloc[idx[h:]].reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>    ytr, yte <span class="op">=</span> ya[idx[:h]], ya[idx[h:]]</span>
-<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>    tr_f, te_f <span class="op">=</span> add_counts(tr, te, combos<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>    tr_c, te_c <span class="op">=</span> add_counts(tr, te, combos<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> model <span class="kw">in</span> [<span class="st">"tabpfn"</span>, <span class="st">"lightgbm"</span>, <span class="st">"catboost"</span>]:</span>
-<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>        rows.append(<span class="bu">dict</span>(seed<span class="op">=</span>seed, model<span class="op">=</span>model,</span>
-<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>                         base<span class="op">=</span>score(model, tr, ytr, te, yte, seed, cat_cols<span class="op">=</span>id_cols),</span>
-<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>                         freq<span class="op">=</span>score(model, tr_f, ytr, te_f, yte, seed, cat_cols<span class="op">=</span>id_cols),</span>
-<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>                         freq_combo<span class="op">=</span>score(model, tr_c, ytr, te_c, yte, seed, cat_cols<span class="op">=</span>id_cols)))</span>
-<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>amz <span class="op">=</span> pd.DataFrame(rows).groupby(<span class="st">"model"</span>)[[<span class="st">"base"</span>, <span class="st">"freq"</span>, <span class="st">"freq_combo"</span>]].mean()</span>
-<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>amz[<span class="st">"gain_freq"</span>] <span class="op">=</span> amz[<span class="st">"freq"</span>] <span class="op">-</span> amz[<span class="st">"base"</span>]</span>
-<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>amz[<span class="st">"gain_combo"</span>] <span class="op">=</span> amz[<span class="st">"freq_combo"</span>] <span class="op">-</span> amz[<span class="st">"base"</span>]</span>
-<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Amazon Employee Access: AUC by feature set, and gains, per model:"</span>)</span>
-<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>printdf(amz.loc[[<span class="st">"tabpfn"</span>, <span class="st">"lightgbm"</span>, <span class="st">"catboost"</span>]].<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>amazon <span class="op">=</span> fetch_openml(data_id<span class="op">=</span><span class="dv">4135</span>, as_frame<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>Xa <span class="op">=</span> amazon.data.copy()</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>ya <span class="op">=</span> amazon.target.astype(<span class="bu">int</span>).values</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>id_cols <span class="op">=</span> <span class="bu">list</span>(Xa.columns)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>combo_pairs <span class="op">=</span> [</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"RESOURCE"</span>, <span class="st">"MGR_ID"</span>),</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"RESOURCE"</span>, <span class="st">"ROLE_DEPTNAME"</span>),</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"MGR_ID"</span>, <span class="st">"ROLE_DEPTNAME"</span>),</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"RESOURCE"</span>, <span class="st">"ROLE_FAMILY"</span>),</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"ROLE_DEPTNAME"</span>, <span class="st">"ROLE_TITLE"</span>),</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> add_counts(train, test, include_combo_counts<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Add train-only frequency counts for ids and selected id pairs."""</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    train_with_counts <span class="op">=</span> train.copy()</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    test_with_counts <span class="op">=</span> test.copy()</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> column <span class="kw">in</span> id_cols:</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>        train_counts <span class="op">=</span> train[column].value_counts()</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>        new_column <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>column<span class="sc">}</span><span class="ss">_freq"</span></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>        train_with_counts[new_column] <span class="op">=</span> (</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>            train[column].<span class="bu">map</span>(train_counts).fillna(<span class="dv">0</span>).astype(<span class="bu">float</span>).values</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>        test_with_counts[new_column] <span class="op">=</span> (</span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>            test[column].<span class="bu">map</span>(train_counts).fillna(<span class="dv">0</span>).astype(<span class="bu">float</span>).values</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> include_combo_counts:</span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> first, second <span class="kw">in</span> combo_pairs:</span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>            train_key <span class="op">=</span> train[first].astype(<span class="bu">str</span>) <span class="op">+</span> <span class="st">"_"</span> <span class="op">+</span> train[second].astype(<span class="bu">str</span>)</span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>            test_key <span class="op">=</span> test[first].astype(<span class="bu">str</span>) <span class="op">+</span> <span class="st">"_"</span> <span class="op">+</span> test[second].astype(<span class="bu">str</span>)</span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>            train_counts <span class="op">=</span> train_key.value_counts()</span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>            new_column <span class="op">=</span> <span class="ss">f"</span><span class="sc">{</span>first<span class="sc">}</span><span class="ss">_</span><span class="sc">{</span>second<span class="sc">}</span><span class="ss">_cnt"</span></span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a>            train_with_counts[new_column] <span class="op">=</span> (</span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>                train_key.<span class="bu">map</span>(train_counts).fillna(<span class="dv">0</span>).astype(<span class="bu">float</span>).values</span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a>            test_with_counts[new_column] <span class="op">=</span> (</span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a>                test_key.<span class="bu">map</span>(train_counts).fillna(<span class="dv">0</span>).astype(<span class="bu">float</span>).values</span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> train_with_counts, test_with_counts</span>
+<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> seed <span class="kw">in</span> tqdm([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>], desc<span class="op">=</span><span class="st">"seed"</span>):</span>
+<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
+<span id="cb14-51"><a href="#cb14-51" aria-hidden="true" tabindex="-1"></a>    sampled_rows <span class="op">=</span> rng.permutation(<span class="bu">len</span>(Xa))[:<span class="dv">16000</span>]</span>
+<span id="cb14-52"><a href="#cb14-52" aria-hidden="true" tabindex="-1"></a>    split_at <span class="op">=</span> <span class="dv">8000</span></span>
+<span id="cb14-53"><a href="#cb14-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-54"><a href="#cb14-54" aria-hidden="true" tabindex="-1"></a>    train <span class="op">=</span> Xa.iloc[sampled_rows[:split_at]].reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb14-55"><a href="#cb14-55" aria-hidden="true" tabindex="-1"></a>    test <span class="op">=</span> Xa.iloc[sampled_rows[split_at:]].reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb14-56"><a href="#cb14-56" aria-hidden="true" tabindex="-1"></a>    y_train <span class="op">=</span> ya[sampled_rows[:split_at]]</span>
+<span id="cb14-57"><a href="#cb14-57" aria-hidden="true" tabindex="-1"></a>    y_test <span class="op">=</span> ya[sampled_rows[split_at:]]</span>
+<span id="cb14-58"><a href="#cb14-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-59"><a href="#cb14-59" aria-hidden="true" tabindex="-1"></a>    train_with_freq, test_with_freq <span class="op">=</span> add_counts(train, test, include_combo_counts<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb14-60"><a href="#cb14-60" aria-hidden="true" tabindex="-1"></a>    train_with_combos, test_with_combos <span class="op">=</span> add_counts(train, test, include_combo_counts<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb14-61"><a href="#cb14-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-62"><a href="#cb14-62" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> model_name <span class="kw">in</span> [<span class="st">"tabpfn"</span>, <span class="st">"lightgbm"</span>, <span class="st">"catboost"</span>]:</span>
+<span id="cb14-63"><a href="#cb14-63" aria-hidden="true" tabindex="-1"></a>        rows.append({</span>
+<span id="cb14-64"><a href="#cb14-64" aria-hidden="true" tabindex="-1"></a>            <span class="st">"seed"</span>: seed,</span>
+<span id="cb14-65"><a href="#cb14-65" aria-hidden="true" tabindex="-1"></a>            <span class="st">"model"</span>: model_name,</span>
+<span id="cb14-66"><a href="#cb14-66" aria-hidden="true" tabindex="-1"></a>            <span class="st">"base"</span>: score(model_name, train, y_train, test, y_test, seed, cat_cols<span class="op">=</span>id_cols),</span>
+<span id="cb14-67"><a href="#cb14-67" aria-hidden="true" tabindex="-1"></a>            <span class="st">"freq"</span>: score(</span>
+<span id="cb14-68"><a href="#cb14-68" aria-hidden="true" tabindex="-1"></a>                model_name,</span>
+<span id="cb14-69"><a href="#cb14-69" aria-hidden="true" tabindex="-1"></a>                train_with_freq,</span>
+<span id="cb14-70"><a href="#cb14-70" aria-hidden="true" tabindex="-1"></a>                y_train,</span>
+<span id="cb14-71"><a href="#cb14-71" aria-hidden="true" tabindex="-1"></a>                test_with_freq,</span>
+<span id="cb14-72"><a href="#cb14-72" aria-hidden="true" tabindex="-1"></a>                y_test,</span>
+<span id="cb14-73"><a href="#cb14-73" aria-hidden="true" tabindex="-1"></a>                seed,</span>
+<span id="cb14-74"><a href="#cb14-74" aria-hidden="true" tabindex="-1"></a>                cat_cols<span class="op">=</span>id_cols,</span>
+<span id="cb14-75"><a href="#cb14-75" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb14-76"><a href="#cb14-76" aria-hidden="true" tabindex="-1"></a>            <span class="st">"freq_combo"</span>: score(</span>
+<span id="cb14-77"><a href="#cb14-77" aria-hidden="true" tabindex="-1"></a>                model_name,</span>
+<span id="cb14-78"><a href="#cb14-78" aria-hidden="true" tabindex="-1"></a>                train_with_combos,</span>
+<span id="cb14-79"><a href="#cb14-79" aria-hidden="true" tabindex="-1"></a>                y_train,</span>
+<span id="cb14-80"><a href="#cb14-80" aria-hidden="true" tabindex="-1"></a>                test_with_combos,</span>
+<span id="cb14-81"><a href="#cb14-81" aria-hidden="true" tabindex="-1"></a>                y_test,</span>
+<span id="cb14-82"><a href="#cb14-82" aria-hidden="true" tabindex="-1"></a>                seed,</span>
+<span id="cb14-83"><a href="#cb14-83" aria-hidden="true" tabindex="-1"></a>                cat_cols<span class="op">=</span>id_cols,</span>
+<span id="cb14-84"><a href="#cb14-84" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb14-85"><a href="#cb14-85" aria-hidden="true" tabindex="-1"></a>        })</span>
+<span id="cb14-86"><a href="#cb14-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-87"><a href="#cb14-87" aria-hidden="true" tabindex="-1"></a>amz <span class="op">=</span> pd.DataFrame(rows).groupby(<span class="st">"model"</span>)[[<span class="st">"base"</span>, <span class="st">"freq"</span>, <span class="st">"freq_combo"</span>]].mean()</span>
+<span id="cb14-88"><a href="#cb14-88" aria-hidden="true" tabindex="-1"></a>amz[<span class="st">"gain_freq"</span>] <span class="op">=</span> amz[<span class="st">"freq"</span>] <span class="op">-</span> amz[<span class="st">"base"</span>]</span>
+<span id="cb14-89"><a href="#cb14-89" aria-hidden="true" tabindex="-1"></a>amz[<span class="st">"gain_combo"</span>] <span class="op">=</span> amz[<span class="st">"freq_combo"</span>] <span class="op">-</span> amz[<span class="st">"base"</span>]</span>
+<span id="cb14-90"><a href="#cb14-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-91"><a href="#cb14-91" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Amazon Employee Access: AUC by feature set, and gains, per model:"</span>)</span>
+<span id="cb14-92"><a href="#cb14-92" aria-hidden="true" tabindex="-1"></a>printdf(amz.loc[[<span class="st">"tabpfn"</span>, <span class="st">"lightgbm"</span>, <span class="st">"catboost"</span>]].<span class="bu">round</span>(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
 <pre><code>
@@ -576,15 +807,15 @@ seed: 100%|███████████████████████
 <div id="b2fab477" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:34:12.549647Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:34:12.549456Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:34:12.732721Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:34:12.732030Z&quot;}}" data-execution_count="7">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>bars <span class="op">=</span> amz.loc[[<span class="st">"tabpfn"</span>, <span class="st">"lightgbm"</span>, <span class="st">"catboost"</span>], [<span class="st">"base"</span>, <span class="st">"freq"</span>, <span class="st">"freq_combo"</span>]]</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> bars.plot(kind<span class="op">=</span><span class="st">"bar"</span>, figsize<span class="op">=</span>(<span class="fl">8.5</span>, <span class="fl">4.5</span>))</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="fl">0.75</span>, <span class="fl">0.83</span>)</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"AUC"</span>)</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>ax.set_axisbelow(<span class="va">True</span>)<span class="op">;</span> ax.grid(axis<span class="op">=</span><span class="st">"y"</span>, alpha<span class="op">=</span><span class="fl">0.6</span>)</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Amazon: count FE helps TabPFN and LightGBM, not CatBoost"</span>)</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>ax.legend(title<span class="op">=</span><span class="st">"features"</span>, loc<span class="op">=</span><span class="st">"center left"</span>, bbox_to_anchor<span class="op">=</span>(<span class="fl">1.01</span>, <span class="fl">0.5</span>), fontsize<span class="op">=</span><span class="dv">9</span>, title_fontsize<span class="op">=</span><span class="dv">10</span>)</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>plt.xticks(rotation<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>bars <span class="op">=</span> amz.loc[[<span class="st">"tabpfn"</span>, <span class="st">"lightgbm"</span>, <span class="st">"catboost"</span>], [<span class="st">"base"</span>, <span class="st">"freq"</span>, <span class="st">"freq_combo"</span>]]</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> bars.plot(kind<span class="op">=</span><span class="st">"bar"</span>, figsize<span class="op">=</span>(<span class="fl">8.5</span>, <span class="fl">4.5</span>))</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="fl">0.75</span>, <span class="fl">0.83</span>)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"AUC"</span>)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>ax.set_axisbelow(<span class="va">True</span>)<span class="op">;</span> ax.grid(axis<span class="op">=</span><span class="st">"y"</span>, alpha<span class="op">=</span><span class="fl">0.6</span>)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Amazon: count FE helps TabPFN and LightGBM, not CatBoost"</span>)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>ax.legend(title<span class="op">=</span><span class="st">"features"</span>, loc<span class="op">=</span><span class="st">"center left"</span>, bbox_to_anchor<span class="op">=</span>(<span class="fl">1.01</span>, <span class="fl">0.5</span>), fontsize<span class="op">=</span><span class="dv">9</span>, title_fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>plt.xticks(rotation<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -596,38 +827,56 @@ seed: 100%|███████████████████████
 </div>
 <p>The synthetic split holds on real data. <strong>TabPFN gains about +0.014 from frequency and +0.016 from combination counts</strong>, real lift from features it cannot compute per row. <strong>LightGBM gains the most</strong> (about +0.024). And <strong>CatBoost loses a little</strong>, because its native target statistics already encode the ids, so raw counts are redundant noise. The same three-way pattern as the synthetic entity test.</p>
 </section>
-<section id="deep-dive-one-rule-explains-all-of-it" class="level2">
-<h2 class="anchored" data-anchor-id="deep-dive-one-rule-explains-all-of-it">4. Deep dive: one rule explains all of it</h2>
+<section id="why-the-split-holds" class="level2">
+<h2 class="anchored" data-anchor-id="why-the-split-holds">Why the split holds</h2>
 <p>Every result above is the same quantity: <strong>the gain from an engineered feature equals its incremental predictiveness given what the model already recovers from the raw inputs.</strong> A feature helps only when it carries signal the model cannot reconstruct on its own.</p>
 <ul>
 <li><strong>Within-row</strong> features (products, ratios): TabPFN reconstructs them with cross-feature attention, so the incremental term is ~0 for it at any importance. A linear model reconstructs nothing, so it is FE-hungry. Trees sit in between.</li>
 <li><strong>Cross-row</strong> features (aggregates): TabPFN cannot reconstruct them per prediction, so the incremental term is large, unless the cross-row effect is already learnable from a low-cardinality, well-sampled id (then it reconstructs it and the term collapses), or a model has a native shortcut (CatBoost’s ordered target statistics).</li>
 </ul>
-<p>We can see the “incremental predictiveness” directly on a real within-row ratio. On Taiwan credit, the classic utilization ratio (bill / limit):</p>
+<p>We can see the “incremental predictiveness” directly on a real within-row ratio. On Taiwan credit, the classic utilization ratio is bill amount divided by credit limit:</p>
 <div id="79e01803" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-22T15:34:12.734561Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-22T15:34:12.734360Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-22T15:34:13.358088Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-22T15:34:13.357328Z&quot;}}" data-execution_count="8">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>credit <span class="op">=</span> fetch_openml(name<span class="op">=</span><span class="st">"default-of-credit-card-clients"</span>, as_frame<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>Xc <span class="op">=</span> credit.data.astype(<span class="bu">float</span>).reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>yc <span class="op">=</span> credit.target.astype(<span class="bu">int</span>).values <span class="cf">if</span> <span class="bu">str</span>(credit.target.dtype) <span class="kw">not</span> <span class="kw">in</span> (<span class="st">"object"</span>, <span class="st">"category"</span>) <span class="op">\</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>     <span class="cf">else</span> credit.target.astype(<span class="bu">str</span>).isin([<span class="st">"1"</span>, <span class="st">"yes"</span>]).astype(<span class="bu">int</span>).values</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>util <span class="op">=</span> (Xc[<span class="st">"x12"</span>] <span class="op">/</span> Xc[<span class="st">"x1"</span>]).rename(<span class="st">"utilization"</span>)     <span class="co"># bill / limit</span></span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">0</span>)<span class="op">;</span> n <span class="op">=</span> <span class="dv">12000</span><span class="op">;</span> idx <span class="op">=</span> rng.permutation(<span class="bu">len</span>(Xc))[:n]<span class="op">;</span> h <span class="op">=</span> n <span class="op">//</span> <span class="dv">2</span></span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>Xs <span class="op">=</span> Xc.iloc[idx].reset_index(drop<span class="op">=</span><span class="va">True</span>)<span class="op">;</span> ys <span class="op">=</span> yc[idx]<span class="op">;</span> u <span class="op">=</span> util.iloc[idx].reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lgbm_auc(df):</span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> LGBMClassifier(verbose<span class="op">=-</span><span class="dv">1</span>)<span class="op">;</span> m.fit(df.iloc[:h], ys[:h])</span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> roc_auc_score(ys[h:], m.predict_proba(df.iloc[h:])[:, <span class="dv">1</span>])</span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>sets <span class="op">=</span> {</span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"utilization ALONE"</span>: u.to_frame(),</span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"its components {limit, bill}"</span>: Xs[[<span class="st">"x1"</span>, <span class="st">"x12"</span>]],</span>
-<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"components + utilization"</span>: pd.concat([Xs[[<span class="st">"x1"</span>, <span class="st">"x12"</span>]], u], axis<span class="op">=</span><span class="dv">1</span>),</span>
-<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"all 23 raw columns"</span>: Xs,</span>
-<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"all 23 + utilization"</span>: pd.concat([Xs, u], axis<span class="op">=</span><span class="dv">1</span>),</span>
-<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Taiwan credit, LightGBM AUC by feature set (the incremental value of the ratio):"</span>)</span>
-<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, df <span class="kw">in</span> sets.items():</span>
-<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>name<span class="sc">:32}</span><span class="ss"> </span><span class="sc">{</span>lgbm_auc(df)<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>credit <span class="op">=</span> fetch_openml(name<span class="op">=</span><span class="st">"default-of-credit-card-clients"</span>, as_frame<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>Xc <span class="op">=</span> credit.data.astype(<span class="bu">float</span>).reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">str</span>(credit.target.dtype) <span class="kw">in</span> (<span class="st">"object"</span>, <span class="st">"category"</span>):</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    yc <span class="op">=</span> credit.target.astype(<span class="bu">str</span>).isin([<span class="st">"1"</span>, <span class="st">"yes"</span>]).astype(<span class="bu">int</span>).values</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    yc <span class="op">=</span> credit.target.astype(<span class="bu">int</span>).values</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>utilization <span class="op">=</span> (Xc[<span class="st">"x12"</span>] <span class="op">/</span> Xc[<span class="st">"x1"</span>]).rename(<span class="st">"utilization"</span>)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">0</span>)</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">12000</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>sampled_rows <span class="op">=</span> rng.permutation(<span class="bu">len</span>(Xc))[:n]</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>split_at <span class="op">=</span> n <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>Xs <span class="op">=</span> Xc.iloc[sampled_rows].reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>ys <span class="op">=</span> yc[sampled_rows]</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>u <span class="op">=</span> utilization.iloc[sampled_rows].reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> lgbm_auc(features):</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Fit LightGBM on the first half and score AUC on the second half."""</span></span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> LGBMClassifier(verbose<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>    model.fit(features.iloc[:split_at], ys[:split_at])</span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>    probabilities <span class="op">=</span> model.predict_proba(features.iloc[split_at:])[:, <span class="dv">1</span>]</span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> roc_auc_score(ys[split_at:], probabilities)</span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a>feature_sets <span class="op">=</span> {</span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a>    <span class="st">"utilization ALONE"</span>: u.to_frame(),</span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a>    <span class="st">"its components {limit, bill}"</span>: Xs[[<span class="st">"x1"</span>, <span class="st">"x12"</span>]],</span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a>    <span class="st">"components + utilization"</span>: pd.concat([Xs[[<span class="st">"x1"</span>, <span class="st">"x12"</span>]], u], axis<span class="op">=</span><span class="dv">1</span>),</span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a>    <span class="st">"all 23 raw columns"</span>: Xs,</span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a>    <span class="st">"all 23 + utilization"</span>: pd.concat([Xs, u], axis<span class="op">=</span><span class="dv">1</span>),</span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb19-36"><a href="#cb19-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-37"><a href="#cb19-37" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Taiwan credit, LightGBM AUC by feature set (the incremental value of the ratio):"</span>)</span>
+<span id="cb19-38"><a href="#cb19-38" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, features <span class="kw">in</span> feature_sets.items():</span>
+<span id="cb19-39"><a href="#cb19-39" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>name<span class="sc">:32}</span><span class="ss"> </span><span class="sc">{</span>lgbm_auc(features)<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Taiwan credit, LightGBM AUC by feature set (the incremental value of the ratio):
@@ -639,13 +888,16 @@ seed: 100%|███████████████████████
 </div>
 </div>
 <p>The ratio scores only 0.569 alone, adds about +0.002 over its own components (the model recovers it from limit and bill), and about +0.007 against the full 0.76 model. Tiny incremental signal, so it helps no model much, TabPFN included. A cross-row count on Amazon, by contrast, carries signal no single row holds, so it helps the models that cannot compute it.</p>
-<p>This is why the Kaggle FE that wins is overwhelmingly cross-row: Santander’s per-feature value-frequency features (about +0.023 AUC), the IEEE-CIS fraud “UID” group-by aggregations (about +0.013), Home Credit’s per-client aggregations of auxiliary tables. TabPFN benefits from precisely this family, and often more than a tuned GBM.</p>
+<p>This is also the old Kaggle lesson. In <a href="https://www.kaggle.com/code/willkoehrsen/introduction-to-manual-feature-engineering">Will Koehrsen’s Home Credit manual feature-engineering notebook</a>, the central move is aggregating auxiliary tables back to each client. In <a href="https://www.kaggle.com/code/cdeotte/200-magical-models-santander-0-920">Chris Deotte’s Santander notebook</a>, the “magic” feature is a per-value frequency count. In his <a href="https://www.kaggle.com/code/cdeotte/xgb-fraud-with-magic-0-9600">IEEE-CIS fraud notebook</a>, UID and count-style features are part of the 0.96 XGBoost story. Those are different competitions, but the same shape: useful information is spread across rows, then summarized into a feature a row-level model can consume.</p>
+<p>TabPFN benefits from precisely this family, and often more than a tuned GBM.</p>
 <section id="honest-limits" class="level3">
 <h3 class="anchored" data-anchor-id="honest-limits">Honest limits</h3>
 <ul>
 <li>The dramatic synthetic gains (entity aggregates up to +0.16) need the aggregate to carry most of the signal; on real data with strong existing features the gains are smaller (Amazon +0.016) but in the same direction.</li>
 <li>The cross-row gain is <strong>conditional</strong>: it requires high-cardinality, sparsely-observed entities. Well sampled, low-cardinality ids are recovered from the id alone and the aggregate adds nothing.</li>
-<li>CatBoost is the standing exception via native target statistics. All models run on default hyperparameters.</li>
+<li>CatBoost is the standing exception via native target statistics.</li>
+<li>AutoGluon and TabPrep are useful references, but they should not be load-bearing prerequisites for this chapter. The reader should understand the result from the within-row versus cross-row split alone.</li>
+<li>All models run on default hyperparameters.</li>
 </ul>
 </section>
 </section>
@@ -654,8 +906,8 @@ seed: 100%|███████████████████████
 <p>For TabPFN the feature-engineering question is not <strong>whether</strong>, it is <strong>what</strong>:</p>
 <ul>
 <li><strong>Within-row</strong> features (interactions, ratios, polynomials) are redundant: attention forms them, even when they are the entire signal. Stop reflexively adding products and ratios.</li>
-<li><strong>Cross-row</strong> features (group-by aggregates, counts, frequency and target encoding, entity statistics) are where engineering earns its keep, because TabPFN cannot compute them per prediction, and it often benefits more than a GBM. This is exactly the FE that wins competitions.</li>
-<li>The single rule: engineer the features your model cannot reconstruct from your data. For TabPFN, that means cross-row, not within-row.</li>
+<li><strong>Cross-row</strong> features (group-by aggregates, counts, frequency and target encoding, entity statistics) are where engineering earns its keep, because TabPFN cannot compute them per prediction. This is the feature-engineering family behind many strong Kaggle notebooks.</li>
+<li>The single rule: engineer the features your model cannot reconstruct from your data. For TabPFN, that usually means cross-row, not within-row.</li>
 </ul>
 
 
@@ -1120,13 +1372,13 @@ seed: 100%|███████████████████████
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./Correlation.html" class="pagination-link" aria-label="Correlated variables, with TabPFN">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Correlated variables, with TabPFN</span>
+      <a href="./Correlation.html" class="pagination-link" aria-label="Correlated variables">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Correlated variables</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./MissingValues.html" class="pagination-link" aria-label="Missing values, with TabPFN">
-        <span class="nav-page-text">Missing values, with TabPFN</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./MissingValues.html" class="pagination-link" aria-label="Missing values">
+        <span class="nav-page-text">Missing values</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

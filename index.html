@@ -101,6 +101,43 @@ ul.task-list li input[type="checkbox"] {
     }
   })
   </script>
+<style>
+#title-block-header .quarto-title .title {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+#title-block-header .quarto-title .title::before {
+  content: "";
+  flex: 0 0 auto;
+  width: clamp(2rem, 4vw, 3rem);
+  aspect-ratio: 34 / 21;
+  background-image: url("features_target_table_icon.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.92;
+}
+
+#TOC .nav-link {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+@media (max-width: 575.98px) {
+  #title-block-header .quarto-title .title {
+    align-items: flex-start;
+  }
+
+  #title-block-header .quarto-title .title::before {
+    width: 2rem;
+    margin-top: 0.1rem;
+  }
+}
+</style>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -200,7 +237,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
- <span class="menu-text">Needs metadata</span></a>
+ <span class="menu-text">Notebooks</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -209,31 +246,31 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Categoricals.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">High-cardinality and categorical variables, with TabPFN</span></a>
+ <span class="menu-text">Categorical variables</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Correlated variables, with TabPFN</span></a>
+ <span class="menu-text">Correlated variables</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./FeatureEngineering.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Feature engineering, with TabPFN</span></a>
+ <span class="menu-text">Feature engineering</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./MissingValues.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Missing values, with TabPFN</span></a>
+ <span class="menu-text">Missing values</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Parameters.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">TabPFN parameters, for a gradient-boosting practitioner</span></a>
+ <span class="menu-text">Inference parameters</span></a>
   </div>
 </li>
       </ul>
@@ -247,7 +284,7 @@ window.Quarto = {
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
    
-  <ul>
+  <ul class="collapse">
   <li><a href="#notebook-index" id="toc-notebook-index" class="nav-link active" data-scroll-target="#notebook-index">Notebook Index</a></li>
   </ul>
 </nav>
@@ -311,10 +348,10 @@ Reading Time
 </thead>
 <tbody class="list">
 
-<tr data-index="0" data-listing-file-modified-sort="1782230511125" data-listing-reading-time-sort="10" data-listing-word-count-sort="1904" data-listing-title-sort="High-cardinality and categorical variables, with TabPFN" data-listing-filename-sort="Categoricals.ipynb" onclick="href = this.querySelector('a').getAttribute('href');
+<tr data-index="0" data-listing-file-modified-sort="1782287472927" data-listing-reading-time-sort="10" data-listing-word-count-sort="1890" data-listing-title-sort="Categorical variables" data-listing-filename-sort="Categoricals.ipynb" onclick="href = this.querySelector('a').getAttribute('href');
  if (href) { window.location=href ; return false; }">
 <td>
-<a href="./Categoricals.html" class="title listing-title">High-cardinality and categorical variables, with TabPFN</a>
+<a href="./Categoricals.html" class="title listing-title">Categorical variables</a>
 </td>
 <td>
 <span class="listing-description">A machine-learning model takes numbers, and a column like <code>country = {Germany, Brazil, Japan}</code> is not one. Every tabular pipeline turns the labels into numbers, and there is a…</span>
@@ -325,10 +362,10 @@ Reading Time
 
 </tr>
 
-<tr data-index="1" data-listing-file-modified-sort="1782230511128" data-listing-reading-time-sort="7" data-listing-word-count-sort="1325" data-listing-title-sort="Correlated variables, with TabPFN" data-listing-filename-sort="Correlation.ipynb" onclick="href = this.querySelector('a').getAttribute('href');
+<tr data-index="1" data-listing-file-modified-sort="1782287472928" data-listing-reading-time-sort="7" data-listing-word-count-sort="1310" data-listing-title-sort="Correlated variables" data-listing-filename-sort="Correlation.ipynb" onclick="href = this.querySelector('a').getAttribute('href');
  if (href) { window.location=href ; return false; }">
 <td>
-<a href="./Correlation.html" class="title listing-title">Correlated variables, with TabPFN</a>
+<a href="./Correlation.html" class="title listing-title">Correlated variables</a>
 </td>
 <td>
 <span class="listing-description">Two columns that say almost the same thing are the oldest smell in a feature matrix. The gradient-boosting reflex is well drilled: build a correlation heatmap, find the…<em></em></span>
@@ -339,24 +376,24 @@ Reading Time
 
 </tr>
 
-<tr data-index="2" data-listing-file-modified-sort="1782230511130" data-listing-reading-time-sort="7" data-listing-word-count-sort="1327" data-listing-title-sort="Feature engineering, with TabPFN" data-listing-filename-sort="FeatureEngineering.ipynb" onclick="href = this.querySelector('a').getAttribute('href');
+<tr data-index="2" data-listing-file-modified-sort="1782287472930" data-listing-reading-time-sort="8" data-listing-word-count-sort="1561" data-listing-title-sort="Feature engineering" data-listing-filename-sort="FeatureEngineering.ipynb" onclick="href = this.querySelector('a').getAttribute('href');
  if (href) { window.location=href ; return false; }">
 <td>
-<a href="./FeatureEngineering.html" class="title listing-title">Feature engineering, with TabPFN</a>
+<a href="./FeatureEngineering.html" class="title listing-title">Feature engineering</a>
 </td>
 <td>
 <span class="listing-description">Feature engineering is the lever a gradient-boosting practitioner trusts most: hand-craft the features that let the model see structure it cannot learn on its own. The…<strong></strong><strong></strong></span>
 </td>
 <td>
-<span class="listing-reading-time">7 min</span>
+<span class="listing-reading-time">8 min</span>
 </td>
 
 </tr>
 
-<tr data-index="3" data-listing-file-modified-sort="1782230511130" data-listing-reading-time-sort="11" data-listing-word-count-sort="2153" data-listing-title-sort="Missing values, with TabPFN" data-listing-filename-sort="MissingValues.ipynb" onclick="href = this.querySelector('a').getAttribute('href');
+<tr data-index="3" data-listing-file-modified-sort="1782287472930" data-listing-reading-time-sort="11" data-listing-word-count-sort="2138" data-listing-title-sort="Missing values" data-listing-filename-sort="MissingValues.ipynb" onclick="href = this.querySelector('a').getAttribute('href');
  if (href) { window.location=href ; return false; }">
 <td>
-<a href="./MissingValues.html" class="title listing-title">Missing values, with TabPFN</a>
+<a href="./MissingValues.html" class="title listing-title">Missing values</a>
 </td>
 <td>
 <span class="listing-description">A hole in the table is the most common defect in real data. This notebook walks the classical toolkit for handling it, shows how much of that toolkit TabPFN makes…</span>
@@ -367,10 +404,10 @@ Reading Time
 
 </tr>
 
-<tr data-index="4" data-listing-file-modified-sort="1782230511132" data-listing-reading-time-sort="10" data-listing-word-count-sort="1986" data-listing-title-sort="TabPFN parameters, for a gradient-boosting practitioner" data-listing-filename-sort="Parameters.ipynb" onclick="href = this.querySelector('a').getAttribute('href');
+<tr data-index="4" data-listing-file-modified-sort="1782287472931" data-listing-reading-time-sort="10" data-listing-word-count-sort="1961" data-listing-title-sort="Inference parameters" data-listing-filename-sort="Parameters.ipynb" onclick="href = this.querySelector('a').getAttribute('href');
  if (href) { window.location=href ; return false; }">
 <td>
-<a href="./Parameters.html" class="title listing-title">TabPFN parameters, for a gradient-boosting practitioner</a>
+<a href="./Parameters.html" class="title listing-title">Inference parameters</a>
 </td>
 <td>
 <span class="listing-description">With a gradient-boosting model you spend real effort searching hyperparameters: tree depth, learning rate, number of trees, number of leaves, minimum number of instances in…<strong></strong><strong></strong></span>
@@ -845,8 +882,8 @@ Reading Time
   <div class="nav-page nav-page-previous">
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./Categoricals.html" class="pagination-link" aria-label="High-cardinality and categorical variables, with TabPFN">
-        <span class="nav-page-text">High-cardinality and categorical variables, with TabPFN</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./Categoricals.html" class="pagination-link" aria-label="Categorical variables">
+        <span class="nav-page-text">Categorical variables</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

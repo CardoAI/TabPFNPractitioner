@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>TabPFN parameters, for a gradient-boosting practitioner – TabPFN Practitioner</title>
+<title>Inference parameters – TabPFN Practitioner</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -105,6 +105,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<style>
+#title-block-header .quarto-title .title {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+#title-block-header .quarto-title .title::before {
+  content: "";
+  flex: 0 0 auto;
+  width: clamp(2rem, 4vw, 3rem);
+  aspect-ratio: 34 / 21;
+  background-image: url("features_target_table_icon.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.92;
+}
+
+#TOC .nav-link {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+@media (max-width: 575.98px) {
+  #title-block-header .quarto-title .title {
+    align-items: flex-start;
+  }
+
+  #title-block-header .quarto-title .title::before {
+    width: 2rem;
+    margin-top: 0.1rem;
+  }
+}
+</style>
 
 
 </head>
@@ -146,7 +183,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Needs metadata</a></li><li class="breadcrumb-item"><a href="./Parameters.html">TabPFN parameters, for a gradient-boosting practitioner</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Parameters.html">Inference parameters</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -175,7 +212,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
- <span class="menu-text">Needs metadata</span></a>
+ <span class="menu-text">Notebooks</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -184,31 +221,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Categoricals.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">High-cardinality and categorical variables, with TabPFN</span></a>
+ <span class="menu-text">Categorical variables</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Correlated variables, with TabPFN</span></a>
+ <span class="menu-text">Correlated variables</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./FeatureEngineering.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Feature engineering, with TabPFN</span></a>
+ <span class="menu-text">Feature engineering</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./MissingValues.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Missing values, with TabPFN</span></a>
+ <span class="menu-text">Missing values</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Parameters.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">TabPFN parameters, for a gradient-boosting practitioner</span></a>
+ <span class="menu-text">Inference parameters</span></a>
   </div>
 </li>
       </ul>
@@ -222,14 +259,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
    
-  <ul>
-  <li><a href="#the-map" id="toc-the-map" class="nav-link active" data-scroll-target="#the-map">The map</a></li>
-  <li><a href="#n_estimators-the-accuracy-vs-speed-dialeach-estimator-is-a-differently-preprocessed-copy-of-the-data-and-tabpfn-averages-over-them.-moreestimators-reduce-the-variance-of-the-averaged-prediction-at-a-compute-cost-that-grows-with-thecount-the-timing-cell-below-makes-it-concrete.-the-accuracy-gain-saturates-quickly-and-exactlyhow-quickly-is-dataset-dependent-so-there-is-no-universal-number.-the-default-of-8-is-a-reasonablemiddle-drop-it-to-1-or-2-when-you-need-speed-raise-it-for-a-marginal-diminishing-gain." id="toc-n_estimators-the-accuracy-vs-speed-dialeach-estimator-is-a-differently-preprocessed-copy-of-the-data-and-tabpfn-averages-over-them.-moreestimators-reduce-the-variance-of-the-averaged-prediction-at-a-compute-cost-that-grows-with-thecount-the-timing-cell-below-makes-it-concrete.-the-accuracy-gain-saturates-quickly-and-exactlyhow-quickly-is-dataset-dependent-so-there-is-no-universal-number.-the-default-of-8-is-a-reasonablemiddle-drop-it-to-1-or-2-when-you-need-speed-raise-it-for-a-marginal-diminishing-gain." class="nav-link" data-scroll-target="#n_estimators-the-accuracy-vs-speed-dialeach-estimator-is-a-differently-preprocessed-copy-of-the-data-and-tabpfn-averages-over-them.-moreestimators-reduce-the-variance-of-the-averaged-prediction-at-a-compute-cost-that-grows-with-thecount-the-timing-cell-below-makes-it-concrete.-the-accuracy-gain-saturates-quickly-and-exactlyhow-quickly-is-dataset-dependent-so-there-is-no-universal-number.-the-default-of-8-is-a-reasonablemiddle-drop-it-to-1-or-2-when-you-need-speed-raise-it-for-a-marginal-diminishing-gain."><code>n_estimators</code>: the accuracy-vs-speed dialEach estimator is a differently-preprocessed copy of the data, and TabPFN averages over them. Moreestimators reduce the variance of the averaged prediction, at a compute cost that grows with thecount (the timing cell below makes it concrete). The accuracy gain saturates quickly, and exactlyhow quickly is dataset-dependent, so there is no universal number. The default of 8 is a reasonablemiddle: drop it to 1 or 2 when you need speed, raise it for a marginal, diminishing gain.</a></li>
-  <li><a href="#what-the-calibration-knobs-do-and-when-you-need-them" id="toc-what-the-calibration-knobs-do-and-when-you-need-them" class="nav-link" data-scroll-target="#what-the-calibration-knobs-do-and-when-you-need-them">What the calibration knobs do, and when you need them</a></li>
-  <li><a href="#speed-and-memory-fit_mode-and-the-shape-of-in-context-learning" id="toc-speed-and-memory-fit_mode-and-the-shape-of-in-context-learning" class="nav-link" data-scroll-target="#speed-and-memory-fit_mode-and-the-shape-of-in-context-learning">Speed and memory: fit_mode and the shape of in-context learning</a></li>
-  <li><a href="#inspect-what-tabpfn-inferredyou-do-not-tune-the-preprocessing-but-you-can-read-it.-after-a-fit-inference_config_-holds-theresolved-limits-and-thresholds-and-inferred_feature_schema_-shows-the-modality-tabpfn-assigned-toeach-column-which-is-what-categorical_features_indices-would-override." id="toc-inspect-what-tabpfn-inferredyou-do-not-tune-the-preprocessing-but-you-can-read-it.-after-a-fit-inference_config_-holds-theresolved-limits-and-thresholds-and-inferred_feature_schema_-shows-the-modality-tabpfn-assigned-toeach-column-which-is-what-categorical_features_indices-would-override." class="nav-link" data-scroll-target="#inspect-what-tabpfn-inferredyou-do-not-tune-the-preprocessing-but-you-can-read-it.-after-a-fit-inference_config_-holds-theresolved-limits-and-thresholds-and-inferred_feature_schema_-shows-the-modality-tabpfn-assigned-toeach-column-which-is-what-categorical_features_indices-would-override.">Inspect what TabPFN inferredYou do not tune the preprocessing, but you can read it. After a fit, <code>inference_config_</code> holds theresolved limits and thresholds, and <code>inferred_feature_schema_</code> shows the modality TabPFN assigned toeach column (which is what <code>categorical_features_indices</code> would override).</a></li>
-  <li><a href="#pointing-at-the-model-model_path-and-inference_config" id="toc-pointing-at-the-model-model_path-and-inference_config" class="nav-link" data-scroll-target="#pointing-at-the-model-model_path-and-inference_config">Pointing at the model: model_path and inference_config</a></li>
-  <li><a href="#every-other-knob-in-one-place" id="toc-every-other-knob-in-one-place" class="nav-link" data-scroll-target="#every-other-knob-in-one-place">Every other knob, in one place</a></li>
+  <ul class="collapse">
+  <li><a href="#parameter-map" id="toc-parameter-map" class="nav-link active" data-scroll-target="#parameter-map">Parameter map</a></li>
+  <li><a href="#accuracy-versus-speedeach-estimator-is-a-differently-preprocessed-copy-of-the-data-and-tabpfn-averages-over-them.-moreestimators-reduce-the-variance-of-the-averaged-prediction-at-a-compute-cost-that-grows-with-thecount-the-timing-cell-below-makes-it-concrete.-the-accuracy-gain-saturates-quickly-and-exactlyhow-quickly-is-dataset-dependent-so-there-is-no-universal-number.-the-default-of-8-is-a-reasonablemiddle-drop-it-to-1-or-2-when-you-need-speed-raise-it-for-a-marginal-diminishing-gain." id="toc-accuracy-versus-speedeach-estimator-is-a-differently-preprocessed-copy-of-the-data-and-tabpfn-averages-over-them.-moreestimators-reduce-the-variance-of-the-averaged-prediction-at-a-compute-cost-that-grows-with-thecount-the-timing-cell-below-makes-it-concrete.-the-accuracy-gain-saturates-quickly-and-exactlyhow-quickly-is-dataset-dependent-so-there-is-no-universal-number.-the-default-of-8-is-a-reasonablemiddle-drop-it-to-1-or-2-when-you-need-speed-raise-it-for-a-marginal-diminishing-gain." class="nav-link" data-scroll-target="#accuracy-versus-speedeach-estimator-is-a-differently-preprocessed-copy-of-the-data-and-tabpfn-averages-over-them.-moreestimators-reduce-the-variance-of-the-averaged-prediction-at-a-compute-cost-that-grows-with-thecount-the-timing-cell-below-makes-it-concrete.-the-accuracy-gain-saturates-quickly-and-exactlyhow-quickly-is-dataset-dependent-so-there-is-no-universal-number.-the-default-of-8-is-a-reasonablemiddle-drop-it-to-1-or-2-when-you-need-speed-raise-it-for-a-marginal-diminishing-gain.">Accuracy versus speedEach estimator is a differently-preprocessed copy of the data, and TabPFN averages over them. Moreestimators reduce the variance of the averaged prediction, at a compute cost that grows with thecount (the timing cell below makes it concrete). The accuracy gain saturates quickly, and exactlyhow quickly is dataset-dependent, so there is no universal number. The default of 8 is a reasonablemiddle: drop it to 1 or 2 when you need speed, raise it for a marginal, diminishing gain.</a></li>
+  <li><a href="#calibration-knobs" id="toc-calibration-knobs" class="nav-link" data-scroll-target="#calibration-knobs">Calibration knobs</a></li>
+  <li><a href="#speed-and-memory" id="toc-speed-and-memory" class="nav-link" data-scroll-target="#speed-and-memory">Speed and memory</a></li>
+  <li><a href="#inferred-settingsyou-do-not-tune-the-preprocessing-but-you-can-read-it.-after-a-fit-inference_config_-holds-theresolved-limits-and-thresholds-and-inferred_feature_schema_-shows-the-modality-tabpfn-assigned-toeach-column-which-is-what-categorical_features_indices-would-override." id="toc-inferred-settingsyou-do-not-tune-the-preprocessing-but-you-can-read-it.-after-a-fit-inference_config_-holds-theresolved-limits-and-thresholds-and-inferred_feature_schema_-shows-the-modality-tabpfn-assigned-toeach-column-which-is-what-categorical_features_indices-would-override." class="nav-link" data-scroll-target="#inferred-settingsyou-do-not-tune-the-preprocessing-but-you-can-read-it.-after-a-fit-inference_config_-holds-theresolved-limits-and-thresholds-and-inferred_feature_schema_-shows-the-modality-tabpfn-assigned-toeach-column-which-is-what-categorical_features_indices-would-override.">Inferred settingsYou do not tune the preprocessing, but you can read it. After a fit, <code>inference_config_</code> holds theresolved limits and thresholds, and <code>inferred_feature_schema_</code> shows the modality TabPFN assigned toeach column (which is what <code>categorical_features_indices</code> would override).</a></li>
+  <li><a href="#model-and-inference-configuration" id="toc-model-and-inference-configuration" class="nav-link" data-scroll-target="#model-and-inference-configuration">Model and inference configuration</a></li>
+  <li><a href="#other-knobs" id="toc-other-knobs" class="nav-link" data-scroll-target="#other-knobs">Other knobs</a></li>
   <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
   </ul>
 </nav>
@@ -237,9 +274,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Needs metadata</a></li><li class="breadcrumb-item"><a href="./Parameters.html">TabPFN parameters, for a gradient-boosting practitioner</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Parameters.html">Inference parameters</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">TabPFN parameters, for a gradient-boosting practitioner</h1>
+<h1 class="title">Inference parameters</h1>
 </div>
 
 
@@ -317,8 +354,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> calibration_gap</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<section id="the-map" class="level2">
-<h2 class="anchored" data-anchor-id="the-map">The map</h2>
+<section id="parameter-map" class="level2">
+<h2 class="anchored" data-anchor-id="parameter-map">Parameter map</h2>
 <p>Every TabPFN inference setting, with its default and when you would reach for it:</p>
 <table class="caption-top table">
 <colgroup>
@@ -423,8 +460,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <p>The defaults are strong almost everywhere. The next cells measure the ones that actually move accuracy or the clock, then show how to read and override the rest.</p>
 </section>
-<section id="n_estimators-the-accuracy-vs-speed-dialeach-estimator-is-a-differently-preprocessed-copy-of-the-data-and-tabpfn-averages-over-them.-moreestimators-reduce-the-variance-of-the-averaged-prediction-at-a-compute-cost-that-grows-with-thecount-the-timing-cell-below-makes-it-concrete.-the-accuracy-gain-saturates-quickly-and-exactlyhow-quickly-is-dataset-dependent-so-there-is-no-universal-number.-the-default-of-8-is-a-reasonablemiddle-drop-it-to-1-or-2-when-you-need-speed-raise-it-for-a-marginal-diminishing-gain." class="level2">
-<h2 class="anchored" data-anchor-id="n_estimators-the-accuracy-vs-speed-dialeach-estimator-is-a-differently-preprocessed-copy-of-the-data-and-tabpfn-averages-over-them.-moreestimators-reduce-the-variance-of-the-averaged-prediction-at-a-compute-cost-that-grows-with-thecount-the-timing-cell-below-makes-it-concrete.-the-accuracy-gain-saturates-quickly-and-exactlyhow-quickly-is-dataset-dependent-so-there-is-no-universal-number.-the-default-of-8-is-a-reasonablemiddle-drop-it-to-1-or-2-when-you-need-speed-raise-it-for-a-marginal-diminishing-gain."><code>n_estimators</code>: the accuracy-vs-speed dialEach estimator is a differently-preprocessed copy of the data, and TabPFN averages over them. Moreestimators reduce the variance of the averaged prediction, at a compute cost that grows with thecount (the timing cell below makes it concrete). The accuracy gain saturates quickly, and exactlyhow quickly is dataset-dependent, so there is no universal number. The default of 8 is a reasonablemiddle: drop it to 1 or 2 when you need speed, raise it for a marginal, diminishing gain.</h2>
+<section id="accuracy-versus-speedeach-estimator-is-a-differently-preprocessed-copy-of-the-data-and-tabpfn-averages-over-them.-moreestimators-reduce-the-variance-of-the-averaged-prediction-at-a-compute-cost-that-grows-with-thecount-the-timing-cell-below-makes-it-concrete.-the-accuracy-gain-saturates-quickly-and-exactlyhow-quickly-is-dataset-dependent-so-there-is-no-universal-number.-the-default-of-8-is-a-reasonablemiddle-drop-it-to-1-or-2-when-you-need-speed-raise-it-for-a-marginal-diminishing-gain." class="level2">
+<h2 class="anchored" data-anchor-id="accuracy-versus-speedeach-estimator-is-a-differently-preprocessed-copy-of-the-data-and-tabpfn-averages-over-them.-moreestimators-reduce-the-variance-of-the-averaged-prediction-at-a-compute-cost-that-grows-with-thecount-the-timing-cell-below-makes-it-concrete.-the-accuracy-gain-saturates-quickly-and-exactlyhow-quickly-is-dataset-dependent-so-there-is-no-universal-number.-the-default-of-8-is-a-reasonablemiddle-drop-it-to-1-or-2-when-you-need-speed-raise-it-for-a-marginal-diminishing-gain.">Accuracy versus speedEach estimator is a differently-preprocessed copy of the data, and TabPFN averages over them. Moreestimators reduce the variance of the averaged prediction, at a compute cost that grows with thecount (the timing cell below makes it concrete). The accuracy gain saturates quickly, and exactlyhow quickly is dataset-dependent, so there is no universal number. The default of 8 is a reasonablemiddle: drop it to 1 or 2 when you need speed, raise it for a marginal, diminishing gain.</h2>
 <div id="nestsweep" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T15:13:00.323032Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T15:13:00.322625Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T15:13:30.706913Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T15:13:30.706207Z&quot;}}" data-execution_count="2">
 <details class="code-fold">
 <summary>Show code</summary>
@@ -491,8 +528,8 @@ n_estimators=16: 3.42s</code></pre>
 </div>
 <p>The same shape shows up on every dataset: accuracy is essentially settled by two to four estimators, and the climb from there to sixteen is a few thousandths at most. The exact saturation point and the size of the gain vary (a small, noisy dataset like credit-g wobbles more than it climbs), so this is a general tendency rather than a law, but the practical rule is solid: the default of 8 sits comfortably past saturation on all four, and you can drop to 2 to 4 for speed with little to lose. Time, meanwhile, grows with the count, so the extra estimators buy a diminishing accuracy gain at a roughly linear cost.</p>
 </section>
-<section id="what-the-calibration-knobs-do-and-when-you-need-them" class="level2">
-<h2 class="anchored" data-anchor-id="what-the-calibration-knobs-do-and-when-you-need-them">What the calibration knobs do, and when you need them</h2>
+<section id="calibration-knobs" class="level2">
+<h2 class="anchored" data-anchor-id="calibration-knobs">Calibration knobs</h2>
 <p>These two knobs matter the moment you stop ranking and start <em>deciding</em>. Most production uses of a classifier threshold its probability to take an action: call this customer, review this claim, hold this transaction. A cutoff like 0.5 only means “more likely than not” when the probabilities are <em>calibrated</em>. <code>balance_probabilities</code> and <code>softmax_temperature</code> reshape the probability distribution without touching the ranking, both are monotone transforms, so AUC and AUPRC are unchanged by construction, which means what they really move is where your threshold bites. We show this first on the shape of the output, then on a real imbalanced decision.</p>
 <div id="hlbal" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T15:13:37.253980Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T15:13:37.253781Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T15:13:42.149658Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T15:13:42.148918Z&quot;}}" data-execution_count="4">
 <details class="code-fold">
@@ -595,8 +632,8 @@ balance_probabilities=True:
 <p>The histograms and the campaign tell one story. The AUC is identical with and without the knob, the ranking does not move, so neither knob can “improve” a ranking metric. What moves is the <em>operating point</em>. The default model is well-calibrated (ECE around 0.01, mean probability near the 12% base rate), so a 0.5 cutoff calls about 5% of customers at decent precision. <code>balance_probabilities</code> lifts the whole distribution toward the minority class (mean probability jumps, ECE blows up past 0.1), so the same 0.5 cutoff now calls roughly five times as many people: recall soars, precision falls. That is the knob’s actual job, shifting where a fixed threshold lands.</p>
 <p><code>softmax_temperature</code> is the same lesson in the other direction: below 1 it sharpens probabilities toward 0 and 1, above 1 it softens them toward 0.5, and the default 0.9 sits near the best-calibrated point (the printed ECE is lowest there, about 0.03 against 0.11 at 0.5 and 0.06 at 2.0). Reach for either knob only when a fixed cutoff or a calibrated probability is what you actually need, never to improve AUC. (A gradient-boosting model’s <code>scale_pos_weight</code> is what people often expect to help ranking; this is not that.)</p>
 </section>
-<section id="speed-and-memory-fit_mode-and-the-shape-of-in-context-learning" class="level2">
-<h2 class="anchored" data-anchor-id="speed-and-memory-fit_mode-and-the-shape-of-in-context-learning">Speed and memory: fit_mode and the shape of in-context learning</h2>
+<section id="speed-and-memory" class="level2">
+<h2 class="anchored" data-anchor-id="speed-and-memory">Speed and memory</h2>
 <p>TabPFN has no training loop, so its <code>.fit()</code> does something unusual: it stores your training data as the <em>context</em> the forward pass will condition on. <code>fit_mode</code> decides how much of that conditioning is precomputed and cached, which is the clearest window into how in-context learning actually runs. The preprocessing it refers to is the same ensemble we keep meeting: TabPFN builds one differently preprocessed copy of the data per estimator.</p>
 <ul>
 <li><code>low_memory</code> caches nothing. Every <code>.predict()</code> re-runs the full preprocessing, fitting the preprocessors on the training data and transforming both train and test, once per estimator, and then the forward pass. Smallest memory footprint, slowest repeated prediction.</li>
@@ -638,8 +675,8 @@ fit_preprocessors         0.63                        2.09
 <li><code>inference_precision</code> (<code>"auto"</code>, <code>"autocast"</code>, or a <code>torch.dtype</code>) uses mixed precision for speed by default; pinning a dtype trades speed for reproducibility: <code>TabPFNClassifier(inference_precision=torch.float32)</code> for the most repeatable run.</li>
 </ul>
 </section>
-<section id="inspect-what-tabpfn-inferredyou-do-not-tune-the-preprocessing-but-you-can-read-it.-after-a-fit-inference_config_-holds-theresolved-limits-and-thresholds-and-inferred_feature_schema_-shows-the-modality-tabpfn-assigned-toeach-column-which-is-what-categorical_features_indices-would-override." class="level2">
-<h2 class="anchored" data-anchor-id="inspect-what-tabpfn-inferredyou-do-not-tune-the-preprocessing-but-you-can-read-it.-after-a-fit-inference_config_-holds-theresolved-limits-and-thresholds-and-inferred_feature_schema_-shows-the-modality-tabpfn-assigned-toeach-column-which-is-what-categorical_features_indices-would-override.">Inspect what TabPFN inferredYou do not tune the preprocessing, but you can read it. After a fit, <code>inference_config_</code> holds theresolved limits and thresholds, and <code>inferred_feature_schema_</code> shows the modality TabPFN assigned toeach column (which is what <code>categorical_features_indices</code> would override).</h2>
+<section id="inferred-settingsyou-do-not-tune-the-preprocessing-but-you-can-read-it.-after-a-fit-inference_config_-holds-theresolved-limits-and-thresholds-and-inferred_feature_schema_-shows-the-modality-tabpfn-assigned-toeach-column-which-is-what-categorical_features_indices-would-override." class="level2">
+<h2 class="anchored" data-anchor-id="inferred-settingsyou-do-not-tune-the-preprocessing-but-you-can-read-it.-after-a-fit-inference_config_-holds-theresolved-limits-and-thresholds-and-inferred_feature_schema_-shows-the-modality-tabpfn-assigned-toeach-column-which-is-what-categorical_features_indices-would-override.">Inferred settingsYou do not tune the preprocessing, but you can read it. After a fit, <code>inference_config_</code> holds theresolved limits and thresholds, and <code>inferred_feature_schema_</code> shows the modality TabPFN assigned toeach column (which is what <code>categorical_features_indices</code> would override).</h2>
 <div id="c11" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T15:14:13.566969Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T15:14:13.566774Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T15:14:14.395622Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T15:14:14.394851Z&quot;}}" data-execution_count="8">
 <details class="code-fold">
 <summary>Show code</summary>
@@ -682,8 +719,8 @@ Inferred column modality (first five columns):
 </div>
 <p>The <strong>envelope</strong> is the hard ceiling the checkpoint was built for (a million rows, two thousand features, a hundred and sixty classes). Separately, <code>ignore_pretraining_limits</code> guards a softer <em>recommended</em> operating range, and pushing well past it is where accuracy starts to slip. The <strong>thresholds</strong> are the rules behind the auto-detection: a string column with 30 or fewer distinct values is treated as categorical, a numeric column needs at least 4 distinct values to stay numeric, and category inference needs at least 100 rows. Those are the knobs the scaling and categorical chapters open up through <code>inference_config</code>.</p>
 </section>
-<section id="pointing-at-the-model-model_path-and-inference_config" class="level2">
-<h2 class="anchored" data-anchor-id="pointing-at-the-model-model_path-and-inference_config">Pointing at the model: model_path and inference_config</h2>
+<section id="model-and-inference-configuration" class="level2">
+<h2 class="anchored" data-anchor-id="model-and-inference-configuration">Model and inference configuration</h2>
 <p><code>model_path</code> selects the checkpoint. <code>"auto"</code> (the default) downloads the v3 default classifier on first use and caches it; you can redirect the cache with the <code>TABPFN_MODEL_CACHE_DIR</code> environment variable. The envelope and thresholds printed above are read straight off that v3 checkpoint.</p>
 <p>The package ships more than one checkpoint, and several map onto problems we meet elsewhere in the series: a v2.5 family with large-features and large-samples variants for wide or tall data, and v3 variants tuned for different numeric priors (a low-skew and a quantiles checkpoint that connect to the skewed-variables chapter), small samples, and so on. You point at one with a filesystem path to a <code>.ckpt</code>, for example <code>TabPFNClassifier(model_path="path/to/checkpoint.ckpt")</code>; the repository README lists the exact identifiers. For almost every use the <code>"auto"</code> v3 default is the right answer.</p>
 <p><code>inference_config</code> is the door to the internal preprocessing. The cell below prints the <em>default</em> preprocessing pipeline, then replaces it with a single transform, which is how the scaling and categorical chapters reach inside the model.</p>
@@ -719,8 +756,8 @@ Overridden to a single quantile transform:
 </div>
 <p>The default pipeline is itself an ensemble: TabPFN applies a different preprocessing to the data foreach estimator (a squashing scaler here, a quantile transform there), which is part of why moreestimators help, every member receives the data under a different preprocessing. <code>inference_config</code> letsyou replace that pipeline outright, as above, or change a single setting like the outlier-clip width orthe categorical-detection thresholds. It validates your keys, an unknown one raises rather than failingsilently. For most work you never touch it; it is the door the scaling and categorical chapters open.</p>
 </section>
-<section id="every-other-knob-in-one-place" class="level2">
-<h2 class="anchored" data-anchor-id="every-other-knob-in-one-place">Every other knob, in one place</h2>
+<section id="other-knobs" class="level2">
+<h2 class="anchored" data-anchor-id="other-knobs">Other knobs</h2>
 <p>For completeness, the settings that did not need their own section, each as a one-line example:</p>
 <ul>
 <li><code>TabPFNClassifier(average_before_softmax=True)</code>: average the estimators’ logits before the softmax instead of their probabilities (only matters with <code>n_estimators &gt; 1</code>, can help calibration and many-class problems).</li>
@@ -1205,8 +1242,8 @@ Overridden to a single quantile transform:
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./MissingValues.html" class="pagination-link" aria-label="Missing values, with TabPFN">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Missing values, with TabPFN</span>
+      <a href="./MissingValues.html" class="pagination-link" aria-label="Missing values">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Missing values</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">

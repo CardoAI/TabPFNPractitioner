@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Correlated variables, with TabPFN – TabPFN Practitioner</title>
+<title>Correlated variables – TabPFN Practitioner</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -106,6 +106,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<style>
+#title-block-header .quarto-title .title {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+#title-block-header .quarto-title .title::before {
+  content: "";
+  flex: 0 0 auto;
+  width: clamp(2rem, 4vw, 3rem);
+  aspect-ratio: 34 / 21;
+  background-image: url("features_target_table_icon.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.92;
+}
+
+#TOC .nav-link {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+@media (max-width: 575.98px) {
+  #title-block-header .quarto-title .title {
+    align-items: flex-start;
+  }
+
+  #title-block-header .quarto-title .title::before {
+    width: 2rem;
+    margin-top: 0.1rem;
+  }
+}
+</style>
 
 
 </head>
@@ -147,7 +184,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Needs metadata</a></li><li class="breadcrumb-item"><a href="./Correlation.html">Correlated variables, with TabPFN</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Correlation.html">Correlated variables</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -176,7 +213,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
- <span class="menu-text">Needs metadata</span></a>
+ <span class="menu-text">Notebooks</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -185,31 +222,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Categoricals.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">High-cardinality and categorical variables, with TabPFN</span></a>
+ <span class="menu-text">Categorical variables</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Correlation.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Correlated variables, with TabPFN</span></a>
+ <span class="menu-text">Correlated variables</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./FeatureEngineering.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Feature engineering, with TabPFN</span></a>
+ <span class="menu-text">Feature engineering</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./MissingValues.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Missing values, with TabPFN</span></a>
+ <span class="menu-text">Missing values</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Parameters.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">TabPFN parameters, for a gradient-boosting practitioner</span></a>
+ <span class="menu-text">Inference parameters</span></a>
   </div>
 </li>
       </ul>
@@ -223,13 +260,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
    
-  <ul>
-  <li><a href="#the-reflex-on-the-data-that-made-it-famous" id="toc-the-reflex-on-the-data-that-made-it-famous" class="nav-link active" data-scroll-target="#the-reflex-on-the-data-that-made-it-famous">The reflex, on the data that made it famous</a></li>
+  <ul class="collapse">
+  <li><a href="#the-familiar-reflex" id="toc-the-familiar-reflex" class="nav-link active" data-scroll-target="#the-familiar-reflex">The familiar reflex</a></li>
   <li><a href="#does-correlation-cost-you-accuracy" id="toc-does-correlation-cost-you-accuracy" class="nav-link" data-scroll-target="#does-correlation-cost-you-accuracy">Does correlation cost you accuracy?</a></li>
-  <li><a href="#the-real-cost-which-feature-gets-the-credit" id="toc-the-real-cost-which-feature-gets-the-credit" class="nav-link" data-scroll-target="#the-real-cost-which-feature-gets-the-credit">The real cost: which feature gets the credit</a></li>
-  <li><a href="#a-real-competition-drowning-in-duplicates" id="toc-a-real-competition-drowning-in-duplicates" class="nav-link" data-scroll-target="#a-real-competition-drowning-in-duplicates">A real competition drowning in duplicates</a></li>
+  <li><a href="#feature-credit" id="toc-feature-credit" class="nav-link" data-scroll-target="#feature-credit">Feature credit</a></li>
+  <li><a href="#real-competition-check" id="toc-real-competition-check" class="nav-link" data-scroll-target="#real-competition-check">Real competition check</a></li>
   <li><a href="#noise-correlation-and-the-feature-ceiling" id="toc-noise-correlation-and-the-feature-ceiling" class="nav-link" data-scroll-target="#noise-correlation-and-the-feature-ceiling">Noise, correlation, and the feature ceiling</a></li>
-  <li><a href="#a-bridge-correlation-can-hide-in-the-missingness" id="toc-a-bridge-correlation-can-hide-in-the-missingness" class="nav-link" data-scroll-target="#a-bridge-correlation-can-hide-in-the-missingness">A bridge: correlation can hide in the missingness</a></li>
+  <li><a href="#missingness-bridge" id="toc-missingness-bridge" class="nav-link" data-scroll-target="#missingness-bridge">Missingness bridge</a></li>
   <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
   </ul>
 </nav>
@@ -237,9 +274,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Needs metadata</a></li><li class="breadcrumb-item"><a href="./Correlation.html">Correlated variables, with TabPFN</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./Correlation.html">Correlated variables</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Correlated variables, with TabPFN</h1>
+<h1 class="title">Correlated variables</h1>
 </div>
 
 
@@ -348,8 +385,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> out.drop(columns<span class="op">=</span>[baseline_col])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<section id="the-reflex-on-the-data-that-made-it-famous" class="level2">
-<h2 class="anchored" data-anchor-id="the-reflex-on-the-data-that-made-it-famous">The reflex, on the data that made it famous</h2>
+<section id="the-familiar-reflex" class="level2">
+<h2 class="anchored" data-anchor-id="the-familiar-reflex">The familiar reflex</h2>
 <p>Before any TabPFN twist, let us reproduce the habit on the real House Prices data. We pull the numeric columns and ask which pairs are strongly correlated. These are the “twins” the Marcelino notebook flags and trims. We make the task binary in the spirit of the series: predict whether a house sells above the median price.</p>
 <div id="30c52a0d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:31:54.923152Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:31:54.922765Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:31:55.046774Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:31:55.046104Z&quot;}}" data-execution_count="2">
 <details class="code-fold">
@@ -547,8 +584,8 @@ drop_twin minus keep_all:
 </div>
 <p>The 33,000-upvote move changes test AUC by a few ten-thousandths, in either direction, for every model including logistic regression, where multicollinearity is the textbook worry. Dropping the twin does not buy accuracy. So what is it for?</p>
 </section>
-<section id="the-real-cost-which-feature-gets-the-credit" class="level2">
-<h2 class="anchored" data-anchor-id="the-real-cost-which-feature-gets-the-credit">The real cost: which feature gets the credit</h2>
+<section id="feature-credit" class="level2">
+<h2 class="anchored" data-anchor-id="feature-credit">Feature credit</h2>
 <p>Correlation does not break the score, it breaks the <em>story</em>. Permutation importance asks “how much does the score drop if I scramble this column?” With a twin present, scrambling one column changes little, because its partner still carries the signal. So both twins look unimportant, and the credit dissolves.</p>
 <p>First synthetically: watch the permutation importance of the original feature 0 as we add copies of it.</p>
 <div id="c59fb039" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:32:43.412098Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:32:43.411903Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:34:06.193200Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:34:06.192379Z&quot;}}" data-execution_count="6">
@@ -660,8 +697,8 @@ importance: 100%|█████████████████████
 </div>
 <p>A 0.97-AUC model where permuting any one of 30 features barely moves the score, the false reading is “nothing matters”. Keep one feature per correlation cluster and the importances come back, at a tiny accuracy cost. TabPFN shows the same collapse as the forest. The lesson: pruning correlated features is how you protect your <em>interpretation</em>, not your accuracy.</p>
 </section>
-<section id="a-real-competition-drowning-in-duplicates" class="level2">
-<h2 class="anchored" data-anchor-id="a-real-competition-drowning-in-duplicates">A real competition drowning in duplicates</h2>
+<section id="real-competition-check" class="level2">
+<h2 class="anchored" data-anchor-id="real-competition-check">Real competition check</h2>
 <p>House Prices is tidy. Santander Customer Satisfaction is a real Kaggle competition where the famous first move was to strip constant, duplicate and correlated columns, because the anonymized feature set is full of them. We remove them in stages, so we can see which removal actually helps, rather than crediting “dedup” as one lump. The column sets are decided without looking at the label.</p>
 <div id="30437a8d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:36:44.515181Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:36:44.514991Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:38:47.128658Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:38:47.127836Z&quot;}}" data-execution_count="9">
 <details class="code-fold">
@@ -836,8 +873,8 @@ ceiling: 100%|██████████████████████
 </div>
 <p>TabPFN shrugs off both noise and correlated padding at the accuracy level, the drop is under 0.01 even at 200 extra columns. XGBoost is actually bothered a little more by noise than by correlated copies, since the copies still carry usable signal. The widely-repeated idea that correlated features are qualitatively harder than noise does not show up here as an accuracy effect; it lives in the attribution, which we already saw collapse. Growing toward TabPFN’s 2000-feature envelope is a gentle accuracy bleed and a rising compute bill, not a cliff.</p>
 </section>
-<section id="a-bridge-correlation-can-hide-in-the-missingness" class="level2">
-<h2 class="anchored" data-anchor-id="a-bridge-correlation-can-hide-in-the-missingness">A bridge: correlation can hide in the missingness</h2>
+<section id="missingness-bridge" class="level2">
+<h2 class="anchored" data-anchor-id="missingness-bridge">Missingness bridge</h2>
 <p>Correlation does not only live in values. Columns can be correlated in <em>when they go missing</em>, several fields that tend to be blank together, or filled together. Does that pattern matter, and does TabPFN read it?</p>
 <p>We build it cleanly. Four informative features drive the base label. Then <code>order</code> extra carrier columns hold noise values, each missing independently half the time. The label gets a boost when the carriers <strong>agree</strong>, all missing or all present. That signal is invisible in any single column (each is blank half the time regardless) and only readable from the combination. We confirm that with a guard before testing models.</p>
 <div id="8a09fa3f" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T10:39:37.504070Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T10:39:37.503886Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T10:39:37.547726Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T10:39:37.546562Z&quot;}}" data-execution_count="12">
@@ -1408,13 +1445,13 @@ co-missingness: 100%|███████████████████�
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./Categoricals.html" class="pagination-link" aria-label="High-cardinality and categorical variables, with TabPFN">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">High-cardinality and categorical variables, with TabPFN</span>
+      <a href="./Categoricals.html" class="pagination-link" aria-label="Categorical variables">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Categorical variables</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./FeatureEngineering.html" class="pagination-link" aria-label="Feature engineering, with TabPFN">
-        <span class="nav-page-text">Feature engineering, with TabPFN</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./FeatureEngineering.html" class="pagination-link" aria-label="Feature engineering">
+        <span class="nav-page-text">Feature engineering</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

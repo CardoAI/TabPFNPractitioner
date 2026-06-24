@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Missing values, with TabPFN – TabPFN Practitioner</title>
+<title>Missing values – TabPFN Practitioner</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -106,6 +106,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<style>
+#title-block-header .quarto-title .title {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+#title-block-header .quarto-title .title::before {
+  content: "";
+  flex: 0 0 auto;
+  width: clamp(2rem, 4vw, 3rem);
+  aspect-ratio: 34 / 21;
+  background-image: url("features_target_table_icon.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.92;
+}
+
+#TOC .nav-link {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+@media (max-width: 575.98px) {
+  #title-block-header .quarto-title .title {
+    align-items: flex-start;
+  }
+
+  #title-block-header .quarto-title .title::before {
+    width: 2rem;
+    margin-top: 0.1rem;
+  }
+}
+</style>
 
 
 </head>
@@ -147,7 +184,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Needs metadata</a></li><li class="breadcrumb-item"><a href="./MissingValues.html">Missing values, with TabPFN</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./MissingValues.html">Missing values</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -176,7 +213,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
- <span class="menu-text">Needs metadata</span></a>
+ <span class="menu-text">Notebooks</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -185,31 +222,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Categoricals.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">High-cardinality and categorical variables, with TabPFN</span></a>
+ <span class="menu-text">Categorical variables</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Correlation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Correlated variables, with TabPFN</span></a>
+ <span class="menu-text">Correlated variables</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./FeatureEngineering.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Feature engineering, with TabPFN</span></a>
+ <span class="menu-text">Feature engineering</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./MissingValues.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Missing values, with TabPFN</span></a>
+ <span class="menu-text">Missing values</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Parameters.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">TabPFN parameters, for a gradient-boosting practitioner</span></a>
+ <span class="menu-text">Inference parameters</span></a>
   </div>
 </li>
       </ul>
@@ -223,21 +260,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
    
-  <ul>
-  <li><a href="#how-we-usually-handle-missing-values" id="toc-how-we-usually-handle-missing-values" class="nav-link active" data-scroll-target="#how-we-usually-handle-missing-values">How we usually handle missing values</a></li>
-  <li><a href="#why-is-it-missing-mcar-mar-mnar" id="toc-why-is-it-missing-mcar-mar-mnar" class="nav-link" data-scroll-target="#why-is-it-missing-mcar-mar-mnar">Why is it missing? MCAR, MAR, MNAR</a></li>
-  <li><a href="#what-tabpfn-does" id="toc-what-tabpfn-does" class="nav-link" data-scroll-target="#what-tabpfn-does">What TabPFN does</a>
   <ul class="collapse">
-  <li><a href="#can-you-change-how-tabpfn-handles-missing-values" id="toc-can-you-change-how-tabpfn-handles-missing-values" class="nav-link" data-scroll-target="#can-you-change-how-tabpfn-handles-missing-values">Can you change how TabPFN handles missing values?</a></li>
-  </ul></li>
-  <li><a href="#do-the-classical-fills-even-matter" id="toc-do-the-classical-fills-even-matter" class="nav-link" data-scroll-target="#do-the-classical-fills-even-matter">Do the classical fills even matter?</a></li>
+  <li><a href="#classical-toolkit" id="toc-classical-toolkit" class="nav-link active" data-scroll-target="#classical-toolkit">Classical toolkit</a></li>
+  <li><a href="#missingness-mechanisms" id="toc-missingness-mechanisms" class="nav-link" data-scroll-target="#missingness-mechanisms">Missingness mechanisms</a></li>
+  <li><a href="#native-handling" id="toc-native-handling" class="nav-link" data-scroll-target="#native-handling">Native handling</a></li>
+  <li><a href="#classical-fills" id="toc-classical-fills" class="nav-link" data-scroll-target="#classical-fills">Classical fills</a></li>
   <li><a href="#the-toolkit-mostly-collapses" id="toc-the-toolkit-mostly-collapses" class="nav-link" data-scroll-target="#the-toolkit-mostly-collapses">The toolkit mostly collapses</a></li>
-  <li><a href="#where-it-actually-bites-the-failure-modesnative-nan-handling-has-a-catch-that-has-nothing-to-do-with-tabpfn.-a-gradient-boosting-model-learns-where-toroute-a-missing-value-from-the-missingness-it-saw-during-training.-two-ways-that-backfires-andthey-land-very-differently-for-tabpfn." id="toc-where-it-actually-bites-the-failure-modesnative-nan-handling-has-a-catch-that-has-nothing-to-do-with-tabpfn.-a-gradient-boosting-model-learns-where-toroute-a-missing-value-from-the-missingness-it-saw-during-training.-two-ways-that-backfires-andthey-land-very-differently-for-tabpfn." class="nav-link" data-scroll-target="#where-it-actually-bites-the-failure-modesnative-nan-handling-has-a-catch-that-has-nothing-to-do-with-tabpfn.-a-gradient-boosting-model-learns-where-toroute-a-missing-value-from-the-missingness-it-saw-during-training.-two-ways-that-backfires-andthey-land-very-differently-for-tabpfn.">Where it actually bites: the failure modesNative NaN handling has a catch that has nothing to do with TabPFN. A gradient-boosting model learns <em>where toroute a missing value</em> from the missingness it saw during training. Two ways that backfires, andthey land very differently for TabPFN.</a>
-  <ul class="collapse">
-  <li><a href="#the-vendor-trap-a-column-missing-only-at-inferencethe-classic-schema-or-vendor-feed-change-a-feature-was-never-missing-in-training-then-a-feeddrops-in-production.-the-models-routing-for-missing-was-never-learned.-below-the-test-setalways-has-30-of-x0-a-strong-predictor-missing-and-we-sweep-how-much-missingness-the-modelsaw-during-training." id="toc-the-vendor-trap-a-column-missing-only-at-inferencethe-classic-schema-or-vendor-feed-change-a-feature-was-never-missing-in-training-then-a-feeddrops-in-production.-the-models-routing-for-missing-was-never-learned.-below-the-test-setalways-has-30-of-x0-a-strong-predictor-missing-and-we-sweep-how-much-missingness-the-modelsaw-during-training." class="nav-link" data-scroll-target="#the-vendor-trap-a-column-missing-only-at-inferencethe-classic-schema-or-vendor-feed-change-a-feature-was-never-missing-in-training-then-a-feeddrops-in-production.-the-models-routing-for-missing-was-never-learned.-below-the-test-setalways-has-30-of-x0-a-strong-predictor-missing-and-we-sweep-how-much-missingness-the-modelsaw-during-training.">The vendor trap: a column missing only at inferenceThe classic schema or vendor-feed change: a feature was never missing in training, then a feeddrops in production. The model’s routing for “missing” was never learned. Below, the test setalways has 30% of <code>x0</code> (a strong predictor) missing, and we sweep how much missingness the modelsaw during training.</a></li>
-  <li><a href="#why-they-cliff-the-default-direction" id="toc-why-they-cliff-the-default-direction" class="nav-link" data-scroll-target="#why-they-cliff-the-default-direction">Why they cliff: the default direction</a></li>
-  <li><a href="#mechanism-shift-when-the-reason-changes" id="toc-mechanism-shift-when-the-reason-changes" class="nav-link" data-scroll-target="#mechanism-shift-when-the-reason-changes">Mechanism shift: when the reason changes</a></li>
-  </ul></li>
+  <li><a href="#failure-modesnative-nan-handling-has-a-catch-that-has-nothing-to-do-with-tabpfn.-a-gradient-boosting-model-learns-where-toroute-a-missing-value-from-the-missingness-it-saw-during-training.-two-ways-that-backfires-andthey-land-very-differently-for-tabpfn." id="toc-failure-modesnative-nan-handling-has-a-catch-that-has-nothing-to-do-with-tabpfn.-a-gradient-boosting-model-learns-where-toroute-a-missing-value-from-the-missingness-it-saw-during-training.-two-ways-that-backfires-andthey-land-very-differently-for-tabpfn." class="nav-link" data-scroll-target="#failure-modesnative-nan-handling-has-a-catch-that-has-nothing-to-do-with-tabpfn.-a-gradient-boosting-model-learns-where-toroute-a-missing-value-from-the-missingness-it-saw-during-training.-two-ways-that-backfires-andthey-land-very-differently-for-tabpfn.">Failure modesNative NaN handling has a catch that has nothing to do with TabPFN. A gradient-boosting model learns <em>where toroute a missing value</em> from the missingness it saw during training. Two ways that backfires, andthey land very differently for TabPFN.</a></li>
   <li><a href="#takeaways--tabpfn-does-mean-impute-plus-indicator-by-default-so-most-of-the-classical-missing-value-toolkit-is-redundant-for-it-native-mean-fill-sentinel-and-hand-built-indicators-all-land-within-noise.--the-one-survivor-is-model-based-imputation-of-a-genuinely-complex-recoverable-column-where-tabpfns-internal-reconstruction-hits-a-complexity-ceiling.--the-vendor-trap-a-column-missing-only-at-inference-is-where-tabpfn-clearly-wins-flat-while-the-gradient-boosting-models-cliff.--mechanism-shift-is-the-honest-limit-a-changing-missingness-rule-fools-tabpfn-as-much-as-anyone-so-you-monitor-it.--one-thread-we-leave-for-the-correlation-chapter-when-several-columns-go-missing-together-the-missingness-pattern-is-itself-a-correlated-signal.-the-per-feature-indicator-channel-above-puts-that-joint-pattern-in-front-of-attention-for-free-while-a-gradient-boosting-model-needs-you-to-add-the-indicators-by-hand.-whether-that-gap-is-real-and-how-deep-the-co-missingness-has-to-go-before-it-shows-up-we-test-there.the-throughline-native-handling-models-the-routing-of-missingness-learned-from-training.-tabpfnsprior-covers-the-routing-you-never-saw-but-neither-covers-a-routing-that-changes-underneath-you." id="toc-takeaways--tabpfn-does-mean-impute-plus-indicator-by-default-so-most-of-the-classical-missing-value-toolkit-is-redundant-for-it-native-mean-fill-sentinel-and-hand-built-indicators-all-land-within-noise.--the-one-survivor-is-model-based-imputation-of-a-genuinely-complex-recoverable-column-where-tabpfns-internal-reconstruction-hits-a-complexity-ceiling.--the-vendor-trap-a-column-missing-only-at-inference-is-where-tabpfn-clearly-wins-flat-while-the-gradient-boosting-models-cliff.--mechanism-shift-is-the-honest-limit-a-changing-missingness-rule-fools-tabpfn-as-much-as-anyone-so-you-monitor-it.--one-thread-we-leave-for-the-correlation-chapter-when-several-columns-go-missing-together-the-missingness-pattern-is-itself-a-correlated-signal.-the-per-feature-indicator-channel-above-puts-that-joint-pattern-in-front-of-attention-for-free-while-a-gradient-boosting-model-needs-you-to-add-the-indicators-by-hand.-whether-that-gap-is-real-and-how-deep-the-co-missingness-has-to-go-before-it-shows-up-we-test-there.the-throughline-native-handling-models-the-routing-of-missingness-learned-from-training.-tabpfnsprior-covers-the-routing-you-never-saw-but-neither-covers-a-routing-that-changes-underneath-you." class="nav-link" data-scroll-target="#takeaways--tabpfn-does-mean-impute-plus-indicator-by-default-so-most-of-the-classical-missing-value-toolkit-is-redundant-for-it-native-mean-fill-sentinel-and-hand-built-indicators-all-land-within-noise.--the-one-survivor-is-model-based-imputation-of-a-genuinely-complex-recoverable-column-where-tabpfns-internal-reconstruction-hits-a-complexity-ceiling.--the-vendor-trap-a-column-missing-only-at-inference-is-where-tabpfn-clearly-wins-flat-while-the-gradient-boosting-models-cliff.--mechanism-shift-is-the-honest-limit-a-changing-missingness-rule-fools-tabpfn-as-much-as-anyone-so-you-monitor-it.--one-thread-we-leave-for-the-correlation-chapter-when-several-columns-go-missing-together-the-missingness-pattern-is-itself-a-correlated-signal.-the-per-feature-indicator-channel-above-puts-that-joint-pattern-in-front-of-attention-for-free-while-a-gradient-boosting-model-needs-you-to-add-the-indicators-by-hand.-whether-that-gap-is-real-and-how-deep-the-co-missingness-has-to-go-before-it-shows-up-we-test-there.the-throughline-native-handling-models-the-routing-of-missingness-learned-from-training.-tabpfnsprior-covers-the-routing-you-never-saw-but-neither-covers-a-routing-that-changes-underneath-you.">Takeaways- TabPFN does mean-impute-plus-indicator by default, so most of the classical missing-value toolkit is redundant for it: native, mean-fill, sentinel, and hand-built indicators all land within noise.- The one survivor is <strong>model-based imputation of a genuinely complex recoverable column</strong>, where TabPFN’s internal reconstruction hits a complexity ceiling.- The <strong>vendor trap</strong> (a column missing only at inference) is where TabPFN clearly wins: flat, while the gradient-boosting models cliff.- <strong>Mechanism shift</strong> is the honest limit: a changing missingness rule fools TabPFN as much as anyone, so you monitor it.- One thread we leave for the <strong>Correlation</strong> chapter: when several columns go missing <em>together</em>, the missingness pattern is itself a correlated signal. The per-feature indicator channel above puts that joint pattern in front of attention for free, while a gradient-boosting model needs you to add the indicators by hand. Whether that gap is real, and how deep the co-missingness has to go before it shows up, we test there.The throughline: native handling models the <em>routing</em> of missingness learned from training. TabPFN’sprior covers the routing you never saw, but neither covers a routing that changes underneath you.</a></li>
   </ul>
 </nav>
@@ -245,9 +274,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Needs metadata</a></li><li class="breadcrumb-item"><a href="./MissingValues.html">Missing values, with TabPFN</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Categoricals.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./MissingValues.html">Missing values</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Missing values, with TabPFN</h1>
+<h1 class="title">Missing values</h1>
 </div>
 
 
@@ -313,8 +342,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<section id="how-we-usually-handle-missing-values" class="level2">
-<h2 class="anchored" data-anchor-id="how-we-usually-handle-missing-values">How we usually handle missing values</h2>
+<section id="classical-toolkit" class="level2">
+<h2 class="anchored" data-anchor-id="classical-toolkit">Classical toolkit</h2>
 <p>The classical toolkit, in rough order of effort:</p>
 <ul>
 <li><strong>Drop</strong> rows or columns when the gaps are few and uninformative.</li>
@@ -326,8 +355,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>Which one you reach for depends on the model, and on <em>why</em> the value is missing (MCAR, MAR, MNAR).</p>
 </section>
-<section id="why-is-it-missing-mcar-mar-mnar" class="level2">
-<h2 class="anchored" data-anchor-id="why-is-it-missing-mcar-mar-mnar">Why is it missing? MCAR, MAR, MNAR</h2>
+<section id="missingness-mechanisms" class="level2">
+<h2 class="anchored" data-anchor-id="missingness-mechanisms">Missingness mechanisms</h2>
 <p>Before choosing a fix, the textbook asks <em>why</em> a value is missing, because that decides whether the gap is noise or signal:</p>
 <ul>
 <li><strong>MCAR (Missing Completely At Random).</strong> No pattern at all, e.g.&nbsp;a sensor that randomly drops readings. That a value is missing tells you nothing.</li>
@@ -371,8 +400,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>MCAR’s indicator is uninformative (~0); under MAR and MNAR the missing-flag correlates with the label. The difference between those two: MAR’s signal is recoverable from <code>other</code> (a column you still observe), while MNAR’s lives in the value you can no longer see. That distinction is exactly where an indicator earns or wastes its place.</p>
 </section>
-<section id="what-tabpfn-does" class="level2">
-<h2 class="anchored" data-anchor-id="what-tabpfn-does">What TabPFN does</h2>
+<section id="native-handling" class="level2">
+<h2 class="anchored" data-anchor-id="native-handling">Native handling</h2>
 <p>Leave the NaNs in. Inside the model, before the forward pass, every missing cell is (1) filled with that feature’s <strong>mean over the training rows</strong>, and (2) recorded in a <strong>per-feature missing-indicator channel</strong> that the network reads. So TabPFN performs <em>mean-impute-plus-indicator</em> by default, the move strong neural baselines do by hand. Most of the checklist above is already inside the model. The rest of this notebook asks: which parts does that make redundant, and where does the toolkit still earn its keep?</p>
 <div id="c07" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:24:31.740750Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:24:31.740581Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:24:36.246089Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:24:36.245332Z&quot;}}" data-execution_count="3">
 <details class="code-fold">
@@ -425,8 +454,8 @@ inference_config fields that control feature imputation: none</code></pre>
 </div>
 </section>
 </section>
-<section id="do-the-classical-fills-even-matter" class="level2">
-<h2 class="anchored" data-anchor-id="do-the-classical-fills-even-matter">Do the classical fills even matter?</h2>
+<section id="classical-fills" class="level2">
+<h2 class="anchored" data-anchor-id="classical-fills">Classical fills</h2>
 <p>A useful numeric column <code>a</code> is 40% missing (completely at random), and it varies by an observed segment <code>seg</code> (think product or region). We try the classical fills, mean, median, an out-of-range sentinel, a segment-wise mean, and mean-plus-indicator, against just leaving the NaN in. (Mode is the same idea for a categorical column: fill with the most frequent level.) How much does the choice move each model?</p>
 <div id="c11" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:24:36.995162Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:24:36.994972Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:24:37.001494Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:24:37.000907Z&quot;}}" data-execution_count="5">
 <details class="code-fold">
@@ -915,8 +944,8 @@ Linear: 100%|██████████████████████�
 </div>
 <p>Now model-based imputation helps TabPFN and RandomForest as well, not just the linear model. And notice that <code>native</code> TabPFN sits clearly below the <code>oracle</code>: even with every source column present, it cannot fully rebuild a hard column in one forward pass. <strong>TabPFN’s internal reconstruction has a complexity ceiling.</strong> For a genuinely complex recoverable column, explicit model-based imputation still earns its keep. That is the one real survivor of the classical toolkit.</p>
 </section>
-<section id="where-it-actually-bites-the-failure-modesnative-nan-handling-has-a-catch-that-has-nothing-to-do-with-tabpfn.-a-gradient-boosting-model-learns-where-toroute-a-missing-value-from-the-missingness-it-saw-during-training.-two-ways-that-backfires-andthey-land-very-differently-for-tabpfn." class="level2">
-<h2 class="anchored" data-anchor-id="where-it-actually-bites-the-failure-modesnative-nan-handling-has-a-catch-that-has-nothing-to-do-with-tabpfn.-a-gradient-boosting-model-learns-where-toroute-a-missing-value-from-the-missingness-it-saw-during-training.-two-ways-that-backfires-andthey-land-very-differently-for-tabpfn.">Where it actually bites: the failure modesNative NaN handling has a catch that has nothing to do with TabPFN. A gradient-boosting model learns <em>where toroute a missing value</em> from the missingness it saw during training. Two ways that backfires, andthey land very differently for TabPFN.</h2>
+<section id="failure-modesnative-nan-handling-has-a-catch-that-has-nothing-to-do-with-tabpfn.-a-gradient-boosting-model-learns-where-toroute-a-missing-value-from-the-missingness-it-saw-during-training.-two-ways-that-backfires-andthey-land-very-differently-for-tabpfn." class="level2">
+<h2 class="anchored" data-anchor-id="failure-modesnative-nan-handling-has-a-catch-that-has-nothing-to-do-with-tabpfn.-a-gradient-boosting-model-learns-where-toroute-a-missing-value-from-the-missingness-it-saw-during-training.-two-ways-that-backfires-andthey-land-very-differently-for-tabpfn.">Failure modesNative NaN handling has a catch that has nothing to do with TabPFN. A gradient-boosting model learns <em>where toroute a missing value</em> from the missingness it saw during training. Two ways that backfires, andthey land very differently for TabPFN.</h2>
 <section id="the-vendor-trap-a-column-missing-only-at-inferencethe-classic-schema-or-vendor-feed-change-a-feature-was-never-missing-in-training-then-a-feeddrops-in-production.-the-models-routing-for-missing-was-never-learned.-below-the-test-setalways-has-30-of-x0-a-strong-predictor-missing-and-we-sweep-how-much-missingness-the-modelsaw-during-training." class="level3">
 <h3 class="anchored" data-anchor-id="the-vendor-trap-a-column-missing-only-at-inferencethe-classic-schema-or-vendor-feed-change-a-feature-was-never-missing-in-training-then-a-feeddrops-in-production.-the-models-routing-for-missing-was-never-learned.-below-the-test-setalways-has-30-of-x0-a-strong-predictor-missing-and-we-sweep-how-much-missingness-the-modelsaw-during-training.">The vendor trap: a column missing only at inferenceThe classic schema or vendor-feed change: a feature was never missing in training, then a feeddrops in production. The model’s routing for “missing” was never learned. Below, the test setalways has 30% of <code>x0</code> (a strong predictor) missing, and we sweep how much missingness the modelsaw during training.</h3>
 <div id="c24" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-23T12:26:35.324274Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-23T12:26:35.323956Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-23T12:27:05.706767Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-23T12:27:05.705339Z&quot;}}" data-execution_count="13">
@@ -1695,13 +1724,13 @@ Same table, relative to the stable rule (the collapse when the rule flips):
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./FeatureEngineering.html" class="pagination-link" aria-label="Feature engineering, with TabPFN">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Feature engineering, with TabPFN</span>
+      <a href="./FeatureEngineering.html" class="pagination-link" aria-label="Feature engineering">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Feature engineering</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./Parameters.html" class="pagination-link" aria-label="TabPFN parameters, for a gradient-boosting practitioner">
-        <span class="nav-page-text">TabPFN parameters, for a gradient-boosting practitioner</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./Parameters.html" class="pagination-link" aria-label="Inference parameters">
+        <span class="nav-page-text">Inference parameters</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
