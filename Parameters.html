@@ -771,7 +771,7 @@ n_estimators=16: 3.42s</code></pre>
 <li><strong>default</strong> (the two-recipe menu): saturates by 2 to 4.</li>
 <li><strong>wider menu</strong> (six recipes): keeps climbing past where the default flattens, to about 16.</li>
 </ul>
-<p>So the saturation point is not a law; it tracks how diverse the views are. The wider menu pays off most where the default’s own recipe fits the data poorly: on diabetes <code>squashing+SVD</code> is the weakest single recipe and the added ones beat it, so averaging them in lifts AUC; on synthetic and blood-transfusion it is already fine, so little is gained. Rule of thumb: 8 is a safe default <em>for the default menu</em>, a richer menu rewards more estimators, and no diversity wastes them. (Clearest on diabetes; blood-transfusion is too small and noisy to read.)</p>
+<p>So the saturation point is not a law; it tracks how diverse the views are. That diversity is two things at once, the recipe menu and the per-estimator column shuffle, so the climb you see reflects both, not the menu alone. The wider menu pays off most where the default’s own recipe fits the data poorly: on diabetes <code>squashing+SVD</code> is the weakest single recipe and the added ones beat it, so averaging them in lifts AUC; on synthetic and blood-transfusion it is already fine, so little is gained. Rule of thumb: 8 is a safe default <em>for the default menu</em>, a richer menu rewards more estimators, and no diversity wastes them. (Clearest on diabetes; blood-transfusion is too small and noisy to read.)</p>
 </section>
 <section id="what-each-view-does-inference_config" class="level3">
 <h3 class="anchored" data-anchor-id="what-each-view-does-inference_config">What each view does: inference_config</h3>
@@ -1048,7 +1048,7 @@ row subsample to 0.5  -0.0001  0.0057 -0.0324 -0.0040</code></pre>
 </div>
 <p>Four metrics, one knob flipped from its default, averaged over the four datasets. <code>dAUC</code>, <code>dAUPRC</code>, <code>dF1</code> higher is better; <code>dECE</code> higher means worse calibration.</p>
 <ul>
-<li><strong>Ranking (AUC, AUPRC) barely moves for any knob</strong> (all under 0.006): TabPFN’s accuracy is robust to its own preprocessing.</li>
+<li><strong>Ranking (AUC, AUPRC) barely moves for any knob</strong> (all under 0.006): the preprocessing choice leaves TabPFN’s accuracy essentially unchanged.</li>
 <li><strong>The decision and the calibration move more.</strong> <code>row subsample to 0.5</code> leaves ranking flat but drops <strong>F1 by about 0.03</strong>: halving the context shifts where a 0.5 cutoff lands, not the ranking. <code>numeric transform off</code> hardly touches AUC but is the worst for <strong>calibration</strong> (<code>dECE</code> +0.008), dropping the scaler leaves the probabilities less calibrated.</li>
 <li><strong><code>outlier clip off</code> is inert</strong> (all zeros): the squashing and quantile transforms already bound the data inside 12σ.</li>
 </ul>
