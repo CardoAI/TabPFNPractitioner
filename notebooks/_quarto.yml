@@ -4,6 +4,8 @@ metadata-files:
 project:
   type: website
   output-dir: _site
+  resources:
+    - features_target_table_icon.png
   pre-render: scripts/build_sidebar.py
   render:
     - "*.qmd"
@@ -43,10 +45,13 @@ format:
       - cosmo
       - styles/theme.scss
     toc: true
+    toc-depth: 2
     code-fold: true
     code-summary: "Show code"
     code-copy: true
     code-overflow: wrap
+    include-in-header:
+      - includes/page-header-icon.html
     include-after-body:
       - includes/counterfactual-toggle.html
     link-external-newwindow: true

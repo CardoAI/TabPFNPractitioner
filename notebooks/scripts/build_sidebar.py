@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build Quarto sidebar metadata from notebook front matter."""
+"""Build Quarto sidebar grouping from notebook front matter when present."""
 
 from __future__ import annotations
 
@@ -14,7 +14,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 NAV_PATH = ROOT / "_site-nav.yml"
 IGNORED_PARTS = {".ipynb_checkpoints", ".quarto", "_site", "_freeze"}
-REQUIRED_KEYS = ("title", "section", "section-order")
+DEFAULT_SECTION = "Notebooks"
+REQUIRED_KEYS: tuple[str, ...] = ()
 STATIC_PAGES = ("index.qmd",)
 
 
@@ -33,7 +34,7 @@ class NotebookPage:
         value = self.metadata.get("section")
         if isinstance(value, str) and value.strip():
             return value.strip()
-        return "Needs metadata"
+        return DEFAULT_SECTION
 
     @property
     def section_order(self) -> float:
@@ -177,7 +178,7 @@ def build_nav(pages: list[NotebookPage]) -> str:
     for page in STATIC_PAGES:
         lines.append(f"      - {page}")
 
-    for section in sorted(groups, key=lambda item: (section_orders[item], item == "Needs metadata", item)):
+    for section in sorted(groups, key=lambda item: (section_orders[item], item == DEFAULT_SECTION, item)):
         lines.append(f"      - section: {yaml_quote(section)}")
         lines.append("        contents:")
         for page in sorted(groups[section], key=lambda item: (item.order, item.rel)):
