@@ -2,10 +2,6 @@
   {
     "listing": "/index.html",
     "items": [
-      "/Categoricals.html",
-      "/Correlation.html",
-      "/FeatureEngineering.html",
-      "/MissingValues.html",
       "/Parameters.html"
     ]
   }
