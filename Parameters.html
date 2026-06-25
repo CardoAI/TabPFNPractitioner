@@ -757,12 +757,7 @@ n_estimators=16: 3.49s</code></pre>
 <span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
-<pre><code>
-n_estimators x config:   0%|                                      | 0/3 [00:00&lt;?, ?it/s]
-n_estimators x config:  33%|██████████                    | 1/3 [00:58&lt;01:57, 58.84s/it]
-n_estimators x config:  67%|████████████████████          | 2/3 [01:26&lt;00:40, 40.72s/it]
-n_estimators x config: 100%|██████████████████████████████| 3/3 [01:54&lt;00:00, 34.81s/it]
-n_estimators x config: 100%|██████████████████████████████| 3/3 [01:54&lt;00:00, 38.22s/it]</code></pre>
+<pre><code></code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div>
@@ -791,26 +786,35 @@ n_estimators x config: 100%|█████████████████�
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>sample <span class="op">=</span> pd.DataFrame(np.random.RandomState(<span class="dv">0</span>).randn(<span class="dv">200</span>, <span class="dv">5</span>), columns<span class="op">=</span><span class="bu">list</span>(<span class="st">"abcde"</span>))</span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>sample_label <span class="op">=</span> (sample[<span class="st">"a"</span>] <span class="op">&gt;</span> <span class="dv">0</span>).astype(<span class="bu">int</span>)</span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>default_model <span class="op">=</span> TabPFNClassifier(n_estimators<span class="op">=</span><span class="dv">2</span>, random_state<span class="op">=</span><span class="dv">0</span>).fit(sample, sample_label)</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Default preprocessing pipeline (TabPFN draws from these across estimators):"</span>)</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> transform <span class="kw">in</span> default_model.inference_config_.PREPROCESS_TRANSFORMS:</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"  "</span>, transform)</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>custom_model <span class="op">=</span> TabPFNClassifier(</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    n_estimators<span class="op">=</span><span class="dv">2</span>, random_state<span class="op">=</span><span class="dv">0</span>,</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    inference_config<span class="op">=</span>{<span class="st">"PREPROCESS_TRANSFORMS"</span>: [PreprocessorConfig(name<span class="op">=</span><span class="st">"quantile_uni_coarse"</span>)]},</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>).fit(sample, sample_label)</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Overridden to a single quantile transform:"</span>)</span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> transform <span class="kw">in</span> custom_model.inference_config_.PREPROCESS_TRANSFORMS:</span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"  "</span>, transform)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> describe_recipe(t):</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""One readable line per PreprocessorConfig: labeled fields instead of the run-on __str__."""</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    parts <span class="op">=</span> [<span class="ss">f"name=</span><span class="sc">{</span>t<span class="sc">.</span>name<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>             <span class="ss">f"categorical=</span><span class="sc">{</span>t<span class="sc">.</span>categorical_name<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>             <span class="ss">f"max_features/est=</span><span class="sc">{</span>t<span class="sc">.</span>max_features_per_estimator<span class="sc">}</span><span class="ss">"</span>]</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> t.global_transformer_name <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        parts.append(<span class="ss">f"global_transformer=</span><span class="sc">{</span>t<span class="sc">.</span>global_transformer_name<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">"  |  "</span>.join(parts)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>default_model <span class="op">=</span> TabPFNClassifier(n_estimators<span class="op">=</span><span class="dv">2</span>, random_state<span class="op">=</span><span class="dv">0</span>).fit(sample, sample_label)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Default preprocessing pipeline (TabPFN draws from these across estimators):"</span>)</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, transform <span class="kw">in</span> <span class="bu">enumerate</span>(default_model.inference_config_.PREPROCESS_TRANSFORMS, <span class="dv">1</span>):</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  recipe </span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>describe_recipe(transform)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>custom_model <span class="op">=</span> TabPFNClassifier(</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    n_estimators<span class="op">=</span><span class="dv">2</span>, random_state<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    inference_config<span class="op">=</span>{<span class="st">"PREPROCESS_TRANSFORMS"</span>: [PreprocessorConfig(name<span class="op">=</span><span class="st">"quantile_uni_coarse"</span>)]},</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>).fit(sample, sample_label)</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Overridden to a single quantile transform:"</span>)</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, transform <span class="kw">in</span> <span class="bu">enumerate</span>(custom_model.inference_config_.PREPROCESS_TRANSFORMS, <span class="dv">1</span>):</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  recipe </span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>describe_recipe(transform)<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Default preprocessing pipeline (TabPFN draws from these across estimators):
-   squashing_scaler_default_cat:ordinal_very_common_categories_shuffled_max_feats_per_est_200_global_transformer_svd_quarter_components
-   quantile_uni_cat:numeric_max_feats_per_est_200
+  recipe 1: name=squashing_scaler_default  |  categorical=ordinal_very_common_categories_shuffled  |  max_features/est=200  |  global_transformer=svd_quarter_components
+  recipe 2: name=quantile_uni  |  categorical=numeric  |  max_features/est=200
 
 Overridden to a single quantile transform:
-   quantile_uni_coarse_cat:none_max_feats_per_est_500</code></pre>
+  recipe 1: name=quantile_uni_coarse  |  categorical=none  |  max_features/est=500</code></pre>
 </div>
 </div>
 <p>So <code>inference_config</code> either replaces the menu outright (above) or overrides one setting: the outlier-clip width, the categorical-detection thresholds, and so on. Keys are validated, an unknown one raises rather than failing silently. Rarely touched in practice; it is the hook the scaling and categorical chapters use.</p>
@@ -1061,12 +1065,7 @@ default config, CLASS_SHIFT_METHOD=None     -&gt; AUC=0.8574</code></pre>
 <span id="cb17-52"><a href="#cb17-52" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
-<pre><code>
-scaling:   0%|                                                    | 0/3 [00:00&lt;?, ?it/s]
-scaling:  33%|██████████████▎                            | 1/3 [02:18&lt;04:36, 138.15s/it]
-scaling:  67%|█████████████████████████████▎              | 2/3 [02:22&lt;00:59, 59.47s/it]
-scaling: 100%|████████████████████████████████████████████| 3/3 [02:26&lt;00:00, 34.32s/it]
-scaling: 100%|████████████████████████████████████████████| 3/3 [02:26&lt;00:00, 48.98s/it]</code></pre>
+<pre><code></code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>             LogReg  RandomForest  HistGBM  TabPFN
@@ -1141,13 +1140,7 @@ TabPFN          0.0006</code></pre>
 <span id="cb20-45"><a href="#cb20-45" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(sweep.to_string())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
-<pre><code>
-knob sweep:   0%|                                                 | 0/4 [00:00&lt;?, ?it/s]
-knob sweep:  25%|██████████▎                              | 1/4 [00:21&lt;01:03, 21.28s/it]
-knob sweep:  50%|████████████████████▌                    | 2/4 [00:32&lt;00:30, 15.08s/it]
-knob sweep:  75%|██████████████████████████████▊          | 3/4 [00:42&lt;00:13, 13.05s/it]
-knob sweep: 100%|█████████████████████████████████████████| 4/4 [00:53&lt;00:00, 12.10s/it]
-knob sweep: 100%|█████████████████████████████████████████| 4/4 [00:53&lt;00:00, 13.32s/it]</code></pre>
+<pre><code></code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Change in each metric when a knob is flipped from default, averaged over 4 datasets.
@@ -1214,16 +1207,7 @@ row subsample to 0.5  -0.0001  0.0057 -0.0324 -0.0040</code></pre>
 <span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a>ax.legend(fontsize<span class="op">=</span><span class="dv">9</span>)<span class="op">;</span> fig.tight_layout()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stderr">
-<pre><code>
-subsample:   0%|                                                  | 0/7 [00:00&lt;?, ?it/s]
-subsample:  14%|██████                                    | 1/7 [00:01&lt;00:07,  1.21s/it]
-subsample:  29%|████████████                              | 2/7 [00:02&lt;00:05,  1.19s/it]
-subsample:  43%|██████████████████                        | 3/7 [00:03&lt;00:05,  1.28s/it]
-subsample:  57%|████████████████████████                  | 4/7 [00:05&lt;00:04,  1.34s/it]
-subsample:  71%|██████████████████████████████            | 5/7 [00:06&lt;00:02,  1.43s/it]
-subsample:  86%|████████████████████████████████████      | 6/7 [00:08&lt;00:01,  1.56s/it]
-subsample: 100%|██████████████████████████████████████████| 7/7 [00:10&lt;00:00,  1.74s/it]
-subsample: 100%|██████████████████████████████████████████| 7/7 [00:10&lt;00:00,  1.53s/it]</code></pre>
+<pre><code></code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>          context_rows     AUC  F1@0.5     ECE
