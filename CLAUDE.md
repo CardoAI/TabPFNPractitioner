@@ -31,6 +31,11 @@ sequenced last.
 - Verify before claiming: run the cell, never assert a result from intuition, no fabricated numbers.
 - Do not draw strong conclusions from a single dataset. Prefer results that are structural (true by
   construction) or shown across several settings, and caveat what is dataset-dependent.
+- Interpretable conclusions over measurements. A result is not finished at "the parameter moves the
+  output"; state which way it moves, the mechanism, and when to reach for it, anchored to the
+  gradient-boosting knob the reader already understands (`max_depth`, `learning_rate`, `scale_pos_weight`).
+  "It barely moves" becomes a conclusion only when paired with the regime where it would bite. The
+  `notebook-teaching` skill has the full version.
 - Each notebook should run top to bottom and be easy to excerpt for a post.
 
 ## How we work
