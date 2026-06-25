@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 
 ROOT = Path(__file__).resolve().parents[1]
 NAV_PATH = ROOT / "_site-nav.yml"
@@ -118,10 +120,25 @@ def warn(path: Path, message: str) -> None:
     print(f"::warning file={rel}::{message}", file=sys.stderr)
 
 
+def load_draft_names() -> set[str]:
+    """Notebooks held back from publishing. Single source of truth: website.drafts in _quarto.yml.
+    To publish a notebook, delete its line there; it then reappears in the sidebar automatically."""
+    config_path = ROOT / "_quarto.yml"
+    try:
+        config = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+    except (OSError, yaml.YAMLError):
+        return set()
+    drafts = (config.get("website") or {}).get("drafts") or []
+    return {Path(entry).name for entry in drafts}
+
+
 def read_notebooks() -> list[NotebookPage]:
+    draft_names = load_draft_names()
     pages: list[NotebookPage] = []
     for path in sorted(ROOT.rglob("*.ipynb")):
         if not is_notebook_path(path.relative_to(ROOT)):
+            continue
+        if path.name in draft_names:
             continue
         with path.open(encoding="utf-8") as handle:
             notebook = json.load(handle)

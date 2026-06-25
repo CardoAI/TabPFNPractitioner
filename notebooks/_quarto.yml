@@ -26,6 +26,16 @@ website:
   repo-subdir: "notebooks"
   page-navigation: true
   bread-crumbs: true
+  # Staged rollout: notebooks listed here stay unpublished (blank page, omitted from nav,
+  # listing, search, sitemap) until they are ready. To publish one, delete its line.
+  # scripts/build_sidebar.py reads this same list, so the sidebar stays in sync.
+  drafts:
+    - Categoricals.ipynb
+    - Correlation.ipynb
+    - Explo.ipynb
+    - FeatureEngineering.ipynb
+    - MissingValues.ipynb
+  draft-mode: gone
   search:
     location: sidebar
     type: textbox
