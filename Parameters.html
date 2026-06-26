@@ -259,7 +259,8 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#parameter-map" id="toc-parameter-map" class="nav-link active" data-scroll-target="#parameter-map">Parameter map</a></li>
+  <li><a href="#whats-in-here" id="toc-whats-in-here" class="nav-link active" data-scroll-target="#whats-in-here">What’s in here</a></li>
+  <li><a href="#parameter-map" id="toc-parameter-map" class="nav-link" data-scroll-target="#parameter-map">Parameter map</a></li>
   <li><a href="#how-the-preprocessing-builds-its-views" id="toc-how-the-preprocessing-builds-its-views" class="nav-link" data-scroll-target="#how-the-preprocessing-builds-its-views">How the preprocessing builds its views</a></li>
   <li><a href="#what-the-knobs-do-to-the-output" id="toc-what-the-knobs-do-to-the-output" class="nav-link" data-scroll-target="#what-the-knobs-do-to-the-output">What the knobs do to the output</a></li>
   <li><a href="#calibration-knobs" id="toc-calibration-knobs" class="nav-link" data-scroll-target="#calibration-knobs">Calibration knobs</a></li>
@@ -300,7 +301,19 @@ window.Quarto = {
 <p>With a gradient-boosting model you spend real effort searching hyperparameters: tree depth, learning rate, number of trees, number of leaves, minimum number of instances in leaf, subsample, column sample, regularization. With TabPFN that search is gone. The model is <strong>pretrained</strong>, its weights are fixed, and there is no train-time fit to tune. What is left is a short list of <strong>inference settings</strong>, and the defaults are strong.</p>
 <p>This notebook tours them, measures the few that actually move the needle, and shows how to inspect what TabPFN inferred about your data.</p>
 <p>Where the actual “search” really happens is in the context creation, but this is not covered here.</p>
-<div id="c01" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:32:30.291641Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:32:30.291460Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:32:41.734054Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:32:41.733311Z&quot;}}" data-execution_count="1">
+<section id="whats-in-here" class="level2">
+<h2 class="anchored" data-anchor-id="whats-in-here">What’s in here</h2>
+<p>A map of the notebook, in reading order:</p>
+<ol type="1">
+<li><strong>Parameter map</strong>: every inference setting at a glance, with its default and when to touch it.</li>
+<li><strong>How the preprocessing builds its views</strong>: the one mechanism behind TabPFN’s “ensemble”, the same network reading several differently preprocessed copies of your data, plus the transform menu and how to drive it yourself.</li>
+<li><strong>What the knobs do to the output</strong>: the measured half. How many views you need (<code>n_estimators</code>), what keeps them diverse, which knobs move the ranking versus the calibration, and how shrinking the context behaves.</li>
+<li><strong>Calibration knobs</strong>: <code>balance_probabilities</code> and <code>softmax_temperature</code>, the two that move a fixed-threshold decision without touching the ranking.</li>
+<li><strong>Speed and memory</strong>: <code>fit_mode</code> and the caching knobs, the same predictions at different time and memory cost.</li>
+<li><strong>Inferred settings</strong>: reading back what TabPFN decided about your data, and the checkpoint limits.</li>
+<li><strong>Other knobs</strong>, then the <strong>Takeaways</strong>.</li>
+</ol>
+<div id="c01" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:12:45.202620Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:12:45.202428Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:12:57.107154Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:12:57.106355Z&quot;}}" data-execution_count="1">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
@@ -359,6 +372,7 @@ window.Quarto = {
 <span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> calibration_gap</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
+</section>
 <section id="parameter-map" class="level2">
 <h2 class="anchored" data-anchor-id="parameter-map">Parameter map</h2>
 <p>Every TabPFN inference setting, with its default and when you would reach for it:</p>
@@ -486,7 +500,7 @@ window.Quarto = {
 <section id="each-estimator-sees-a-different-view" class="level3">
 <h3 class="anchored" data-anchor-id="each-estimator-sees-a-different-view">Each estimator sees a different view</h3>
 <p>After <code>.fit()</code>, each estimator is a <code>TabPFNEnsembleMember</code> in <code>clf.executor_.ensemble_members</code> with its own recipe and fitted pipeline. The cell below reads them off a default 8-estimator model.</p>
-<div id="preprocinspect" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:32:41.736752Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:32:41.736346Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:32:42.971616Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:32:42.970666Z&quot;}}" data-scrolled="true" data-execution_count="2">
+<div id="preprocinspect" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:12:57.109390Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:12:57.108995Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:12:58.399054Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:12:58.398266Z&quot;}}" data-scrolled="true" data-execution_count="2">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect the ensemble TabPFN actually built. After .fit(), each estimator is a TabPFNEnsembleMember on</span></span>
@@ -561,13 +575,13 @@ fitted steps (the same three for every estimator): ['RemoveConstantFeaturesStep'
 <p>Then every estimator runs the same 3 fitted steps: drop-constant-columns <span class="math inline">\(\to\)</span> reshape-distributions <span class="math inline">\(\to\)</span> encode-categoricals.</p>
 <p>Every dataset in this notebook is numeric, so the categorical setting has no columns to act on here; the recipe name still prints in the config above.</p>
 <p>The eight are not copies. How much do their predictions differ, and does sharing a recipe matter? The next cell reads each estimator’s probabilities separately.</p>
-<div id="preprocviz" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:32:42.973571Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:32:42.973367Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:32:47.321677Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:32:47.320758Z&quot;}}" data-execution_count="3">
+<div id="preprocviz" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:12:58.400815Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:12:58.400629Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:13:02.556020Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:13:02.555304Z&quot;}}" data-execution_count="3">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># How much do the per-estimator predictions actually differ, and does sharing a recipe matter? We read</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># every estimator's P(class 1) off the same fitted model and look two ways: a scatter of a same-recipe pair</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># against a different-recipe pair, and, for the rows the estimators disagree on most, the eight predictions</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># behind each averaged one.</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># every estimator's P(class 1) off the same fitted model and look two ways, as two separate figures: a</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># scatter of a same-recipe pair against a different-recipe pair, and, for the rows the estimators disagree</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># on most, the eight predictions behind each averaged one.</span></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> per_estimator_positive_proba(model, X):</span>
@@ -579,37 +593,38 @@ fitted steps (the same three for every estimator): ['RemoveConstantFeaturesStep'
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>recipe_names <span class="op">=</span> [member.config.preprocess_config.name <span class="cf">for</span> member <span class="kw">in</span> inspect_model.executor_.ensemble_members]</span>
 <span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>is_quantile <span class="op">=</span> np.array([<span class="st">"quantile"</span> <span class="kw">in</span> name <span class="cf">for</span> name <span class="kw">in</span> recipe_names])</span>
 <span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">13</span>, <span class="fl">5.4</span>))</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>same_diff <span class="op">=</span> np.<span class="bu">abs</span>(proba[<span class="dv">0</span>] <span class="op">-</span> proba[<span class="dv">1</span>]).mean()</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>cross_diff <span class="op">=</span> np.<span class="bu">abs</span>(proba[<span class="dv">0</span>] <span class="op">-</span> proba[<span class="dv">4</span>]).mean()</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].scatter(proba[<span class="dv">0</span>], proba[<span class="dv">1</span>], s<span class="op">=</span><span class="dv">7</span>, alpha<span class="op">=</span><span class="fl">0.30</span>, color<span class="op">=</span><span class="st">"#1f77b4"</span>,</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>              label<span class="op">=</span><span class="ss">f"est0 vs est1, same recipe (mean |diff| </span><span class="sc">{</span>same_diff<span class="sc">:.3f}</span><span class="ss">)"</span>)</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].scatter(proba[<span class="dv">0</span>], proba[<span class="dv">4</span>], s<span class="op">=</span><span class="dv">7</span>, alpha<span class="op">=</span><span class="fl">0.30</span>, color<span class="op">=</span><span class="st">"#d62728"</span>,</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>              label<span class="op">=</span><span class="ss">f"est0 vs est4, different recipe (mean |diff| </span><span class="sc">{</span>cross_diff<span class="sc">:.3f}</span><span class="ss">)"</span>)</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].plot([<span class="dv">0</span>, <span class="dv">1</span>], [<span class="dv">0</span>, <span class="dv">1</span>], <span class="st">"k--"</span>, lw<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_xlabel(<span class="st">"est0 P(class 1)"</span>)<span class="op">;</span> ax[<span class="dv">0</span>].set_ylabel(<span class="st">"other estimator P(class 1)"</span>)</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_title(<span class="st">"Sharing a recipe means closer agreement"</span>, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].legend(fontsize<span class="op">=</span><span class="dv">8</span>, loc<span class="op">=</span><span class="st">"upper left"</span>)</span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>spread <span class="op">=</span> proba.<span class="bu">max</span>(<span class="dv">0</span>) <span class="op">-</span> proba.<span class="bu">min</span>(<span class="dv">0</span>)</span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>most_disagreed <span class="op">=</span> np.argsort(spread)[::<span class="op">-</span><span class="dv">1</span>][:<span class="dv">14</span>]</span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>most_disagreed <span class="op">=</span> most_disagreed[np.argsort(proba[:, most_disagreed].mean(<span class="dv">0</span>))]</span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> slot, row <span class="kw">in</span> <span class="bu">enumerate</span>(most_disagreed):</span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">1</span>].plot([proba[<span class="op">~</span>is_quantile, row].mean(), proba[is_quantile, row].mean()], [slot, slot],</span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>               color<span class="op">=</span><span class="st">"0.7"</span>, lw<span class="op">=</span><span class="dv">1</span>, zorder<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">1</span>].scatter(proba[<span class="op">~</span>is_quantile, row], [slot] <span class="op">*</span> <span class="bu">int</span>((<span class="op">~</span>is_quantile).<span class="bu">sum</span>()), color<span class="op">=</span><span class="st">"#1f77b4"</span>,</span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>                  s<span class="op">=</span><span class="dv">34</span>, alpha<span class="op">=</span><span class="fl">0.85</span>, label<span class="op">=</span><span class="st">"squashing estimators"</span> <span class="cf">if</span> slot <span class="op">==</span> <span class="dv">0</span> <span class="cf">else</span> <span class="va">None</span>)</span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">1</span>].scatter(proba[is_quantile, row], [slot] <span class="op">*</span> <span class="bu">int</span>(is_quantile.<span class="bu">sum</span>()), color<span class="op">=</span><span class="st">"#d62728"</span>,</span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>                  s<span class="op">=</span><span class="dv">34</span>, alpha<span class="op">=</span><span class="fl">0.85</span>, label<span class="op">=</span><span class="st">"quantile estimators"</span> <span class="cf">if</span> slot <span class="op">==</span> <span class="dv">0</span> <span class="cf">else</span> <span class="va">None</span>)</span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    ax[<span class="dv">1</span>].scatter([proba[:, row].mean()], [slot], color<span class="op">=</span><span class="st">"k"</span>, marker<span class="op">=</span><span class="st">"|"</span>, s<span class="op">=</span><span class="dv">220</span>, zorder<span class="op">=</span><span class="dv">3</span>,</span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>                  label<span class="op">=</span><span class="st">"ensemble mean"</span> <span class="cf">if</span> slot <span class="op">==</span> <span class="dv">0</span> <span class="cf">else</span> <span class="va">None</span>)</span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_yticks([])<span class="op">;</span> ax[<span class="dv">1</span>].set_xlabel(<span class="st">"P(class 1) per estimator"</span>)<span class="op">;</span> ax[<span class="dv">1</span>].set_ylabel(<span class="st">"14 most-disagreed test rows"</span>)</span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_title(<span class="st">"One prediction is eight estimators averaged"</span>, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].legend(fontsize<span class="op">=</span><span class="dv">8</span>, loc<span class="op">=</span><span class="st">"lower right"</span>)</span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>fig.tight_layout(w_pad<span class="op">=</span><span class="fl">2.0</span>)</span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Figure 1: same-recipe pair against different-recipe pair.</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>same_diff <span class="op">=</span> np.<span class="bu">abs</span>(proba[<span class="dv">0</span>] <span class="op">-</span> proba[<span class="dv">1</span>]).mean()</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>cross_diff <span class="op">=</span> np.<span class="bu">abs</span>(proba[<span class="dv">0</span>] <span class="op">-</span> proba[<span class="dv">4</span>]).mean()</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="fl">6.6</span>, <span class="fl">5.4</span>))</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>ax.scatter(proba[<span class="dv">0</span>], proba[<span class="dv">1</span>], s<span class="op">=</span><span class="dv">7</span>, alpha<span class="op">=</span><span class="fl">0.30</span>, color<span class="op">=</span><span class="st">"#1f77b4"</span>,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>           label<span class="op">=</span><span class="ss">f"est0 vs est1, same recipe (mean |diff| </span><span class="sc">{</span>same_diff<span class="sc">:.3f}</span><span class="ss">)"</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>ax.scatter(proba[<span class="dv">0</span>], proba[<span class="dv">4</span>], s<span class="op">=</span><span class="dv">7</span>, alpha<span class="op">=</span><span class="fl">0.30</span>, color<span class="op">=</span><span class="st">"#d62728"</span>,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>           label<span class="op">=</span><span class="ss">f"est0 vs est4, different recipe (mean |diff| </span><span class="sc">{</span>cross_diff<span class="sc">:.3f}</span><span class="ss">)"</span>)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>ax.plot([<span class="dv">0</span>, <span class="dv">1</span>], [<span class="dv">0</span>, <span class="dv">1</span>], <span class="st">"k--"</span>, lw<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"est0 P(class 1)"</span>)<span class="op">;</span> ax.set_ylabel(<span class="st">"other estimator P(class 1)"</span>)</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Sharing a recipe means closer agreement"</span>, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>ax.legend(fontsize<span class="op">=</span><span class="dv">8</span>, loc<span class="op">=</span><span class="st">"upper left"</span>)</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span> plt.show()</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="co"># Figure 2: the 14 rows the estimators disagree on most, the eight predictions behind each average.</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>spread <span class="op">=</span> proba.<span class="bu">max</span>(<span class="dv">0</span>) <span class="op">-</span> proba.<span class="bu">min</span>(<span class="dv">0</span>)</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>most_disagreed <span class="op">=</span> np.argsort(spread)[::<span class="op">-</span><span class="dv">1</span>][:<span class="dv">14</span>]</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>most_disagreed <span class="op">=</span> most_disagreed[np.argsort(proba[:, most_disagreed].mean(<span class="dv">0</span>))]</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="fl">6.6</span>, <span class="fl">5.4</span>))</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> slot, row <span class="kw">in</span> <span class="bu">enumerate</span>(most_disagreed):</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    ax.plot([proba[<span class="op">~</span>is_quantile, row].mean(), proba[is_quantile, row].mean()], [slot, slot],</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>            color<span class="op">=</span><span class="st">"0.7"</span>, lw<span class="op">=</span><span class="dv">1</span>, zorder<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    ax.scatter(proba[<span class="op">~</span>is_quantile, row], [slot] <span class="op">*</span> <span class="bu">int</span>((<span class="op">~</span>is_quantile).<span class="bu">sum</span>()), color<span class="op">=</span><span class="st">"#1f77b4"</span>,</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>               s<span class="op">=</span><span class="dv">34</span>, alpha<span class="op">=</span><span class="fl">0.85</span>, label<span class="op">=</span><span class="st">"squashing estimators"</span> <span class="cf">if</span> slot <span class="op">==</span> <span class="dv">0</span> <span class="cf">else</span> <span class="va">None</span>)</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    ax.scatter(proba[is_quantile, row], [slot] <span class="op">*</span> <span class="bu">int</span>(is_quantile.<span class="bu">sum</span>()), color<span class="op">=</span><span class="st">"#d62728"</span>,</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>               s<span class="op">=</span><span class="dv">34</span>, alpha<span class="op">=</span><span class="fl">0.85</span>, label<span class="op">=</span><span class="st">"quantile estimators"</span> <span class="cf">if</span> slot <span class="op">==</span> <span class="dv">0</span> <span class="cf">else</span> <span class="va">None</span>)</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>    ax.scatter([proba[:, row].mean()], [slot], color<span class="op">=</span><span class="st">"k"</span>, marker<span class="op">=</span><span class="st">"|"</span>, s<span class="op">=</span><span class="dv">220</span>, zorder<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>               label<span class="op">=</span><span class="st">"ensemble mean"</span> <span class="cf">if</span> slot <span class="op">==</span> <span class="dv">0</span> <span class="cf">else</span> <span class="va">None</span>)</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>ax.set_yticks([])<span class="op">;</span> ax.set_xlabel(<span class="st">"P(class 1) per estimator"</span>)<span class="op">;</span> ax.set_ylabel(<span class="st">"14 most-disagreed test rows"</span>)</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"One prediction is eight estimators averaged"</span>, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>ax.legend(fontsize<span class="op">=</span><span class="dv">8</span>, loc<span class="op">=</span><span class="st">"lower right"</span>)</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -618,45 +633,54 @@ fitted steps (the same three for every estimator): ['RemoveConstantFeaturesStep'
 </figure>
 </div>
 </div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Parameters_files/figure-html/cell-4-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
 </div>
 <p>Same labels, so the marginal output distributions are nearly identical (each estimator averages about 0.49, std about 0.32). The difference is per row:</p>
 <ul>
-<li><strong>left</strong>: the same-recipe pair (blue) hugs the diagonal; the different-recipe pair (red) scatters wider. Swapping squashing for quantile moves a prediction more than reshuffling columns does.</li>
-<li><strong>right</strong>: the 14 most-disagreed rows. Typical rows keep the 8 estimators within about 0.08; here they span 0.3 or more of probability. Black tick = the average TabPFN reports.</li>
+<li><strong>first figure</strong>: the same-recipe pair (blue) hugs the diagonal; the different-recipe pair (red) scatters wider. Swapping squashing for quantile moves a prediction more than reshuffling columns does.</li>
+<li><strong>second figure</strong>: the 14 most-disagreed rows. Typical rows keep the 8 estimators within about 0.08; here they span 0.3 or more of probability. Black tick = the average TabPFN reports.</li>
 </ul>
 <p>Averaging these views is the job of <code>n_estimators</code>. How many do you need?</p>
 </section>
 <section id="the-preprocessing-menu" class="level3">
 <h3 class="anchored" data-anchor-id="the-preprocessing-menu">The preprocessing menu</h3>
 <p>The configuration changes on several axes at once, not just the scaling, and every axis lives in <code>inference_config</code>. The richest one is the numeric transform (<code>PreprocessorConfig.name</code>), the scaling and reshaping step. Its families: identity (<code>none</code>), logs (<code>log</code>, <code>1_plus_log</code>, <code>exp</code>), power transforms (<code>power</code>, <code>safepower</code>, <code>power_box</code>, <code>safepower_box</code>), quantile-to-uniform (<code>quantile_uni</code>, plus <code>_coarse</code>, <code>_fine</code>, <code>_extrapolate</code>), quantile-to-normal (<code>quantile_norm</code>, plus <code>_coarse</code>, <code>_fine</code>), robust scaling with a soft clip (<code>squashing_scaler_default</code>, <code>squashing_scaler_max10</code>, <code>robust</code>), and kernel-density variants (<code>kdi</code>, <code>kdi_uni</code>, <code>norm_and_kdi</code>). The two cells below show what a few of these do to one skewed column, and how the categorical encoding turns a category into numbers; both are illustrative on a single column, not a benchmark.</p>
-<div id="fig_numeric" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:32:47.324055Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:32:47.323845Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:32:47.813363Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:32:47.812509Z&quot;}}" data-execution_count="4">
+<div id="fig_numeric" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:13:02.557857Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:13:02.557665Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:13:02.765717Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:13:02.764960Z&quot;}}" data-execution_count="4">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># What the scaling recipes do to a feature. We push one right-skewed column through the actual transforms</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># TabPFN's recipes draw from and look at the resulting distribution. Illustrative on one synthetic column:</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># the point is the shape each transform produces, not a benchmark.</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># What the scaling recipes do to a feature, as transfer curves: push a grid of raw values through the</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># actual transforms TabPFN's recipes draw from, and plot transformed against original. Illustrative on one</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># synthetic skewed column; the shape each transform produces is the point, not a benchmark.</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn.preprocessing.steps.adaptive_quantile_transformer <span class="im">import</span> AdaptiveQuantileTransformer</span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn.preprocessing.steps.squashing_scaler_transformer <span class="im">import</span> SquashingScaler</span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> RobustScaler</span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>skewed <span class="op">=</span> np.random.RandomState(<span class="dv">0</span>).lognormal(mean<span class="op">=</span><span class="fl">0.0</span>, sigma<span class="op">=</span><span class="fl">1.0</span>, size<span class="op">=</span><span class="dv">4000</span>).reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>transforms <span class="op">=</span> {</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"none (raw)"</span>: <span class="va">None</span>,</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"quantile_uni"</span>: AdaptiveQuantileTransformer(output_distribution<span class="op">=</span><span class="st">"uniform"</span>),</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"squashing_scaler_default"</span>: SquashingScaler(),</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"robust"</span>: RobustScaler(unit_variance<span class="op">=</span><span class="va">True</span>),</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">4</span>, figsize<span class="op">=</span>(<span class="dv">14</span>, <span class="fl">3.1</span>))</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, (name, transform) <span class="kw">in</span> <span class="bu">zip</span>(axes, transforms.items()):</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    reshaped <span class="op">=</span> skewed <span class="cf">if</span> transform <span class="kw">is</span> <span class="va">None</span> <span class="cf">else</span> transform.fit_transform(skewed)</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    ax.hist(reshaped.ravel(), bins<span class="op">=</span><span class="dv">60</span>, color<span class="op">=</span><span class="st">"#4c72b0"</span>)</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    ax.set_title(name, fontsize<span class="op">=</span><span class="dv">10</span>)</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    ax.set_yticks([])</span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"count"</span>)</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>fig.suptitle(<span class="st">"One skewed feature through the recipes: quantile flattens to uniform, squashing soft-clips "</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>             <span class="st">"the tail, robust centers but keeps it"</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>grid <span class="op">=</span> np.linspace(<span class="bu">float</span>(skewed.<span class="bu">min</span>()), <span class="bu">float</span>(np.percentile(skewed, <span class="dv">99</span>)), <span class="dv">300</span>).reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>transforms <span class="op">=</span> {</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"none (raw)"</span>: <span class="va">None</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"quantile_uni"</span>: AdaptiveQuantileTransformer(output_distribution<span class="op">=</span><span class="st">"uniform"</span>),</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"squashing_scaler_default"</span>: SquashingScaler(),</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"robust"</span>: RobustScaler(unit_variance<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="fl">7.6</span>, <span class="fl">4.6</span>))</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, transform <span class="kw">in</span> transforms.items():</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> transform <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>        mapped <span class="op">=</span> grid.ravel()</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        transform.fit(skewed)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        mapped <span class="op">=</span> transform.transform(grid).ravel()</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    ax.plot(grid.ravel(), mapped, lw<span class="op">=</span><span class="fl">2.2</span>, label<span class="op">=</span>name)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"original feature value"</span>)<span class="op">;</span> ax.set_ylabel(<span class="st">"transformed value"</span>)</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"quantile and squashing bound the long tail; robust and raw let it run"</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -666,7 +690,7 @@ fitted steps (the same three for every estimator): ['RemoveConstantFeaturesStep'
 </div>
 </div>
 </div>
-<div id="fig_categorical" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:32:47.815193Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:32:47.814997Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:32:48.131910Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:32:48.131141Z&quot;}}" data-execution_count="5">
+<div id="fig_categorical" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:13:02.767762Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:13:02.767562Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:13:02.903553Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:13:02.902749Z&quot;}}" data-execution_count="5">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># What the recipe's categorical_name does to a category column. The default either keeps the existing</span></span>
@@ -791,7 +815,7 @@ fitted steps (the same three for every estimator): ['RemoveConstantFeaturesStep'
 <section id="what-each-view-does-inference_config" class="level3">
 <h3 class="anchored" data-anchor-id="what-each-view-does-inference_config">What each view does: inference_config</h3>
 <p><code>inference_config</code> is the door to the preprocessing. The cell below prints the default menu (the two recipes the estimators draw from), then overrides it with a single transform, the same hook the scaling and categorical chapters use.</p>
-<div id="infcfgdemo" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:32:48.134171Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:32:48.133975Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:32:49.490122Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:32:49.489381Z&quot;}}" data-execution_count="6">
+<div id="infcfgdemo" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:13:02.905346Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:13:02.905149Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:13:04.608486Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:13:04.607728Z&quot;}}" data-execution_count="6">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn.preprocessing <span class="im">import</span> PreprocessorConfig</span>
@@ -831,7 +855,7 @@ Overridden to a single quantile transform:
 </div>
 </div>
 <p>So <code>inference_config</code> either replaces the menu outright (above) or overrides one setting: the outlier-clip width, the categorical-detection thresholds, and so on. Keys are validated, an unknown one raises rather than failing silently. Rarely touched in practice; it is the hook the scaling and categorical chapters use.</p>
-<div id="recipes" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:32:49.491955Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:32:49.491747Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:32:50.826116Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:32:50.825402Z&quot;}}" data-execution_count="7">
+<div id="recipes" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:13:04.610399Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:13:04.610173Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:13:06.100364Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:13:06.099631Z&quot;}}" data-execution_count="7">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Drive the menu yourself. Override PREPROCESS_TRANSFORMS with your own pool of PreprocessorConfigs and</span></span>
@@ -886,7 +910,7 @@ diverse hand-built pool (one recipe per estimator):
 <section id="how-many-views-n_estimators" class="level3">
 <h3 class="anchored" data-anchor-id="how-many-views-n_estimators">How many views: n_estimators</h3>
 <p>This is bagging. Each estimator is the same frozen network on a differently-preprocessed view, and averaging them lowers the variance of the prediction, exactly as averaging more trees does in a random forest. Two consequences a gradient-boosting practitioner should hold onto. First, there is no training loop to overfit: unlike <code>max_depth</code> or the number of boosting rounds, adding estimators is variance- reducing, not a way to overfit the data, so on a fixed split the metric only wobbles within noise while the expected curve flattens rather than bending down. Second, the gain saturates, and where it saturates is set by how different the views are, which the next cells show. The default 8 sits past saturation for the default menu; drop to 1 or 2 for speed, raise it only when a richer <code>inference_config</code> menu gives the extra estimators something new to average.</p>
-<div id="nestsweep" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:32:50.828150Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:32:50.827938Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:33:19.293171Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:33:19.292406Z&quot;}}" data-execution_count="8">
+<div id="nestsweep" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:13:06.102504Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:13:06.102292Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:13:34.822217Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:13:34.821474Z&quot;}}" data-execution_count="8">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Accuracy saturates with n_estimators, but is that a quirk of one synthetic task? Sweep several</span></span>
@@ -932,7 +956,7 @@ blood-transfusion-service-center  0.7770  0.7785  0.7780  0.7780  0.7775</code><
 </div>
 </div>
 </div>
-<div id="nesttime" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:33:19.295107Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:33:19.294920Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:33:25.802202Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:33:25.801425Z&quot;}}" data-execution_count="9">
+<div id="nesttime" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:13:34.823886Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:13:34.823704Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:13:41.311377Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:13:41.310644Z&quot;}}" data-execution_count="9">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The cost side: time grows with the estimator count, each one is another pass over the data.</span></span>
@@ -946,12 +970,12 @@ blood-transfusion-service-center  0.7770  0.7785  0.7780  0.7780  0.7775</code><
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>n_estimators= 1: 0.82s
-n_estimators= 4: 1.39s
+n_estimators= 4: 1.33s
 n_estimators=16: 3.45s</code></pre>
 </div>
 </div>
 <p>On the default preprocessing, the shape is the same on every dataset: accuracy is settled by 2 to 4 estimators, 4 to 16 adds a few thousandths at most, and time grows roughly linearly with the count. The small dips in the printed table (credit-g and blood-transfusion shed a thousandth or two between n=2 and n=8) are single-split noise, not the curve bending down: averaging more views lowers variance and cannot raise the expected error, so on a fixed split the line wobbles within noise while the underlying curve is flat-to-up. But is “2 to 4” a property of TabPFN, or of the <em>default</em> menu? An estimator only helps when its view differs from the others, and <code>inference_config</code> sets that diversity. The next cell varies it.</p>
-<div id="nestconfig" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:33:25.804261Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:33:25.804065Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:35:14.804159Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:35:14.803371Z&quot;}}" data-execution_count="10">
+<div id="nestconfig" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:13:41.313580Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:13:41.313381Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:15:29.525017Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:15:29.524271Z&quot;}}" data-execution_count="10">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Is "2 to 4 estimators" universal, or a property of the default menu? An estimator only helps if its view</span></span>
@@ -991,21 +1015,36 @@ n_estimators=16: 3.45s</code></pre>
 <span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>            config_rows.append({<span class="st">"dataset"</span>: data_name, <span class="st">"config"</span>: config_name, <span class="st">"n_estimators"</span>: n, <span class="st">"auc"</span>: auc})</span>
 <span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>config_sweep <span class="op">=</span> pd.DataFrame(config_rows)</span>
-<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">15</span>, <span class="fl">4.5</span>))</span>
-<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, data_name <span class="kw">in</span> <span class="bu">zip</span>(axes, config_datasets):</span>
-<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>    sub <span class="op">=</span> config_sweep[config_sweep.dataset <span class="op">==</span> data_name]</span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> data_name <span class="kw">in</span> config_datasets:</span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>    rows_for_dataset <span class="op">=</span> config_sweep[config_sweep.dataset <span class="op">==</span> data_name]</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="fl">7.5</span>, <span class="fl">4.2</span>))</span>
 <span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> config_name <span class="kw">in</span> diversity_configs:</span>
-<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>        line <span class="op">=</span> sub[sub.config <span class="op">==</span> config_name].sort_values(<span class="st">"n_estimators"</span>)</span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>        line <span class="op">=</span> rows_for_dataset[rows_for_dataset.config <span class="op">==</span> config_name].sort_values(<span class="st">"n_estimators"</span>)</span>
 <span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>        ax.plot(line.n_estimators, line.auc, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span>config_name)</span>
 <span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>    ax.set_xscale(<span class="st">"log"</span>, base<span class="op">=</span><span class="dv">2</span>)<span class="op">;</span> ax.set_xticks(estimator_grid)<span class="op">;</span> ax.set_xticklabels(estimator_grid)</span>
-<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>    ax.set_title(data_name)<span class="op">;</span> ax.set_xlabel(<span class="st">"n_estimators"</span>)</span>
-<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"test AUC"</span>)<span class="op">;</span> axes[<span class="op">-</span><span class="dv">1</span>].legend(fontsize<span class="op">=</span><span class="dv">8</span>)</span>
-<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="ss">f"n_estimators vs diversity: </span><span class="sc">{</span>data_name<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">"n_estimators"</span>)<span class="op">;</span> ax.set_ylabel(<span class="st">"test AUC"</span>)</span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a>    ax.legend(fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a>    fig.tight_layout()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
 <p><img src="Parameters_files/figure-html/cell-11-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Parameters_files/figure-html/cell-11-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Parameters_files/figure-html/cell-11-output-3.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 </div>
@@ -1021,7 +1060,7 @@ n_estimators=16: 3.45s</code></pre>
 <section id="what-keeps-the-views-different" class="level3">
 <h3 class="anchored" data-anchor-id="what-keeps-the-views-different">What keeps the views different</h3>
 <p>The menu above lists the diversity sources; here we test the two main ones. Identical preprocessing <span class="math inline">\(\Rightarrow\)</span> averaging buys nothing. Within one recipe the copies differ mostly by column order (<code>FEATURE_SHIFT_METHOD</code>). Turn that off and they collapse.</p>
-<div id="preprocshift" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:35:14.805999Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:35:14.805814Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:35:19.116410Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:35:19.115613Z&quot;}}" data-execution_count="11">
+<div id="preprocshift" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:15:29.526936Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:15:29.526748Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:15:33.688229Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:15:33.687548Z&quot;}}" data-execution_count="11">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Turn the column reordering off and watch the redundant copies collapse. Using per_estimator_positive_proba</span></span>
@@ -1058,7 +1097,7 @@ n_estimators=16: 3.45s</code></pre>
 </ul>
 <p>Ensemble AUC barely moves: the menu has only 2 distinct recipes, and the shift only diversifies the copies of each. Killing it makes the copies redundant but keeps the recipe-level diversity that carries the ensemble.</p>
 <p>Mechanism (<code>shuffle_features_step.py</code>): <code>"shuffle"</code> = a fresh <code>rng.permutation</code> per estimator, <code>feature_shift_count</code> ignored; <code>"rotate"</code> = roll by that count; <code>None</code> = identity. So <code>feature_shift_count</code> only bites in <code>"rotate"</code> mode.</p>
-<div id="preproccshift" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:35:19.118479Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:35:19.118291Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:35:27.151039Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:35:27.150276Z&quot;}}" data-execution_count="12">
+<div id="preproccshift" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:15:33.690183Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:15:33.689997Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:15:41.748182Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:15:41.747457Z&quot;}}" data-execution_count="12">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Is the class shift pulling any weight? Isolate it: pin a single recipe (so the menu adds no diversity)</span></span>
@@ -1120,7 +1159,7 @@ default config, CLASS_SHIFT_METHOD=None     -&gt; AUC=0.8574</code></pre>
 <li><strong>(d) ensemble decorrelation only</strong> (the feature and class shifts from above): variance down, the expected prediction unchanged.</li>
 </ul>
 <p>Bucket (a) is the one a gradient-boosting practitioner recognizes fastest, so we show it directly before the sweep: who actually needs feature scaling?</p>
-<div id="f86fe912" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:35:27.152935Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:35:27.152739Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:36:56.038568Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:36:56.037885Z&quot;}}" data-execution_count="13">
+<div id="f86fe912" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:15:41.750194Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:15:41.750002Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:17:11.154357Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:17:11.153647Z&quot;}}" data-execution_count="13">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Scaling is the reflex you cannot skip for a linear model and can ignore for a tree. We build features</span></span>
@@ -1199,7 +1238,7 @@ TabPFN          0.0006</code></pre>
 </div>
 <p>Same data, three scalings, four models. LogReg swings by about <strong>0.10 AUC</strong> between raw and scaled, while RandomForest, HistGBM, and TabPFN barely move (under 0.001 here). The magnitude is dataset-specific, but the split is the point: TabPFN tracks the tree models, not the linear one. A tree is exactly invariant to a monotone change of units (it only reshuffles split thresholds); TabPFN is not guaranteed to be, it reads the values in context, but empirically it barely moves, an order of magnitude under LogReg, so the scaler menu inside <code>inference_config</code> is, for ranking, close to a non-event.</p>
 <p>What the scaler still moves is calibration. In the sweep that follows, <code>numeric transform off</code> is the worst knob for <code>dECE</code> (about +0.008): dropping the scaler leaves the probabilities less calibrated even though the ranking holds. That is bucket (a) in full, a monotone reshape is ranking-invariant and calibration-sensitive.</p>
-<div id="sweepcode" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:36:56.040630Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:36:56.040439Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:37:49.127766Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:37:49.127056Z&quot;}}" data-execution_count="14">
+<div id="sweepcode" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:17:11.156155Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:17:11.155963Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:18:03.922413Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:18:03.921595Z&quot;}}" data-execution_count="14">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Flip each preprocessing knob once from its default and read four familiar metrics, averaged across</span></span>
@@ -1276,7 +1315,7 @@ row subsample to 0.5  -0.0001  0.0057 -0.0324 -0.0040</code></pre>
 <section id="context-size-row-subsampling" class="level3">
 <h3 class="anchored" data-anchor-id="context-size-row-subsampling">Context size: row subsampling</h3>
 <p><code>SUBSAMPLE_SAMPLES</code> is the one knob in this section that is not a representation choice. It hands each estimator only a fraction of the training rows, and because TabPFN learns in context, that fraction is the training set the model actually sees. So the sweep is a learning curve, the most familiar plot in supervised learning: accuracy against how much data the model is given.</p>
-<div id="subsamp_code" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:37:49.129668Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:37:49.129483Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:38:00.167099Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:38:00.166371Z&quot;}}" data-execution_count="15">
+<div id="subsamp_code" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:18:03.924296Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:18:03.924103Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:18:14.842981Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:18:14.842289Z&quot;}}" data-execution_count="15">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># SUBSAMPLE_SAMPLES gives each estimator only a fraction of the training rows. Because TabPFN learns in</span></span>
@@ -1334,7 +1373,7 @@ fraction
 <section id="calibration-knobs" class="level2">
 <h2 class="anchored" data-anchor-id="calibration-knobs">Calibration knobs</h2>
 <p>These two knobs matter the moment you stop ranking and start <em>deciding</em>. Most production uses of a classifier threshold its probability to take an action: call this customer, review this claim, hold this transaction. A cutoff like 0.5 only means “more likely than not” when the probabilities are <em>calibrated</em>. <code>balance_probabilities</code> and <code>softmax_temperature</code> reshape the probability distribution without touching the ranking, both are monotone transforms, so AUC and AUPRC are unchanged by construction, which means what they really move is where your threshold bites. We show this first on the shape of the output, then on a real imbalanced decision.</p>
-<div id="hlbal" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:38:00.169057Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:38:00.168867Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:38:05.147401Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:38:05.146653Z&quot;}}" data-execution_count="16">
+<div id="hlbal" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:18:14.844973Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:18:14.844788Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:18:19.737290Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:18:19.736569Z&quot;}}" data-execution_count="16">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># balance_probabilities on a HARD, imbalanced task (uncertain model, so the shift is visible).</span></span>
@@ -1369,7 +1408,7 @@ fraction
 </div>
 </div>
 <p>The histogram shows the distribution lifting toward the minority class, but <code>balance_probabilities</code> is not learning a new shape. It applies a fixed rule: divide each class probability by that class’s training frequency, then renormalize. For two classes that is a prior correction with a closed form, and the cell checks it against TabPFN’s actual balanced output.</p>
-<div id="balprior_code" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:38:05.149192Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:38:05.149006Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:38:05.153691Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:38:05.153005Z&quot;}}" data-execution_count="17">
+<div id="balprior_code" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:18:19.739069Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:18:19.738886Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:18:19.743411Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:18:19.742775Z&quot;}}" data-execution_count="17">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># balance_probabilities is not a black box: it divides each class probability by that class's training</span></span>
@@ -1392,7 +1431,7 @@ rows where (balanced &gt;= 0.5) == (default &gt;= pi): 1.000</code></pre>
 </div>
 </div>
 <p>So the knob has a closed form. It divides each class probability by its training frequency and renormalizes, which for two classes is <code>p' = (p/π) / (p/π + (1-p)/(1-π))</code>. The reconstruction matches TabPFN’s balanced output to the sixth decimal, so this is the exact rule, not an approximation. In log-odds it is one subtraction, <code>logit(p') = logit(p) - logit(π)</code>, the knob removes the prior. That single fact explains the section. A constant shift in log-odds cannot reorder anything, so AUC and AUPRC stay put. And thresholding the balanced output at 0.5 is identical to thresholding the default output at the base rate π: above, every row clears both or neither. So <code>balance_probabilities=True</code> read at a 0.5 cutoff is a compact way to say “flag everything above the base rate”. Reach for it when your action fires at a fixed 0.5 and you want that to mean the base rate, never to improve a ranking.</p>
-<div id="hltemp" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:38:05.155323Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:38:05.155155Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:38:12.779703Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:38:12.779021Z&quot;}}" data-execution_count="18">
+<div id="hltemp" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:18:19.745040Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:18:19.744874Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:18:27.300448Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:18:27.299747Z&quot;}}" data-execution_count="18">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># softmax_temperature on a HARD, balanced task (uncertain model, so sharpen/soften shows).</span></span>
@@ -1427,7 +1466,7 @@ temperature 2.0: calibration error (ECE) 0.056</code></pre>
 <section id="tuning-the-dial-the-temperature-u-curve" class="level3">
 <h3 class="anchored" data-anchor-id="tuning-the-dial-the-temperature-u-curve">Tuning the dial: the temperature U-curve</h3>
 <p>The three histograms show what temperature does to the shape of the output. To see what it does to a metric, sweep it finely. <code>softmax_temperature</code> divides each estimator’s logits before its softmax, so a single fit gives the whole family exactly: we read the per-estimator logits once, re-temper them, and average them the way TabPFN does. The question is where calibration is best, and whether that point moves between an easy task and a hard one.</p>
-<div id="tempU_code" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:38:12.781771Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:38:12.781579Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:38:21.555668Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:38:21.554960Z&quot;}}" data-execution_count="19">
+<div id="tempU_code" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:18:27.302551Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:18:27.302351Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:18:36.016297Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:18:36.015588Z&quot;}}" data-execution_count="19">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># softmax_temperature divides EACH estimator's logits before its softmax, then the estimators are averaged.</span></span>
@@ -1481,7 +1520,7 @@ confident (strong signal)  AUC 0.9099 to 0.9099 across T   ECE 0.036 at default 
 </div>
 </div>
 <p>Two readings, both useful. First, ranking barely moves: the AUC printed for each task is flat across temperature, its range spanning about 0.0001. Each estimator’s softmax is monotone in its own logits, and averaging eight of them leaves the row order intact here, so temperature is effectively a pure confidence dial. Second, calibration traces a clean U with a single minimum, the picture behind “temperature scaling” in the calibration literature. On both the uncertain and the confident task that minimum sits near T = 1.0 to 1.2, just above the default 0.9: the pretrained ensemble is a touch over-confident here, so softening it slightly is the most calibration you can buy, and the gain over the default is small (ECE about 0.02 against 0.03). The optimum landing near the same place on two different tasks is why 0.9 is a safe default and why you rarely move it. Reach for temperature only when you need calibrated probabilities and can measure ECE on held-out data, then turn it toward the U minimum, not to move a ranking it leaves alone.</p>
-<div id="calusecase" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:38:21.557487Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:38:21.557296Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:38:27.218046Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:38:27.217349Z&quot;}}" data-execution_count="20">
+<div id="calusecase" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:18:36.018241Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:18:36.018059Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:18:41.563124Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:18:41.562402Z&quot;}}" data-execution_count="20">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A real threshold decision: a marketing campaign on imbalanced data (~12% subscribe). We threshold</span></span>
@@ -1528,7 +1567,7 @@ balance_probabilities=True:
 <li><code>fit_with_cache</code> does all of that and, in addition, pushes the preprocessed training context through the transformer at <code>.fit()</code> to compute and store its <strong>key-value cache</strong>, one per estimator. In a transformer the training rows become the keys and values that test rows attend to; caching them means a later <code>.predict()</code> skips recomputing the whole training context and only passes the test queries through attention. Fastest repeated prediction, at the highest memory cost. By default (<code>keep_cache_on_device=True</code>) each estimator’s cache stays on the inference device (the GPU when there is one); set <code>keep_cache_on_device=False</code> to offload it to CPU RAM, trading a little speed for device memory when a large cached context will not otherwise fit.</li>
 </ul>
 <p>So the answer to “what gets recomputed” climbs in three steps: <code>low_memory</code> redoes the preprocessing every time, <code>fit_preprocessors</code> keeps the preprocessed training data, and <code>fit_with_cache</code> also keeps the attention representation of that data. None of the three changes a single prediction. The next cell times all three on the same data.</p>
-<div id="fitmodedemo" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:38:27.219858Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:38:27.219677Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:38:46.042033Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:38:46.041324Z&quot;}}" data-execution_count="21">
+<div id="fitmodedemo" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:18:41.565202Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:18:41.565014Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:19:00.326374Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:19:00.325674Z&quot;}}" data-execution_count="21">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>X, y <span class="op">=</span> make_data(n<span class="op">=</span><span class="dv">6000</span>, seed<span class="op">=</span><span class="dv">1</span>)</span>
@@ -1550,8 +1589,8 @@ balance_probabilities=True:
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>         fit_mode  fit_seconds  predict_seconds (avg of 3)
-       low_memory         0.60                        2.14
-fit_preprocessors         0.61                        2.12
+       low_memory         0.62                        2.13
+fit_preprocessors         0.61                        2.11
    fit_with_cache         1.86                        0.98</code></pre>
 </div>
 </div>
@@ -1565,7 +1604,7 @@ fit_preprocessors         0.61                        2.12
 <section id="inferred-settings" class="level2">
 <h2 class="anchored" data-anchor-id="inferred-settings">Inferred settings</h2>
 <p>You do not tune the preprocessing, but you can read it. After a fit, <code>inference_config_</code> holds the resolved limits and thresholds, and <code>inferred_feature_schema_</code> shows the modality TabPFN assigned to each column (which is what <code>categorical_features_indices</code> would override).</p>
-<div id="c11" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T11:38:46.044002Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T11:38:46.043808Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T11:38:46.694398Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T11:38:46.693694Z&quot;}}" data-execution_count="22">
+<div id="c11" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T12:19:00.328213Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T12:19:00.328029Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T12:19:00.950946Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T12:19:00.950259Z&quot;}}" data-execution_count="22">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>Xq <span class="op">=</span> pd.DataFrame(np.random.RandomState(<span class="dv">0</span>).randn(<span class="dv">200</span>, <span class="dv">5</span>), columns<span class="op">=</span>[<span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"e"</span>])</span>
