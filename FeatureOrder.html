@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Does feature order matter? – TabPFN Practitioner</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./Parameters.html" rel="next">
+<link href="./index.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-1f0383365d55c353df76ff428ca87abd.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-5a3118da9a7072767d500adb0b6529fa.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>
+.navbar .navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.navbar .navbar-brand::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 2.65rem;
+  aspect-ratio: 34 / 21;
+  background-color: #d7b46a;
+  -webkit-mask: url("features_target_table_icon.png") center / contain no-repeat;
+  mask: url("features_target_table_icon.png") center / contain no-repeat;
+}
+
+#TOC .nav-link {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+@media (max-width: 575.98px) {
+  .navbar .navbar-brand::before {
+    width: 2.2rem;
+  }
+}
+</style>
+
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">TabPFN Practitioner</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="./index.html" aria-current="page"> 
+<span class="menu-text">Overview</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/CardoAI/TabPFNPractitioner"> 
+<span class="menu-text">Source</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./FeatureOrder.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./FeatureOrder.html">Does feature order matter?</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TabPFN Practitioner</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Notebooks</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./FeatureOrder.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Does feature order matter?</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Parameters.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TabPFN parameters</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul class="collapse">
+  <li><a href="#what-gradient-boosting-taught-us-order-does-not-matter" id="toc-what-gradient-boosting-taught-us-order-does-not-matter" class="nav-link active" data-scroll-target="#what-gradient-boosting-taught-us-order-does-not-matter">What gradient boosting taught us: order does not matter</a></li>
+  <li><a href="#tabpfn-reads-the-row-so-order-is-an-input" id="toc-tabpfn-reads-the-row-so-order-is-an-input" class="nav-link" data-scroll-target="#tabpfn-reads-the-row-so-order-is-an-input">TabPFN reads the row, so order is an input</a></li>
+  <li><a href="#with-the-shuffle-off-does-bundling-related-features-help" id="toc-with-the-shuffle-off-does-bundling-related-features-help" class="nav-link" data-scroll-target="#with-the-shuffle-off-does-bundling-related-features-help">With the shuffle off, does bundling related features help?</a></li>
+  <li><a href="#it-holds-for-several-groups-at-once" id="toc-it-holds-for-several-groups-at-once" class="nav-link" data-scroll-target="#it-holds-for-several-groups-at-once">It holds for several groups at once</a></li>
+  <li><a href="#real-data-and-the-honest-bottom-line" id="toc-real-data-and-the-honest-bottom-line" class="nav-link" data-scroll-target="#real-data-and-the-honest-bottom-line">Real data, and the honest bottom line</a></li>
+  <li><a href="#what-to-do" id="toc-what-to-do" class="nav-link" data-scroll-target="#what-to-do">What to do</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./FeatureOrder.html">Notebooks</a></li><li class="breadcrumb-item"><a href="./FeatureOrder.html">Does feature order matter?</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Does feature order matter?</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Gradient boosting trained us to stop thinking about column order. A tree finds a feature by name and splits on its value, so shuffling the columns changes nothing. This chapter asks whether that reflex carries over to TabPFN. The short answer: less than you would hope and more than you would expect, and the details are worth knowing.</p>
+<p><strong>What’s in here</strong></p>
+<ol type="1">
+<li>The gradient-boosting baseline: column order is invisible to trees.</li>
+<li>Why TabPFN is different: it reads the row jointly, and the default checkpoint is not permutation-invariant.</li>
+<li>The hidden default: a per-member shuffle averages the column order away.</li>
+<li>A measured result: with the shuffle off, bundling two <em>interacting</em> features helps; a redundant pair does not.</li>
+<li>The knife-edge: the interaction type, the exact column gap, and the shuffle all have to line up.</li>
+<li>Real data, and the honest bottom line.</li>
+</ol>
+<div id="d6037d79" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>warnings.filterwarnings(<span class="st">"ignore"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>plt.style.use(<span class="st">'fivethirtyeight'</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm <span class="im">import</span> tqdm</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> log_loss</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tabpfn <span class="im">import</span> TabPFNClassifier</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<section id="what-gradient-boosting-taught-us-order-does-not-matter" class="level2">
+<h2 class="anchored" data-anchor-id="what-gradient-boosting-taught-us-order-does-not-matter">What gradient boosting taught us: order does not matter</h2>
+<p>A tree splits on one feature value at a time and finds that feature by name, not by position. Permute the columns of the input, refit, and the model relabels which feature sits where but learns the same structure, so the predictions match. Column order is a readability choice, never a modeling one. The cell below makes the point: fit LightGBM, permute the columns of train and test the same way, refit, and the two probability vectors match exactly.</p>
+<div id="c7863d46" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> lightgbm <span class="im">import</span> LGBMClassifier</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.RandomState(<span class="dv">0</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>n_features <span class="op">=</span> <span class="dv">12</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>X_train <span class="op">=</span> rng.randn(<span class="dv">4000</span>, n_features)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>X_test <span class="op">=</span> rng.randn(<span class="dv">2000</span>, n_features)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> product_label(feature_matrix):</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Binary label from a product interaction plus two linear terms."""</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    signal <span class="op">=</span> (feature_matrix[:, <span class="dv">0</span>] <span class="op">*</span> feature_matrix[:, <span class="dv">1</span>]</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>              <span class="op">+</span> <span class="fl">0.7</span> <span class="op">*</span> feature_matrix[:, <span class="dv">2</span>] <span class="op">-</span> <span class="fl">0.7</span> <span class="op">*</span> feature_matrix[:, <span class="dv">3</span>])</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (signal <span class="op">&gt;</span> <span class="dv">0</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>y_train <span class="op">=</span> product_label(X_train)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>y_test <span class="op">=</span> product_label(X_test)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>column_permutation <span class="op">=</span> rng.permutation(n_features)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>gbm_plain <span class="op">=</span> LGBMClassifier(n_estimators<span class="op">=</span><span class="dv">200</span>, verbose<span class="op">=-</span><span class="dv">1</span>).fit(X_train, y_train)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>gbm_permuted <span class="op">=</span> LGBMClassifier(n_estimators<span class="op">=</span><span class="dv">200</span>, verbose<span class="op">=-</span><span class="dv">1</span>).fit(X_train[:, column_permutation], y_train)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>proba_plain <span class="op">=</span> gbm_plain.predict_proba(X_test)[:, <span class="dv">1</span>]</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>proba_permuted <span class="op">=</span> gbm_permuted.predict_proba(X_test[:, column_permutation])[:, <span class="dv">1</span>]</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"gradient boosting, plain vs column-permuted:"</span>)</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  max |change in P(class 1)|: </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">max</span>(np.<span class="bu">abs</span>(proba_plain <span class="op">-</span> proba_permuted))<span class="sc">:.2e}</span><span class="ss">"</span>)</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  test log-loss plain </span><span class="sc">{</span>log_loss(y_test, proba_plain)<span class="sc">:.4f}</span><span class="ss"> vs permuted </span><span class="sc">{</span>log_loss(y_test, proba_permuted)<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>gradient boosting, plain vs column-permuted:
+  max |change in P(class 1)|: 0.00e+00
+  test log-loss plain 0.1001 vs permuted 0.1001</code></pre>
+</div>
+</div>
+</section>
+<section id="tabpfn-reads-the-row-so-order-is-an-input" class="level2">
+<h2 class="anchored" data-anchor-id="tabpfn-reads-the-row-so-order-is-an-input">TabPFN reads the row, so order is an input</h2>
+<p>A tree looks at one feature at a time. TabPFN reads the whole row at once and lets the features interact inside a transformer, so where a feature sits in the row is part of what the model sees. The default classifier is TabPFN v2, checkpoint version 3, and two of its parts depend on column order.</p>
+<p>The input embedding fuses each column with its circular neighbours at offsets 1, 2 and 4 through a single linear layer (<code>architectures/tabpfn_v3.py</code>, the <code>_group_features</code> step, <code>feature_group_size = 3</code>), so columns that sit near each other in the order share an early representation. The cross-feature attention then adds rotary position encodings over the column axis (<code>use_rope = True</code>), so columns close in the order are treated as closer. Neither step is invariant to column order.</p>
+<p>If that were the whole story, feature order would be a parameter you had to tune. It is not, because of the next part.</p>
+<section id="the-default-shuffles-the-order-away" class="level3">
+<h3 class="anchored" data-anchor-id="the-default-shuffles-the-order-away">The default shuffles the order away</h3>
+<p>TabPFN builds its ensemble by handing each member a different view of the data. One of those knobs, <code>FEATURE_SHIFT_METHOD</code>, permutes the feature columns per member, and its default is <code>"shuffle"</code>. Averaged over members, the arbitrary column order washes out. To see this, we take one task, permute its input columns a few times, and measure how much the prediction moves, once with the default shuffle and once with it turned off (<code>FEATURE_SHIFT_METHOD=None</code>, which makes every member see the order we pass in).</p>
+<p>First the task we will reuse throughout: the label is the sign of a product <code>a*b</code>, a genuine two-feature interaction. Columns 0 and 1 hold noisy copies of <code>a</code> and <code>b</code>; the rest are pure noise.</p>
+<div id="a6eadb72" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_interaction_task(seed, n_train<span class="op">=</span><span class="dv">200</span>, n_test<span class="op">=</span><span class="dv">600</span>, n_noise<span class="op">=</span><span class="dv">18</span>, obs_noise<span class="op">=</span><span class="fl">0.3</span>):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Label is sign(a*b). Columns 0,1 are the interacting pair; the other n_noise columns are noise."""</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> rng.randn(n_train <span class="op">+</span> n_test)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    b <span class="op">=</span> rng.randn(n_train <span class="op">+</span> n_test)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    label <span class="op">=</span> (a <span class="op">*</span> b <span class="op">&gt;</span> <span class="dv">0</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [a <span class="op">+</span> obs_noise <span class="op">*</span> rng.randn(n_train <span class="op">+</span> n_test),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>               b <span class="op">+</span> obs_noise <span class="op">*</span> rng.randn(n_train <span class="op">+</span> n_test)]</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">+=</span> [rng.randn(n_train <span class="op">+</span> n_test) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(n_noise)]</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    feature_matrix <span class="op">=</span> np.column_stack(columns)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> feature_matrix[:n_train], label[:n_train], feature_matrix[n_train:], label[n_train:]</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>X_train, y_train, X_test, y_test <span class="op">=</span> make_interaction_task(seed<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>n_columns <span class="op">=</span> X_train.shape[<span class="dv">1</span>]</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>shuffle_rng <span class="op">=</span> np.random.RandomState(<span class="dv">1</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>permutations <span class="op">=</span> [shuffle_rng.permutation(n_columns) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>)]</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mean_probability_shift(feature_shift):</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Average absolute change in P(class 1) when the input columns are permuted, vs the identity order."""</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> fit_predict(train_matrix, test_matrix):</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>        model <span class="op">=</span> TabPFNClassifier(inference_config<span class="op">=</span>{<span class="st">"FEATURE_SHIFT_METHOD"</span>: feature_shift},</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>                                 n_estimators<span class="op">=</span><span class="dv">16</span>, random_state<span class="op">=</span><span class="dv">0</span>, auto_scale_n_estimators<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>        model.fit(train_matrix, y_train)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> model.predict_proba(test_matrix)[:, <span class="dv">1</span>]</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    base_proba <span class="op">=</span> fit_predict(X_train, X_test)</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    shifts <span class="op">=</span> []</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> permutation <span class="kw">in</span> tqdm(permutations, desc<span class="op">=</span><span class="ss">f"shift=</span><span class="sc">{</span>feature_shift<span class="sc">}</span><span class="ss">"</span>):</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>        permuted_proba <span class="op">=</span> fit_predict(X_train[:, permutation], X_test[:, permutation])</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>        shifts.append(np.mean(np.<span class="bu">abs</span>(permuted_proba <span class="op">-</span> base_proba)))</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.mean(shifts)</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>shift_default <span class="op">=</span> mean_probability_shift(<span class="st">"shuffle"</span>)</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>shift_off <span class="op">=</span> mean_probability_shift(<span class="va">None</span>)</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"mean |change in P(class 1)| under a column permutation:"</span>)</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  default shuffle: </span><span class="sc">{</span>shift_default<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  shuffle off:     </span><span class="sc">{</span>shift_off<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>mean |change in P(class 1)| under a column permutation:
+  default shuffle: 0.0441
+  shuffle off:     0.1496</code></pre>
+</div>
+</div>
+<div id="50826878" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="fl">6.4</span>, <span class="fl">4.4</span>))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>ax.bar([<span class="st">"default</span><span class="ch">\n</span><span class="st">shuffle"</span>, <span class="st">"shuffle</span><span class="ch">\n</span><span class="st">off"</span>], [shift_default, shift_off], color<span class="op">=</span>[<span class="st">"#4c72b0"</span>, <span class="st">"#c44e52"</span>])</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"mean |change in P(class 1)|"</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Turning the shuffle off exposes the column order"</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FeatureOrder_files/figure-html/cell-5-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>With the shuffle on, permuting the input barely moves the prediction: the ensemble has already averaged over column orders. With it off, the same permutation moves it more than three times as much. The order dependence is real, and the default hides it. Everything below sets <code>FEATURE_SHIFT_METHOD=None</code> so we can study the order directly.</p>
+</section>
+</section>
+<section id="with-the-shuffle-off-does-bundling-related-features-help" class="level2">
+<h2 class="anchored" data-anchor-id="with-the-shuffle-off-does-bundling-related-features-help">With the shuffle off, does bundling related features help?</h2>
+<p>Here is the question a gradient-boosting habit suggests: if two features belong together, does placing them next to each other help TabPFN? We test it on two kinds of “belong together”. In the interaction task above, the label is the product <code>a*b</code>. In a redundant task, the label is the sign of one latent seen as two noisy copies, so the useful combination of the pair is just their average. We also add a third task, <code>|a| &gt; |b|</code>, a real pairwise interaction that is not a product.</p>
+<p>For each task we place the two related columns at a fixed gap and sweep the gap, holding the data fixed and changing only positions. Two small helpers do the placement and the scoring.</p>
+<div id="972b7297" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> order_columns(feature_matrix, placements):</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Return the matrix with chosen columns moved to chosen positions: a pure permutation.</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">    placements is a list of (source_column, target_position). The remaining columns fill the other</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">    positions in their original order, so only positions change and never the data itself."""</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    n_cols <span class="op">=</span> feature_matrix.shape[<span class="dv">1</span>]</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    order <span class="op">=</span> [<span class="va">None</span>] <span class="op">*</span> n_cols</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    placed <span class="op">=</span> <span class="bu">set</span>(column <span class="cf">for</span> column, _ <span class="kw">in</span> placements)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> column, position <span class="kw">in</span> placements:</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        order[position] <span class="op">=</span> column</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    remaining <span class="op">=</span> (c <span class="cf">for</span> c <span class="kw">in</span> <span class="bu">range</span>(n_cols) <span class="cf">if</span> c <span class="kw">not</span> <span class="kw">in</span> placed)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> position <span class="kw">in</span> <span class="bu">range</span>(n_cols):</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> order[position] <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>            order[position] <span class="op">=</span> <span class="bu">next</span>(remaining)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> feature_matrix[:, order]</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> tabpfn_test_logloss(X_train, y_train, X_test, y_test, feature_shift):</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Fit TabPFN with a chosen FEATURE_SHIFT_METHOD and return test log-loss.</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co">    feature_shift=None turns off the per-member column shuffle, so every ensemble member sees the</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co">    exact column order we pass in."""</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> TabPFNClassifier(inference_config<span class="op">=</span>{<span class="st">"FEATURE_SHIFT_METHOD"</span>: feature_shift},</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>                             n_estimators<span class="op">=</span><span class="dv">16</span>, random_state<span class="op">=</span><span class="dv">0</span>, auto_scale_n_estimators<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    model.fit(X_train, y_train)</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>    proba <span class="op">=</span> model.predict_proba(X_test)[:, <span class="dv">1</span>]</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> log_loss(y_test, np.column_stack([<span class="dv">1</span> <span class="op">-</span> proba, proba]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div id="3d01e911" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_redundant_task(seed, n_train<span class="op">=</span><span class="dv">200</span>, n_test<span class="op">=</span><span class="dv">600</span>, n_noise<span class="op">=</span><span class="dv">18</span>, obs_noise<span class="op">=</span><span class="fl">1.5</span>):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Label is sign(latent), with the latent observed twice with noise. Columns 0,1 are the copies."""</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    latent <span class="op">=</span> rng.randn(n_train <span class="op">+</span> n_test)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    label <span class="op">=</span> (latent <span class="op">&gt;</span> <span class="dv">0</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [latent <span class="op">+</span> obs_noise <span class="op">*</span> rng.randn(n_train <span class="op">+</span> n_test),</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>               latent <span class="op">+</span> obs_noise <span class="op">*</span> rng.randn(n_train <span class="op">+</span> n_test)]</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">+=</span> [rng.randn(n_train <span class="op">+</span> n_test) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(n_noise)]</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    feature_matrix <span class="op">=</span> np.column_stack(columns)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> feature_matrix[:n_train], label[:n_train], feature_matrix[n_train:], label[n_train:]</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_magnitude_task(seed, n_train<span class="op">=</span><span class="dv">200</span>, n_test<span class="op">=</span><span class="dv">600</span>, n_noise<span class="op">=</span><span class="dv">18</span>, obs_noise<span class="op">=</span><span class="fl">0.3</span>):</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Label is |a| &gt; |b|, a pairwise interaction that is not a product. Columns 0,1 are the pair."""</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> rng.randn(n_train <span class="op">+</span> n_test)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    b <span class="op">=</span> rng.randn(n_train <span class="op">+</span> n_test)</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    label <span class="op">=</span> (np.<span class="bu">abs</span>(a) <span class="op">&gt;</span> np.<span class="bu">abs</span>(b)).astype(<span class="bu">int</span>)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [a <span class="op">+</span> obs_noise <span class="op">*</span> rng.randn(n_train <span class="op">+</span> n_test),</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>               b <span class="op">+</span> obs_noise <span class="op">*</span> rng.randn(n_train <span class="op">+</span> n_test)]</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">+=</span> [rng.randn(n_train <span class="op">+</span> n_test) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(n_noise)]</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    feature_matrix <span class="op">=</span> np.column_stack(columns)</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> feature_matrix[:n_train], label[:n_train], feature_matrix[n_train:], label[n_train:]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>Read the figure as: test log-loss at each column gap, minus the log-loss when the pair sits far apart (gap 6). Below zero means that spacing helped. The pair always starts at column 2; only the second feature moves.</p>
+<div id="1e7a4018" class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>gaps <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">6</span>]</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>seeds <span class="op">=</span> <span class="bu">range</span>(<span class="dv">8</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>anchor_position <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>far_gap <span class="op">=</span> <span class="dv">6</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> logloss_by_gap(make_task):</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Per-seed test log-loss at each column gap between the two related features, shuffle off."""</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    curve <span class="op">=</span> {}</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> gap <span class="kw">in</span> gaps:</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        per_seed <span class="op">=</span> []</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> seed <span class="kw">in</span> tqdm(seeds, desc<span class="op">=</span><span class="ss">f"gap=</span><span class="sc">{</span>gap<span class="sc">}</span><span class="ss">"</span>, leave<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>            X_train, y_train, X_test, y_test <span class="op">=</span> make_task(seed)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>            placement <span class="op">=</span> [(<span class="dv">0</span>, anchor_position), (<span class="dv">1</span>, anchor_position <span class="op">+</span> gap)]</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>            per_seed.append(tabpfn_test_logloss(order_columns(X_train, placement), y_train,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>                                                order_columns(X_test, placement), y_test, <span class="va">None</span>))</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        curve[gap] <span class="op">=</span> np.array(per_seed)</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> curve</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>interaction_curve <span class="op">=</span> logloss_by_gap(make_interaction_task)</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>redundant_curve <span class="op">=</span> logloss_by_gap(make_redundant_task)</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>magnitude_curve <span class="op">=</span> logloss_by_gap(make_magnitude_task)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div id="12db9bae" class="cell" data-execution_count="8">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="fl">7.4</span>, <span class="fl">4.8</span>))</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>curves <span class="op">=</span> [(interaction_curve, <span class="st">"interaction  a*b"</span>, <span class="st">"#c44e52"</span>),</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>          (redundant_curve, <span class="st">"redundant pair"</span>, <span class="st">"#4c72b0"</span>),</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>          (magnitude_curve, <span class="st">"magnitude  |a|&gt;|b|"</span>, <span class="st">"#55a868"</span>)]</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> curve, name, color <span class="kw">in</span> curves:</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    relative <span class="op">=</span> [curve[gap] <span class="op">-</span> curve[far_gap] <span class="cf">for</span> gap <span class="kw">in</span> gaps]</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    means <span class="op">=</span> [block.mean() <span class="cf">for</span> block <span class="kw">in</span> relative]</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    errors <span class="op">=</span> [block.std() <span class="op">/</span> np.sqrt(<span class="bu">len</span>(seeds)) <span class="cf">for</span> block <span class="kw">in</span> relative]</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    ax.errorbar(gaps, means, yerr<span class="op">=</span>errors, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span>name, color<span class="op">=</span>color)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"0.5"</span>, lw<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"column gap between the two related features"</span>)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"log-loss minus far-apart (gap 6)"</span>)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Only the product interaction gains, and only at gap 2-3"</span>)</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FeatureOrder_files/figure-html/cell-9-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>For the product interaction, placing the pair at a gap of 2 or 3 lowers log-loss by a clear margin, while putting them right next to each other (gap 1) or far apart (gap 4 and beyond) does nothing. The redundant pair and the magnitude interaction stay flat at every gap. Three facts fall out.</p>
+<p>Bundling helps a product interaction, not redundancy, and not every interaction. The sweet spot is a specific gap, not adjacency: the benefit tracks the {1,2,4} offsets the input embedding fuses, and the pair has to straddle the offset-4 tap (gap 2 or 3) to gain. And gap 1, the placement a practitioner would reach for first, is exactly the one that does nothing.</p>
+</section>
+<section id="it-holds-for-several-groups-at-once" class="level2">
+<h2 class="anchored" data-anchor-id="it-holds-for-several-groups-at-once">It holds for several groups at once</h2>
+<p>The single-pair effect is modest. Put several interacting pairs in one task, with the label the sign of a sum of products, and place each pair at its sweet-spot gap. Clustered beats scattered, and stays positive as we add groups. The size is noisy and does not simply add up per group, but the sign is reliable.</p>
+<div id="3f26e9ee" class="cell" data-execution_count="9">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_multi_interaction_task(seed, n_pairs<span class="op">=</span><span class="dv">3</span>, n_train<span class="op">=</span><span class="dv">300</span>, n_test<span class="op">=</span><span class="dv">800</span>, width<span class="op">=</span><span class="dv">20</span>, obs_noise<span class="op">=</span><span class="fl">0.2</span>):</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Label is the sign of a sum of n_pairs products. Columns 0..2*n_pairs-1 are the interacting pairs."""</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.RandomState(seed)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    latents <span class="op">=</span> [rng.randn(n_train <span class="op">+</span> n_test) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">2</span> <span class="op">*</span> n_pairs)]</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    signal <span class="op">=</span> <span class="bu">sum</span>(latents[<span class="dv">2</span> <span class="op">*</span> i] <span class="op">*</span> latents[<span class="dv">2</span> <span class="op">*</span> i <span class="op">+</span> <span class="dv">1</span>] <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n_pairs))</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    label <span class="op">=</span> (signal <span class="op">&gt;</span> <span class="dv">0</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [latents[j] <span class="op">+</span> obs_noise <span class="op">*</span> rng.randn(n_train <span class="op">+</span> n_test) <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">2</span> <span class="op">*</span> n_pairs)]</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">+=</span> [rng.randn(n_train <span class="op">+</span> n_test) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(width <span class="op">-</span> <span class="dv">2</span> <span class="op">*</span> n_pairs)]</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    feature_matrix <span class="op">=</span> np.column_stack(columns)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> feature_matrix[:n_train], label[:n_train], feature_matrix[n_train:], label[n_train:]</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="co"># each pair at gap 2 (clustered) vs every pair broken apart (scattered)</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>clustered_positions <span class="op">=</span> [(<span class="dv">0</span>, <span class="dv">2</span>), (<span class="dv">1</span>, <span class="dv">4</span>), (<span class="dv">2</span>, <span class="dv">8</span>), (<span class="dv">3</span>, <span class="dv">10</span>), (<span class="dv">4</span>, <span class="dv">14</span>), (<span class="dv">5</span>, <span class="dv">16</span>)]</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>scattered_positions <span class="op">=</span> [(<span class="dv">0</span>, <span class="dv">0</span>), (<span class="dv">1</span>, <span class="dv">10</span>), (<span class="dv">2</span>, <span class="dv">3</span>), (<span class="dv">3</span>, <span class="dv">13</span>), (<span class="dv">4</span>, <span class="dv">6</span>), (<span class="dv">5</span>, <span class="dv">16</span>)]</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>clustered_gain <span class="op">=</span> []</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> seed <span class="kw">in</span> tqdm(<span class="bu">range</span>(<span class="dv">10</span>), desc<span class="op">=</span><span class="st">"clustered vs scattered"</span>):</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    X_train, y_train, X_test, y_test <span class="op">=</span> make_multi_interaction_task(seed)</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    loss_clustered <span class="op">=</span> tabpfn_test_logloss(order_columns(X_train, clustered_positions), y_train,</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>                                         order_columns(X_test, clustered_positions), y_test, <span class="va">None</span>)</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    loss_scattered <span class="op">=</span> tabpfn_test_logloss(order_columns(X_train, scattered_positions), y_train,</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>                                         order_columns(X_test, scattered_positions), y_test, <span class="va">None</span>)</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>    clustered_gain.append(loss_scattered <span class="op">-</span> loss_clustered)</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>clustered_gain <span class="op">=</span> np.array(clustered_gain)</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"three interacting pairs, clustered vs scattered:"</span>)</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  clustered lowers log-loss by </span><span class="sc">{</span>clustered_gain<span class="sc">.</span>mean()<span class="sc">:+.3f}</span><span class="ss"> "</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"(better in </span><span class="sc">{</span>np<span class="sc">.</span>mean(clustered_gain <span class="op">&gt;</span> <span class="dv">0</span>)<span class="sc">:.0%}</span><span class="ss"> of </span><span class="sc">{</span><span class="bu">len</span>(clustered_gain)<span class="sc">}</span><span class="ss"> seeds)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>three interacting pairs, clustered vs scattered:
+  clustered lowers log-loss by +0.111 (better in 100% of 10 seeds)</code></pre>
+</div>
+</div>
+<section id="why-a-product-and-not-redundancy-or-a-magnitude-test" class="level3">
+<h3 class="anchored" data-anchor-id="why-a-product-and-not-redundancy-or-a-magnitude-test">Why a product, and not redundancy or a magnitude test</h3>
+<p>The input embedding is a linear map of the fused columns. A linear combination <code>alpha*a + beta*b</code> cannot be a product on its own, but squaring it, which a later nonlinearity can do, surfaces the cross term <code>a*b</code>. Co-locating two features hands the model a shortcut to their product. A redundant pair only needs an average, which the attention forms wherever the copies sit, and <code>|a| &gt; |b|</code>, which is <code>a^2 - b^2</code>, has no single-combination shortcut. That is the pattern the gap figure shows: the product gains, the other two do not.</p>
+</section>
+</section>
+<section id="real-data-and-the-honest-bottom-line" class="level2">
+<h2 class="anchored" data-anchor-id="real-data-and-the-honest-bottom-line">Real data, and the honest bottom line</h2>
+<p>Two checks close the loop. First, keep the injected product label but swap the Gaussian interacting features for standardized columns from the breast cancer dataset. If the gain is not an artifact of clean Gaussian features, clustered should still beat scattered here.</p>
+<div id="2c5afbe2" class="cell" data-execution_count="10">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.datasets <span class="im">import</span> load_breast_cancer</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>real_columns <span class="op">=</span> StandardScaler().fit_transform(load_breast_cancer().data)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>interacting <span class="op">=</span> real_columns[:, [<span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">15</span>, <span class="dv">20</span>, <span class="dv">25</span>]]</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>label_real <span class="op">=</span> ((interacting[:, <span class="dv">0</span>] <span class="op">*</span> interacting[:, <span class="dv">1</span>]</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>               <span class="op">+</span> interacting[:, <span class="dv">2</span>] <span class="op">*</span> interacting[:, <span class="dv">3</span>]</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>               <span class="op">+</span> interacting[:, <span class="dv">4</span>] <span class="op">*</span> interacting[:, <span class="dv">5</span>]) <span class="op">&gt;</span> <span class="dv">0</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>noise_columns <span class="op">=</span> np.random.RandomState(<span class="dv">0</span>).randn(real_columns.shape[<span class="dv">0</span>], <span class="dv">14</span>)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>X_real <span class="op">=</span> np.column_stack([interacting, noise_columns])</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>real_gain <span class="op">=</span> []</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> seed <span class="kw">in</span> tqdm(<span class="bu">range</span>(<span class="dv">10</span>), desc<span class="op">=</span><span class="st">"real interacting features"</span>):</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X_real, label_real, test_size<span class="op">=</span><span class="fl">0.4</span>, random_state<span class="op">=</span>seed)</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    loss_clustered <span class="op">=</span> tabpfn_test_logloss(order_columns(X_train, clustered_positions), y_train,</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>                                         order_columns(X_test, clustered_positions), y_test, <span class="va">None</span>)</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    loss_scattered <span class="op">=</span> tabpfn_test_logloss(order_columns(X_train, scattered_positions), y_train,</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>                                         order_columns(X_test, scattered_positions), y_test, <span class="va">None</span>)</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    real_gain.append(loss_scattered <span class="op">-</span> loss_clustered)</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>real_gain <span class="op">=</span> np.array(real_gain)</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"real interacting features (injected product label):"</span>)</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  clustered lowers log-loss by </span><span class="sc">{</span>real_gain<span class="sc">.</span>mean()<span class="sc">:+.3f}</span><span class="ss"> (better in </span><span class="sc">{</span>np<span class="sc">.</span>mean(real_gain <span class="op">&gt;</span> <span class="dv">0</span>)<span class="sc">:.0%}</span><span class="ss"> of seeds)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>real interacting features (injected product label):
+  clustered lowers log-loss by +0.016 (better in 100% of seeds)</code></pre>
+</div>
+</div>
+<p>The gain survives real feature distributions, so it is not a Gaussian artifact. The harder test is a real task end to end. We fetch sonar (60 numeric features), detect its strongest disjoint interacting pairs with a gradient-boosting H-statistic, cluster those pairs at the sweet-spot gap, and compare against scattering them. If real interactions were product-shaped and landed at the right gap, clustering would win here too.</p>
+<div id="ddc33764" class="cell" data-execution_count="11">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.datasets <span class="im">import</span> fetch_openml</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> StratifiedShuffleSplit</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.inspection <span class="im">import</span> partial_dependence</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> itertools <span class="im">import</span> combinations</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>sonar <span class="op">=</span> fetch_openml(<span class="st">"sonar"</span>, version<span class="op">=</span><span class="dv">1</span>, as_frame<span class="op">=</span><span class="va">True</span>, parser<span class="op">=</span><span class="st">"auto"</span>)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>X_sonar <span class="op">=</span> StandardScaler().fit_transform(sonar.data.select_dtypes(<span class="st">"number"</span>).values)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>y_sonar <span class="op">=</span> (sonar.target <span class="op">==</span> sonar.target.unique()[<span class="dv">0</span>]).astype(<span class="bu">int</span>).values</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> top_disjoint_interacting_pairs(X, y, n_pairs, n_top<span class="op">=</span><span class="dv">10</span>, grid<span class="op">=</span><span class="dv">20</span>):</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Rank feature pairs by Friedman H-statistic from a gradient-boosting fit; return the strongest</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co">    non-overlapping pairs."""</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    booster <span class="op">=</span> LGBMClassifier(n_estimators<span class="op">=</span><span class="dv">300</span>, learning_rate<span class="op">=</span><span class="fl">0.05</span>, num_leaves<span class="op">=</span><span class="dv">15</span>, verbose<span class="op">=-</span><span class="dv">1</span>).fit(X, y)</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    top_features <span class="op">=</span> [<span class="bu">int</span>(f) <span class="cf">for</span> f <span class="kw">in</span> np.argsort(booster.feature_importances_)[::<span class="op">-</span><span class="dv">1</span>][:n_top]]</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> centered_pd(features):</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>        values <span class="op">=</span> partial_dependence(booster, X, [features], grid_resolution<span class="op">=</span>grid, kind<span class="op">=</span><span class="st">"average"</span>)[<span class="st">"average"</span>][<span class="dv">0</span>]</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> values <span class="op">-</span> values.mean()</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    one_way <span class="op">=</span> {f: centered_pd(f) <span class="cf">for</span> f <span class="kw">in</span> top_features}</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    strengths <span class="op">=</span> []</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, j <span class="kw">in</span> combinations(top_features, <span class="dv">2</span>):</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>        joint <span class="op">=</span> centered_pd((i, j))</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>        interaction <span class="op">=</span> joint <span class="op">-</span> one_way[i][:, <span class="va">None</span>] <span class="op">-</span> one_way[j][<span class="va">None</span>, :]</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>        strengths.append((np.sqrt((interaction <span class="op">**</span> <span class="dv">2</span>).<span class="bu">sum</span>() <span class="op">/</span> ((joint <span class="op">**</span> <span class="dv">2</span>).<span class="bu">sum</span>() <span class="op">+</span> <span class="fl">1e-12</span>)), i, j))</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>    strengths.sort(reverse<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>    used, pairs <span class="op">=</span> <span class="bu">set</span>(), []</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _, i, j <span class="kw">in</span> strengths:</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> i <span class="kw">not</span> <span class="kw">in</span> used <span class="kw">and</span> j <span class="kw">not</span> <span class="kw">in</span> used:</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>            pairs.append((i, j))</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>            used.update({i, j})</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(pairs) <span class="op">==</span> n_pairs:</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pairs</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>detected_pairs <span class="op">=</span> top_disjoint_interacting_pairs(X_sonar, y_sonar, n_pairs<span class="op">=</span><span class="dv">4</span>)</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"detected interacting pairs:"</span>, detected_pairs)</span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>sonar_clustered, sonar_scattered <span class="op">=</span> [], []</span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>scatter_a, scatter_b <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">14</span>, <span class="dv">28</span>, <span class="dv">42</span>], [<span class="dv">7</span>, <span class="dv">21</span>, <span class="dv">35</span>, <span class="dv">49</span>]</span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> group_index, (feature_a, feature_b) <span class="kw">in</span> <span class="bu">enumerate</span>(detected_pairs):</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>    sonar_clustered <span class="op">+=</span> [(feature_a, <span class="dv">2</span> <span class="op">+</span> <span class="dv">6</span> <span class="op">*</span> group_index), (feature_b, <span class="dv">4</span> <span class="op">+</span> <span class="dv">6</span> <span class="op">*</span> group_index)]</span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>    sonar_scattered <span class="op">+=</span> [(feature_a, scatter_a[group_index]), (feature_b, scatter_b[group_index])]</span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>splitter <span class="op">=</span> StratifiedShuffleSplit(n_splits<span class="op">=</span><span class="dv">10</span>, train_size<span class="op">=</span><span class="dv">150</span>, random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>sonar_gain <span class="op">=</span> []</span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> train_idx, test_idx <span class="kw">in</span> tqdm(<span class="bu">list</span>(splitter.split(X_sonar, y_sonar)), desc<span class="op">=</span><span class="st">"sonar splits"</span>):</span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>    loss_clustered <span class="op">=</span> tabpfn_test_logloss(order_columns(X_sonar[train_idx], sonar_clustered), y_sonar[train_idx],</span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a>                                         order_columns(X_sonar[test_idx], sonar_clustered), y_sonar[test_idx], <span class="va">None</span>)</span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a>    loss_scattered <span class="op">=</span> tabpfn_test_logloss(order_columns(X_sonar[train_idx], sonar_scattered), y_sonar[train_idx],</span>
+<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a>                                         order_columns(X_sonar[test_idx], sonar_scattered), y_sonar[test_idx], <span class="va">None</span>)</span>
+<span id="cb15-50"><a href="#cb15-50" aria-hidden="true" tabindex="-1"></a>    sonar_gain.append(loss_scattered <span class="op">-</span> loss_clustered)</span>
+<span id="cb15-51"><a href="#cb15-51" aria-hidden="true" tabindex="-1"></a>sonar_gain <span class="op">=</span> np.array(sonar_gain)</span>
+<span id="cb15-52"><a href="#cb15-52" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"sonar, clustering the detected pairs vs scattering:"</span>)</span>
+<span id="cb15-53"><a href="#cb15-53" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  clustered lowers log-loss by </span><span class="sc">{</span>sonar_gain<span class="sc">.</span>mean()<span class="sc">:+.4f}</span><span class="ss"> "</span></span>
+<span id="cb15-54"><a href="#cb15-54" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"+/- </span><span class="sc">{</span>sonar_gain<span class="sc">.</span>std() <span class="op">/</span> np<span class="sc">.</span>sqrt(<span class="bu">len</span>(sonar_gain))<span class="sc">:.4f}</span><span class="ss"> "</span></span>
+<span id="cb15-55"><a href="#cb15-55" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"(better in </span><span class="sc">{</span>np<span class="sc">.</span>mean(sonar_gain <span class="op">&gt;</span> <span class="dv">0</span>)<span class="sc">:.0%}</span><span class="ss"> of splits)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>detected interacting pairs: [(35, 36), (11, 10), (44, 26), (47, 8)]
+sonar, clustering the detected pairs vs scattering:
+  clustered lowers log-loss by -0.0061 +/- 0.0098 (better in 70% of splits)</code></pre>
+</div>
+</div>
+</section>
+<section id="what-to-do" class="level2">
+<h2 class="anchored" data-anchor-id="what-to-do">What to do</h2>
+<p>Feature order is a real input to TabPFN, more than a gradient-boosting habit expects. As a lever, though, it is fragile: it needs a product-shaped interaction, a specific column gap rather than plain adjacency, and the per-member shuffle switched off. On the real task those conditions do not line up, and the clustered order is within noise of scattered. The default shuffle exists precisely to spare you from the arbitrary order.</p>
+<p>So leave <code>FEATURE_SHIFT_METHOD</code> on its default and do not hand-order columns for TabPFN. Keep the mechanism in mind for one practical case: if you ever run with the shuffle off, for speed or reproducibility, two column orders can disagree, and now you know why and by how much.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script>
+(() => {
+  const toggles = document.querySelectorAll(".cf-toggle");
+
+  toggles.forEach((toggle) => {
+    const panels = Array.from(toggle.querySelectorAll("[data-cf-setting]"));
+    if (panels.length < 2 || toggle.dataset.cfReady === "true") {
+      return;
+    }
+
+    const knob = toggle.dataset.cfKnob || "counterfactual";
+    const controls = document.createElement("div");
+    controls.className = "cf-toggle__controls";
+    controls.setAttribute("role", "group");
+    controls.setAttribute("aria-label", knob);
+
+    const settings = panels.map((panel) => panel.dataset.cfSetting);
+    const fallback = settings[0];
+    let active = settings.includes(toggle.dataset.cfDefault)
+      ? toggle.dataset.cfDefault
+      : fallback;
+
+    const show = (setting) => {
+      active = setting;
+      panels.forEach((panel) => {
+        panel.hidden = panel.dataset.cfSetting !== active;
+      });
+      controls.querySelectorAll("button").forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.cfSetting === active));
+      });
+    };
+
+    settings.forEach((setting) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "cf-toggle__button";
+      button.dataset.cfSetting = setting;
+      button.textContent = setting;
+      button.addEventListener("click", () => show(setting));
+      controls.appendChild(button);
+    });
+
+    toggle.prepend(controls);
+    toggle.dataset.cfReady = "true";
+    show(active);
+  });
+})();
+</script>
+
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/cardoai\.github\.io\/TabPFNPractitioner\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./index.html" class="pagination-link" aria-label="TabPFN Practitioner">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">TabPFN Practitioner</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./Parameters.html" class="pagination-link" aria-label="TabPFN parameters">
+        <span class="nav-page-text">TabPFN parameters</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
